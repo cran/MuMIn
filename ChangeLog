@@ -1,0 +1,23 @@
+MuMIn package changelog:
+
+Version: 0.12.2 (2009-06-14)
+fixed: alpha in model.avg was not passed to par.avg
+
+Version: 0.12.1 (2009-04-20)
+fixed: method="NA" in model.avg, par.avg now accepts NA's in 'weight'
+
+Version: 0.12.0 (2009-03-24)
+Change in version number only. Had to make this jump in numbering, as there was a typo in DESCRIPTION file of an early version, 
+(0.11.2 instead of 0.1.0), and since then R-forge mechanism ignored actual newer versions, as they had lower number.
+
+Version 0.1.1 (2009-03-22)
+Modified: dredge: added "fixed" and "m.max" arguments.
+
+Version 0.1.1 (2009-03-17)
+Fixed: par.avg: Variance estimate corrected (previous estimate was square root of variance). 
+	Thanks to Mick Wu.
+Fixed: dredge: Apparently "expand.grid" cannot handle too many combinations, so now dredge stops with a more explanatory message
+
+Version 0.1.0
+dRedging (0.11.2) moved to R-Forge.
+Since model averaging is now the main focus of the package, its name changed to MuMIn - MUltiModelINference.
