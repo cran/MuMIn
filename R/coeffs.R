@@ -1,3 +1,6 @@
+`coeffs` <-
+function (model) UseMethod("coeffs")
+
 `coeffs.default` <-
 function(model) { model$coefficients}
 
@@ -16,8 +19,6 @@ function(model) { ret <- model@fixef; names(ret) <- model@cnames$.fixed; ret}
 `coeffs.mer` <-
 function(model) { return(model@fixef)}
 
-`coeffs` <-
-function (model) UseMethod("coeffs")
-
 `coeffs.spautolm` <-
 function(model) { model$fit$coefficients}
+

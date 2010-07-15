@@ -16,7 +16,9 @@ get.models(dd, subset = delta <= 4, ...)
 \arguments{
   \item{dd}{ object returned by \code{\link{dredge}}}
   \item{subset}{subset of models}
-  \item{\dots}{additional parameters passed to \code{update}, for example, in \code{lme/lmer} one may want to use \code{method = "REML"} while using "ML" for model selection}
+  \item{\dots}{additional parameters passed to \code{update}, for example, in
+	\code{lme/lmer} one may want to use \code{method = "REML"} while using "ML"
+	for model selection}
 }
 
 \value{
@@ -33,7 +35,8 @@ get.models(dd, subset = delta <= 4, ...)
 # Mixed models:
 
 require(nlme)
-fm2 <- lme(distance ~ age + Sex, data = Orthodont, random = ~ 1 | Subject, method="ML")
+fm2 <- lme(distance ~ age + Sex, data = Orthodont,
+	random = ~ 1 | Subject, method="ML")
 dd2 <- dredge(fm2)
 
 # Get top-most models, but fitted by REML:
