@@ -1,14 +1,52 @@
 MuMIn package changelog:
 
+Version: 0.13.3 (2010-07-15)
+Bug fixed in print.averaging
+
+Version: 0.13.2 (2010-07-14)
+Attributes for custom rank function in "dredge" and "model.avg" are now evaluated model-wise, if provided as expressions
+
+Version: 0.13.0-1 (2010-07-12)
+Fixed compatibility issues with models of class "lme" and "sarlm". 
+"model.avg" does now some checking whether all models were fitted to the same data and have the same response. 
+
+Version: 0.12.13 (2010-07-09)
+'recalc.weights' argument added to "subset.model.selection". 
+Small bug fixed in dredge.
+
+Version: 0.12.12 (2010-07-08)
+New in "dredge": Subsetting models a priori according to a formula
+
+Version: 0.12.11 (2010-07-07)
+Subset/extract methods for 'model.selection' object
+
+Version: 0.12.10 (2010-07-05)
+Fixed "predict.averaging" for missing 'newdata' handling; Table returned by "dredge" now has factors
+for terms with more than one level (they were previously shown as '1')
+
+Version: 0.12.9 (2010-07-03)
+Finally fixed problems with variable exporting and hidden methods
+
+Version: 0.12.7-8 (2010-07-02)
+Small changes in namespace and documentation
+
+Version: 0.12.6 (2010-06-26)
+Tidying up the code, small changes.
+
+Version: 0.12.4 (2010-06-21)
+added: "predict.averaging" and "coef.averaging", 'averaging' object contains additional elements, so
+that several default methods work with it.
+
 Version: 0.12.2 (2009-06-14)
-fixed: alpha in model.avg was not passed to par.avg
+fixed: 'alpha' in "model.avg" was not passed to "par.avg"
 
 Version: 0.12.1 (2009-04-20)
 fixed: method="NA" in model.avg, par.avg now accepts NA's in 'weight'
 
 Version: 0.12.0 (2009-03-24)
-Change in version number only. Had to make this jump in numbering, as there was a typo in DESCRIPTION file of an early version, 
-(0.11.2 instead of 0.1.0), and since then R-forge mechanism ignored actual newer versions, as they had lower number.
+Change in version number only. Had to make this jump in numbering, as there was a typo in 
+DESCRIPTION file of an early version, (0.11.2 instead of 0.1.0), and since then R-forge mechanism
+seemed to ignore actual newer versions, as they had lower number.
 
 Version 0.1.1 (2009-03-22)
 Modified: dredge: added "fixed" and "m.max" arguments.
@@ -16,8 +54,10 @@ Modified: dredge: added "fixed" and "m.max" arguments.
 Version 0.1.1 (2009-03-17)
 Fixed: par.avg: Variance estimate corrected (previous estimate was square root of variance). 
 	Thanks to Mick Wu.
-Fixed: dredge: Apparently "expand.grid" cannot handle too many combinations, so now dredge stops with a more explanatory message
+Fixed: dredge: Apparently "expand.grid" cannot handle too many combinations, so now dredge stops 
+with a more explanatory message
 
 Version 0.1.0
 dRedging (0.11.2) moved to R-Forge.
-Since model averaging is now the main focus of the package, its name changed to MuMIn - MUltiModelINference.
+Since model averaging is now the main focus of the package, its name changed 
+to MuMIn - MUltiModelINference.

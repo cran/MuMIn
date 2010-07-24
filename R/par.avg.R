@@ -11,10 +11,12 @@ function(x, se, npar, weight, alpha = 0.05) {
 	ase <- weighted.mean(sqrt(xvar + x.sqdiff), weight, na.rm = TRUE)
 
 	z <- c((qt(1 - (alpha / 2), npar) / qnorm(1 - (alpha / 2)))^2)
-
 	use <- weighted.mean(sqrt((xvar * z) + x.sqdiff), weight, na.rm = TRUE)
-
 	ci <- qnorm(1 - (alpha / 2)) * use
 
-	return(c(`Coefficient` = wx, `Variance` = avar,  `SE` = ase, `Unconditional SE` = use, `Lower CI` = wx - ci, `Upper CI` = wx + ci))
+	return(c(`Coefficient` = wx, `Variance` = avar,  `SE` = ase,
+			 `Unconditional SE` = use,
+			 `Lower CI` = wx - ci,
+			 `Upper CI` = wx + ci
+			 ))
 }

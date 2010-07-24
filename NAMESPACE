@@ -1,35 +1,39 @@
 export(
-AICc, beta.weights, coeffs, coeffs.default, coeffs.glmer, coeffs.gls, coeffs.lme, coeffs.lmer, coeffs.mer, coeffs.spautolm,  dredge, get.models, getAllTerms, getAllTerms.default, getAllTerms.formula, getAllTerms.glmer, getAllTerms.lme, getAllTerms.lmer, getAllTerms.mer, model.avg, par.avg, print.averaging, print.model.selection,
-tTable, tTable.default, 
-#tTable.gam, tTable.glmer, tTable.gls, tTable.lme, tTable.lmer, tTable.mer, tTable.spautolm, 
- QAIC
+	AICc, beta.weights, dredge, get.models, model.avg, par.avg, QAIC,
+	getAllTerms, coeffs, tTable
 )
 
-
+importsFrom(stats, AIC, as.formula, coef, delete.response, deviance, fitted,
+formula, logLik, model.frame, model.matrix, na.omit, predict, qnorm, qt,
+reformulate, residuals, sd, terms, update, weighted.mean)
 
 S3method(print, averaging)
+S3method(summary, averaging)
+S3method(predict, averaging)
+S3method(coef, averaging)
+S3method(fitted, averaging)
+S3method(model.matrix, averaging)
 S3method(print, model.selection)
-
-S3Method(tTable, default)
-S3Method(tTable, gam)
-S3Method(tTable, glmer)
-S3Method(tTable, gls)
-S3Method(tTable, lme)
-S3Method(tTable, lmer)
-S3Method(tTable, mer)
-S3Method(tTable, spautolm)
-
-S3Method(coeffs, default)
-S3Method(coeffs, glmer)
-S3Method(coeffs, gls)
-S3Method(coeffs, lme)
-S3Method(coeffs, lmer)
-S3Method(coeffs, mer)
-S3Method(coeffs, spautolm)
-
-S3Method(getAllTerms, default)
-S3Method(getAllTerms, formula)
-S3Method(getAllTerms, glmer)
-S3Method(getAllTerms, lme)
-S3Method(getAllTerms, lmer)
-S3Method(getAllTerms, mer)
+S3method(subset, model.selection)
+S3method("[", model.selection)
+S3method(getAllTerms, default)
+S3method(getAllTerms, formula)
+S3method(getAllTerms, glmer)
+S3method(getAllTerms, lme)
+S3method(getAllTerms, lmer)
+S3method(getAllTerms, mer)
+S3method(coeffs, default)
+S3method(coeffs, glmer)
+S3method(coeffs, gls)
+S3method(coeffs, lme)
+S3method(coeffs, lmer)
+S3method(coeffs, mer)
+S3method(coeffs, spautolm)
+S3method(tTable, default)
+S3method(tTable, gam)
+S3method(tTable, glmer)
+S3method(tTable, gls)
+S3method(tTable, lme)
+S3method(tTable, lmer)
+S3method(tTable, mer)
+S3method(tTable, spautolm)

@@ -1,7 +1,8 @@
+`tTable` <-
+function (model, ...) 	UseMethod("tTable")
+
 `tTable.default` <-
-function(model, ...) {
-	return(summary(model)$coefficients)
-}
+function(model, ...) return(summary(model)$coefficients)
 
 `tTable.gam` <-
 function(model, ...) {
@@ -21,9 +22,8 @@ function(model, ...) {
 function (model, ...) return(summary(model)$tTable)
 
 `tTable.lme` <-
-function(model, ...) {
-	return(summary(model)$tTable)
-}
+function(model, ...) return(summary(model)$tTable)
+
 
 `tTable.lmer` <-
 function(model, ...) {
@@ -39,12 +39,6 @@ function(model, ...) {
 	#return((lme4::summary(model))@coefs)
 }
 
-`tTable` <-
-function (model, ...) {
-	UseMethod("tTable")
-}
-
+`tTable.sarlm` <-
 `tTable.spautolm` <-
-function(model, ...) {
-return(summary(model)$Coef)
-}
+function(model, ...) return(summary(model)$Coef)

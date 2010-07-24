@@ -4,11 +4,11 @@
 
 \title{Parameter averaging}
 \description{
-averages single parameter based on given weights
+Averages single parameter based on provided weights
 }
 
 \usage{
-par.avg (x, se, npar, weight, alpha = 0.05)
+par.avg(x, se, npar, weight, alpha = 0.05)
 }
 
 \arguments{
@@ -28,8 +28,8 @@ par.avg (x, se, npar, weight, alpha = 0.05)
 }
 
 \references{
-Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel inference: a practical information-theoretic approach}. 2nd ed. 
-}
+Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
+inference: a practical information-theoretic approach}. 2nd ed. }
 
 \author{Kamil Bartoń}
 

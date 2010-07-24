@@ -6,18 +6,29 @@ function(x, ...) {
 `getAllTerms.formula` <-
 function(x, ...) {
 	mTerms <- terms(x)
-	ret <- attr(terms(x),"term.labels")
+	intercept <- attr(mTerms, "intercept")
+	if (!is.null(attr(mTerms, "offset"))){
+		offs <-
+		sapply(as.list(attr(mTerms,"variables")[-1])[attr(mTerms,"offset")],
+		deparse)
+	} else {
+		offs <- NULL
+	}
+	ret <- attr(mTerms, "term.labels")
 	if (length(ret) > 0) {
 		ret <- ret[order(ret)]
 		i <- grep(" ", ret)
 		ret[i] <- paste("(", ret[i] , ")")
 
-		mTerms <- terms(as.formula(paste(". ~", paste(ret, sep=" ", collapse=" + "))))
+		mTerms <- terms(reformulate(ret))
 		ret <- attr(mTerms, "term.labels")
 	}
 
-	attr(ret, "intercept") <- attr(mTerms, "intercept")
-	ret
+	attr(ret, "intercept") <- intercept
+
+	if (!is.null(offs[1]))
+		attr(ret, "offset") <- offs
+	return(ret)
 }
 
 `getAllTerms.glmer` <-
@@ -30,7 +41,6 @@ function(x, ...) {
 	rnd <- ret[i]
      ret <- ret[-i]
      attr(ret, "random.terms") <- rnd
-
      rnd.formula <- paste("(", rnd, ")", sep="", collapse=" + ")
      rnd.formula <- as.formula(paste(". ~ .", rnd.formula, sep="+"))
 
@@ -86,4 +96,4 @@ function(x, ...) {
 }
 
 `getAllTerms` <-
-function (x, ...) UseMethod("getAllTerms")
+function(x, ...) UseMethod("getAllTerms")
