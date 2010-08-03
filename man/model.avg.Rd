@@ -22,7 +22,9 @@ model.avg(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 
 
 \arguments{
-	\item{m1}{A fitted model object or a list of such objects.}
+	\item{m1}{A fitted model object or a list of such objects. See
+		\sQuote{Details}}
+
 	\item{beta}{Logical, should standardized coefficients be returned rather
 		than normal ones?}
 	\item{method}{If set to \dQuote{0} (default), terms missing in one model are
@@ -48,7 +50,7 @@ model.avg(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 }
 
 \value{
-	Ann object of class \code{averaging}, which is a list with elements:
+	An object of class \code{averaging}, being a list with elements:
 
 	\item{summary}{Model table with deviance, AICc, Delta and weight.}
 	\item{coefficients}{the model coefficients}
@@ -69,6 +71,15 @@ model.avg(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 }
 
 \details{
+
+\code{model.avg} has been tested to work with \code{lm}, \code{glm}; \code{rlm}
+(\pkg{MASS}); \code{gam} (\pkg{mgcv}); \code{lme}, \code{gls} (\pkg{nlme}),
+\code{lmer} (\pkg{lme4}), as well as with \code{sarlm} and \code{spautolm}
+(\pkg{spdep}). Other types are also likely to work, in particular when they
+inherit from the supported classes.
+See \sQuote{Details} section of the \link{Miscellaneous} page to see how to
+provide support for other types of models.
+
 \code{rank} is found by a call to \code{match.fun} and typically is specified as
 a function or a symbol (e.g. a backquoted name) or a character string specifying
 a function to be searched for from the environment of the call to lapply.
@@ -87,6 +98,7 @@ Apart from \code{predict} and \code{coef}, other default methods, such as
 }
 
 \note{
+
 \code{predict.averaging} relies on availability of the \code{predict} methods
 for the component model classes (except for \code{(g)lm}).
 }
@@ -103,6 +115,9 @@ inference: a practical information-theoretic approach}. 2nd ed. }
 }
 
 \examples{
+
+require(graphics)
+
 # Example from Burnham and Anderson (2002), page 100:
 data(Cement)
 lm1 <- lm(y ~ ., data = Cement)
