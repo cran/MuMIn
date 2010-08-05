@@ -26,7 +26,7 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 		IC <- function(x) eval(rank.call)
 		res <- IC(m1)
   		if (!is.numeric(res) || length(res) != 1)
-			stop(sQuote("rank"), " should return numeric vector of length 1")
+			stop("'rank' should return numeric vector of length 1")
 	}
 
 	if (length(models) == 1)
@@ -200,7 +200,7 @@ function(object, newdata = NULL, se.fit = NULL, interval = NULL, type = NULL,
 	#if(("type" %in% names(match.call())) && type != "link") {
 	if(!missing("type") && type != "link") {
 		warning("Only predictions on the link scale are allowed. Argument ",
-				dQuote("type"), " ignored")
+				"'type' ignored")
 	}
 	if (!missing(se.fit)) .NotYetUsed("se.fit", error = FALSE)
 	if (!missing(interval)) .NotYetUsed("interval", error = FALSE)
@@ -236,8 +236,7 @@ function(object, newdata = NULL, se.fit = NULL, interval = NULL, type = NULL,
 	} else {
 		# otherwise, use brute force:
 		if(object$method == "NA")
-			warning("Prediction for this type of model assumes method=",
-			dQuote("0"))
+			warning("Prediction for this type of model assumes 'method' is \"0\"")
 
 		ny <- if(!missing(newdata))
 			sapply(models, predict, newdata = newdata, ...)

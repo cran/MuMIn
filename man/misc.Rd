@@ -1,4 +1,5 @@
 \name{miscellaneous}
+\alias{Miscellaneous}
 
 \alias{coeffs}
 \alias{beta.weights}
@@ -71,6 +72,13 @@ rbindDataFrameList(x)
   }
   \item{\dots}{other arguments, not used}
   \item{aic}{a vector of AIC (or other information criterion) values }
+}
+
+\details{
+	The functions \code{coeffs}, \code{getAllTerms} and \code{tTable} provide an
+	interface between the model and \code{model.avg} (as well as \code{dredge}).
+	Custom methods can be written to provide support for additional classes of
+	models. Also, a \code{logLik} method must exist for object.
 }
 
 \note{

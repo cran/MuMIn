@@ -11,13 +11,17 @@ supplied model. }
 \usage{
 dredge(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	fixed = NULL, m.max = NA, subset, ...)
+
+\method{print}{model.selection}(x, abbrev.names = TRUE, ...)
+
 }
 
 \arguments{
   \item{global.model}{a fitted \sQuote{global} model object. Currently, it can
-	be a \code{lm}, \code{glm}, \code{gam}, \code{lme}, \code{lmer},
-	\code{sarlm} or \code{spautolm}, but also other types are likely to work
-	(untested). }
+	be a \code{lm}, \code{glm}, \code{rlm}, \code{gam}, \code{gls}, \code{lme},
+	\code{lmer}, \code{sarlm} or \code{spautolm}, but also other types are
+	likely to work (untested).
+	}
 
   \item{beta}{logical should standardized coefficients be returned rather than
   normal ones?}
@@ -42,6 +46,15 @@ dredge(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	as non-syntactic names and enclosed in backticks (see \link[base]{Quotes}).
 	Mind the spacing, names must match exactly the term names in model's
 	formula.
+  }
+
+  \item{x}{
+	a \code{model.selection} object, returned by \code{dredge}.
+	}
+
+  \item{abbrev.names}{
+	Should variable names be abbreviated when printing? (useful with many
+		variables)
   }
 
   \item{\dots}{optional arguments for the \code{rank} function. Any can be
@@ -78,9 +91,6 @@ according to \code{\link{AICc}} (lowest on top), or by \code{rank} function if
 specified. The attribute "formulas" is a list containing model formulas.
 }
 
-\references{
-Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
-inference: a practical information-theoretic approach}. 2nd ed. }
 
 \author{Kamil Bartoń}
 

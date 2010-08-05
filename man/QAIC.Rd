@@ -35,20 +35,41 @@ always return a scalar.
 \author{ Kamil Bartoń}
 
 \examples{
+
+# Based on "example(predict.glm)"
+require(graphics)
+
 budworm <- data.frame(ldose = rep(0:5, 2), numdead = c(1, 4, 9, 13, 18, 20, 0,
 	2, 6, 10, 12, 16), sex = factor(rep(c("M", "F"), c(6, 6))))
+budworm$SF = cbind(numdead = budworm$numdead, numalive = 20 - budworm$numdead)
 
-budworm$SF <- cbind(budworm$numdead, 20 - budworm$numdead)
+budworm.lg <- glm(SF ~ sex*ldose, data = budworm, family = quasibinomial)
 
-budworm.qlg <- glm(SF ~ sex*ldose, family = quasibinomial, data = budworm)
+plot(c(1,32), c(0,1), type = "n", xlab = "dose",
+     ylab = "prob", log = "x")
+text(2^budworm$ldose, budworm$numdead/20, as.character(budworm$sex))
+ld <- seq(0, 5, 0.1)
+lines(2^ld, predict(budworm.lg, data.frame(ldose=ld,
+   sex=factor(rep("M", length(ld)), levels=levels(budworm$sex))),
+   type = "response"))
+lines(2^ld, predict(budworm.lg, data.frame(ldose=ld,
+   sex=factor(rep("F", length(ld)), levels=levels(budworm$sex))),
+   type = "response"))
 
-dd1 <- dredge(budworm.qlg, rank = "QAIC",
-	chat = summary(budworm.qlg)$dispersion)
-gm1 <- get.models(dd1, 1:4)
 
-model.avg(gm1)
+dd <- dredge(budworm.lg, rank = "QAIC",
+	chat = summary(budworm.lg)$dispersion)
+mod <- get.models(dd, seq(nrow(dd)))
+budworm.avg <- model.avg(mod)
+model.avg(mod[[1]], mod[[2]], rank = "QAIC", rank.args = list(chat = 1))
 
-model.avg(gm1[[1]], gm1[[2]], rank = "QAIC", rank.args = list(chat = 1))
+linkinv <- quasibinomial()$linkinv
+lines(2^ld, linkinv(predict(budworm.avg, data.frame(ldose=ld,
+   sex=factor(rep("M", length(ld)), levels=levels(budworm$sex))))), col=2)
+lines(2^ld, linkinv(predict(budworm.avg, data.frame(ldose=ld,
+   sex=factor(rep("F", length(ld)), levels=levels(budworm$sex))))), col=2)
+legend("bottomright", legend=c("full", "averaged"), title="Model",
+	   col=1:2, lty=1)
 
 }
 

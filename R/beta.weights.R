@@ -1,11 +1,12 @@
 `beta.weights` <-
 function(model) {
 
-	summ <- summary(model)
-	m.coef <- summ$coefficients[,1]
-	m.se <- summ$coefficients[,2]
+	ttbl <- tTable(model)
+	m.coef <- ttbl[,1]
+	m.se <- ttbl[,2]
 
-	response.sd <- sd(eval(attr(model$terms ,"variables"), envir=model$model)[[attr(model$terms ,"response")]])
+	response.sd <- sd(eval(attr(model$terms, "variables"),
+		envir=model$model)[[attr(model$terms, "response")]])
 	m.terms.sd <- sd(model.matrix(model))
 	bx <- m.terms.sd / response.sd
 
@@ -20,4 +21,3 @@ function(model) {
 	ret <- as.matrix(ret)
 	return (ret)
 }
-
