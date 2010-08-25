@@ -1,5 +1,8 @@
 MuMIn package changelog:
 
+Version: 0.13.9 (2010-08-24)
+dredge: fixed bugs introduced in the previous version
+
 Version: 0.13.8 (2010-08-03)
 QAIC: examples expanded
 

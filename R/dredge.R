@@ -25,9 +25,9 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	all.terms <- getAllTerms(global.model)
 
 	has.int <- attr(all.terms, "intercept")
+	tmp <- attributes(all.terms)
 	all.terms <- fixCoefNames(all.terms)
-
-	attributes(getAllTerms(global.model))
+	attributes(all.terms) <- tmp
 
 	n.vars <- length(all.terms)
 	ms.tbl <- numeric(0)
@@ -48,13 +48,14 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 
 	if (beta && is.null(tryCatch(beta.weights(global.model), error=function(e) NULL,
 		warning=function(e) NULL))) {
-		warning("Do not know how to calculate 'beta' weigths for ",
-				class(global.model)[1], ", argument ignored")
+		warning("Do not know how to calculate B-weigths for ",
+				class(global.model)[1], ", argument 'beta' ignored")
          beta <- FALSE
 	}
 
 	summary.globmod <- summary(global.model)
-	has.rsq <- is.numeric(summary.globmod$r.squared)
+
+	has.rsq <- is.list(summary.globmod) && is.numeric(summary.globmod$r.squared)
 	has.dev <- !is.null(deviance(global.model))
 
 	m.max <- if (missing(m.max)) n.vars else min(n.vars, m.max)
@@ -296,4 +297,7 @@ function(x, abbrev.names = TRUE, ...) {
 
 #sorts alphabetically interaction components in model term names
 `fixCoefNames` <-
-function(x) sapply(lapply(strsplit(x, ":"), sort), paste, collapse=":")
+function(x) {
+	if(!is.character(x)) return(x)
+	return(sapply(lapply(strsplit(x, ":"), sort), paste, collapse=":"))
+}
