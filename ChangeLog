@@ -1,5 +1,26 @@
 MuMIn package changelog:
 
+Version: 0.13.14 (2010-09-03)
+print.model.selection:empty columns are not printed now 
+
+Version: 0.13.13 (2010-09-02)
+dredge: handling of models with no intercept, added "call" attribute
+update.model.selection: new
+
+Version: 0.13.12 (2010-08-29)
+dredge, getAllTerms, dredge.Rd: small modifications
+
+Version: 0.13.11 (2010-08-28)
+getAllTerms: improved handling of interactions, random terms (lmer) and "offset()".
+formulaAllowed: now allows for exceptions in margins presence checking (new argument: "except")
+dredge: now tries to call fitting function directly rather than through update (more effective in 
+	case when model not passed as a variable). New arguments: "trace", and "marg.ex" - 
+	marginality checking exceptions.
+
+Version: 0.13.10 (2010-08-26)
+getAllTerms: fixed a bug with with wrong ordering of interaction terms (resulted with a:b or b:a 
+	depending on the set of terms). Improved handling of random terms in lme.
+
 Version: 0.13.9 (2010-08-24)
 dredge: fixed bugs introduced in the previous version
 
@@ -14,7 +35,7 @@ print.model.selection: improved column abbreviation
 
 Version: 0.13.5 (2010-07-31)
 dredge: fixed a bug causing interaction coefficients to be stripped from
-model.selection table, new function 'fixCoefNames' (not exported)handles proper
+model.selection table, new function 'fixCoefNames' (not exported) handles proper
 ordering of interaction components in coefficient names
 
 Version: 0.13.4 (2010-07-21)
