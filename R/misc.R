@@ -21,10 +21,15 @@ function(x) {
 
 # test for marginality constraints
 `formulaAllowed` <-
-function(frm) {
+function(frm, except=NULL) {
+	if(isTRUE(except)) return(TRUE)
 	factors <- attr(terms(frm), "factors")
+	if(length(factors) == 0) return(TRUE)
+	if(is.character(except))
+		factors <- factors[!(rownames(factors) %in% except), ]
 	return(all(factors < 2))
 }
+
 
 # Calculate Akaike weights
 `Weights` <-
@@ -32,4 +37,12 @@ function(aic, ...) {
 	delta <- aic - min(aic)
 	weight <- exp(-delta / 2) / sum(exp(-delta / 2))
 	return (weight)
+}
+
+
+#sorts alphabetically interaction components in model term names
+`fixCoefNames` <-
+function(x) {
+	if(!is.character(x)) return(x)
+	return(sapply(lapply(strsplit(x, ":"), sort), paste, collapse=":"))
 }

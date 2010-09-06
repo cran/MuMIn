@@ -1,6 +1,6 @@
 `dredge` <-
 function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
-		 fixed = NULL, m.max = NA, subset, ...) {
+		 fixed = NULL, m.max = NA, subset, marg.ex = NULL, trace = FALSE, ...) {
 
 	rankFn <- match.fun(rank)
 	if (is.function(rank))
@@ -18,16 +18,39 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	} else {
 		rankFnCall <- call("AICc", as.symbol("x"))
 	}
-	#print(rankFnCall)
 
 	intercept <- "(Intercept)"
 
 	all.terms <- getAllTerms(global.model)
 
+	# Just in case:
+	if(length(grep(":", all.vars(delete.response(terms(global.model))))) > 0)
+		stop("Variable names in the model can not contain \":\"")
+
+	global.call <- if(mode(global.model) == "S4") {
+		if ("call" %in% slotNames(global.model)) slot(global.model, "call") else
+			NULL
+	} else {
+		if(!is.null(global.model$call)) {
+			global.model$call
+		} else if(!is.null(attr(global.model, "call"))) {
+			attr(global.model, "call")
+		} else
+			NULL
+	}
+
+	if (is.null(global.call))
+		global.call <- substitute(global.model)
+
+	formula.arg <- if(inherits(global.model, "lme")) "fixed" else "formula"
+	global.formula <- global.call[[2]]
+
+	# If not named, assume that the first argument is the formula
+	if(!(formula.arg %in% names(global.call)))
+		names(cl)[2] <- formula.arg
+
 	has.int <- attr(all.terms, "intercept")
-	tmp <- attributes(all.terms)
-	all.terms <- fixCoefNames(all.terms)
-	attributes(all.terms) <- tmp
+	globCoefNames <- fixCoefNames(names(coeffs(global.model)))
 
 	n.vars <- length(all.terms)
 	ms.tbl <- numeric(0)
@@ -64,7 +87,7 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	if (!is.null(fixed)) {
 		if (inherits(fixed, "formula")) {
 			if (fixed[[1]] != "~" || length(fixed) != 2)
-				warning("'fixed' attribute should be a formula of form: ",
+				warning("'fixed' should be a formula of form: ",
 						"~ a + b + c")
 			fixed <- c(getAllTerms(fixed))
 		} else if (!is.character(fixed)) {
@@ -95,13 +118,16 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	if (!is.null(fixed))
 		all.comb <- lapply(all.comb, append, (1:n.vars)[all.terms %in% fixed])
 
-	formulas <- lapply(all.comb, function(.x) reformulate(c("1", all.terms[.x]),
-														  response = "." ))
+	int.term <- if (has.int) "1" else "0"
 
+	formulas <- lapply(all.comb,
+		function(.x) reformulate(c(all.terms[.x], int.term), response = "." ))
+
+	env <- attr(terms(global.model), ".Environment")
 	formulas <- lapply(formulas, `attr<-`, ".Environment",
-				 attr(formula(global.model), ".Environment"))
+				 attr(terms(global.model), ".Environment"))
 
-	ss <- sapply(formulas, formulaAllowed)
+	ss <- sapply(formulas, formulaAllowed, except = marg.ex)
 
 	all.comb <- all.comb[ss]
 	formulas <- formulas[ss]
@@ -124,20 +150,30 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
           formulas <- lapply(formulas, update, attr(all.terms, "random"))
 	}
 
+	#cat("Evaluating", length(formulas), "models\n")
+
 	if (!eval) return(formulas)
 
 	getK <- function(x) as.vector(attr(logLik(x), "df"))
 
 	### BEGIN:
-	for(b in seq(length(all.comb))) {
-		# print(all.comb[[b]])
-        terms1 <- all.terms[all.comb[[b]]]
-		frm <- formulas[[b]]
+	for(j in seq(length(all.comb))) {
+		# print(all.comb[[j]])
+        terms1 <- all.terms[all.comb[[j]]]
+		frm <- formulas[[j]]
 
 		row1 <- rep(NA, n.vars)
 		row1[match(terms1, all.terms)] <- rep(1, length(terms1))
 
-		cl <- call("update", substitute(global.model), frm)
+		#cl <- call("update", substitute(global.model), frm)
+
+		cl <- global.call
+		cl[[formula.arg]] <- update.formula(global.formula, frm)
+
+		if(trace) {
+			cat(j, ": ")
+			print(cl)
+		}
 
 		#TODO: optional error printing.
 		fit1 <- tryCatch(eval(cl, parent.frame()), error=function(err) {
@@ -147,7 +183,7 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 		})
 
 		if (is.null(fit1)) {
-			formulas[[as.character(b)]] <- NA
+			formulas[[as.character(j)]] <- NA
 			next;
 		}
 
@@ -182,9 +218,9 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	ms.tbl <- data.frame(ms.tbl, row.names=seq(NROW(ms.tbl)))
 
 	# Convert columns with presence/absence of terms to factors
-	tfac <- which(c(FALSE, !(all.terms %in% fixCoefNames(names(coeffs(global.model))))))
-	ms.tbl[tfac] <- lapply(ms.tbl[tfac], factor, levels=1, labels="+")
+	tfac <- which(c(FALSE, !(all.terms %in% globCoefNames)))
 
+	ms.tbl[tfac] <- lapply(ms.tbl[tfac], factor, levels=1, labels="+")
 
 	colnames(ms.tbl) <- c("(int.)", all.terms, "k",
 		if (has.rsq) c("R.sq", "Adj.R.sq"),
@@ -201,19 +237,18 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 
 	attr(ms.tbl, "formulas") <- formulas[o]
 	attr(ms.tbl, "global") <- global.model
+	attr(ms.tbl, "global.call") <- global.call
 	attr(ms.tbl, "terms") <- c(intercept, all.terms)
 
-	#print(rankFnCall)
-
-	if (rank.custom) {
+	if (rank.custom)
 		rankFnCall[[1]] <- as.name(rank)
-	}
-	#rankFnCall[[2]] <- substitute(global.model)
+
 	attr(ms.tbl, "rank.call") <- rankFnCall
+	attr(ms.tbl, "call") <- match.call(expand.dots = TRUE)
 
-
-	if (!is.null(attr(all.terms, "random.terms")))
+	if (!is.null(attr(all.terms, "random.terms"))) {
 		attr(ms.tbl, "random.terms") <- attr(all.terms, "random.terms")
+	}
 
 	return(ms.tbl)
 }
@@ -236,8 +271,9 @@ function(x, subset, select, recalc.weights = TRUE, ...) {
 function (x, i, j, recalc.weights = TRUE, ...) {
 	res <- `[.data.frame`(x, i, j, ...)
 	if (missing(j)) {
-		attr(res, "global") <- attr(x, "global")
-		attr(res, "terms") <- attr(x, "terms")
+		for (a in c("global", "terms", "rank.call", "random.terms"))
+			attr(res, a) <- attr(x, a)
+
 		attr(res, "formulas") <- attr(x, "formulas")[i]
 		if(recalc.weights)
 			res$weight <- res$weight / sum(res$weight)
@@ -247,6 +283,7 @@ function (x, i, j, recalc.weights = TRUE, ...) {
 	}
 	return(res)
 }
+
 
 `print.model.selection` <-
 function(x, abbrev.names = TRUE, ...) {
@@ -276,17 +313,17 @@ function(x, abbrev.names = TRUE, ...) {
 		colnames(x)[seq_along(xterms)] <-  xterms
 
 
-		gm <- attr(x, "global")
-		gm.call <- (if(mode(gm) == "S4") `@` else `$`)(gm, "call")
-		if(!is.null(call)) {
+		cl <- attr(x, "global.call")
+		if(!is.null(cl)) {
 			cat("Global model: ")
-			print(gm.call)
+			print(cl)
 		}
 
 		cat ("---\nModel selection table \n")
 		i <- sapply(x, is.numeric)
 		x[,i] <- signif(x[,i], 4)
-		print.default(as.matrix(x), na.print="", quote=FALSE)
+		print.default(as.matrix(x[, !sapply(x, function(.x) all(is.na(.x)))]),
+					  na.print="", quote=FALSE)
 		if (!is.null(attr(x, "random.terms"))) {
 			cat("Random terms:", paste(attr(x, "random.terms"), collapse=", "),
 				"\n")
@@ -294,10 +331,20 @@ function(x, abbrev.names = TRUE, ...) {
 	}
 }
 
-
-#sorts alphabetically interaction components in model term names
-`fixCoefNames` <-
-function(x) {
-	if(!is.character(x)) return(x)
-	return(sapply(lapply(strsplit(x, ":"), sort), paste, collapse=":"))
+`update.model.selection` <- function (object, ..., evaluate = TRUE) {
+    call <- attr(object, "call")
+    if (is.null(call))
+        stop("need an object with call component")
+    extras <- match.call(expand.dots = FALSE)$...
+    if (length(extras)) {
+        existing <- !is.na(match(names(extras), names(call)))
+        for (a in names(extras)[existing]) call[[a]] <- extras[[a]]
+        if (any(!existing)) {
+            call <- c(as.list(call), extras[!existing])
+            call <- as.call(call)
+        }
+    }
+    if (evaluate)
+        eval(call, parent.frame())
+    else call
 }
