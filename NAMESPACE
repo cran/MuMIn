@@ -41,3 +41,5 @@ S3method(tTable, lme)
 S3method(tTable, lmer)
 S3method(tTable, mer)
 S3method(tTable, spautolm)
+S3method(tTable, multinom)
+

@@ -1,9 +1,6 @@
 `coeffs` <-
 function (model) UseMethod("coeffs")
 
-`coeffs.default` <-
-function(model) model$coefficients
-
 `coeffs.gls` <-
 function (model) summary(model)$coefficients
 
@@ -12,9 +9,9 @@ function(model) model$coefficients$fixed
 
 `coeffs.glmer` <-
 `coeffs.lmer` <-
-function(model) { 
+function(model) {
 	ret <- model@fixef
-	names(ret) <- model@cnames$.fixed 
+	names(ret) <- model@cnames$.fixed
 	return(ret)
 }
 
@@ -24,3 +21,6 @@ function(model) model@fixef
 `coeffs.spautolm` <-
 function(model) model$fit$coefficients
 
+
+`coeffs.default` <-
+function(model) coef(model)

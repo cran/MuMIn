@@ -24,7 +24,10 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	all.terms <- getAllTerms(global.model)
 
 	# Just in case:
-	if(length(grep(":", all.vars(delete.response(terms(global.model))))) > 0)
+	gterms <- tryCatch(terms(formula(global.model)),
+		error=function(...) terms(global.model))
+
+	if(length(grep(":", all.vars(delete.response(gterms) > 0))))
 		stop("Variable names in the model can not contain \":\"")
 
 	global.call <- if(mode(global.model) == "S4") {
@@ -39,15 +42,30 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 			NULL
 	}
 
-	if (is.null(global.call))
+	if (is.null(global.call)) {
 		global.call <- substitute(global.model)
+		formula.arg <- 2 # assume is a first argument
+	} else {
+		# if we have a call, try to figuse out the 'formula argument name
+		formula.arg <- if(inherits(global.model, "lme"))	"fixed" else
+			if(inherits(global.model, "gls")) "model" else {
+				tryCatch({
+					arg <- names(formals(match.fun(global.call[[1]])))
+					if ("formula" %in% arg) "formula" else 2
+				}, error = function(e) {
+					2
+				})
+			}
+	}
 
-	formula.arg <- if(inherits(global.model, "lme")) "fixed" else "formula"
-	global.formula <- global.call[[2]]
+	#switch(class(fm1)[1], lme="fixed", gls="model", "formula")
+	global.formula <- global.call[[formula.arg]]
 
-	# If not named, assume that the first argument is the formula
-	if(!(formula.arg %in% names(global.call)))
-		names(cl)[2] <- formula.arg
+	# Check for na.omit
+	if (!is.null(global.call$na.action) &&
+		as.character(global.call$na.action) %in% c("na.omit", "na.exclude")) {
+		stop("'global.model' should not use 'na.action' =", global.call$na.action)
+	}
 
 	has.int <- attr(all.terms, "intercept")
 	globCoefNames <- fixCoefNames(names(coeffs(global.model)))
@@ -60,9 +78,13 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	is.lm <- !is.glm & inherits(global.model, "lm")
 
 	if (
-			(inherits(global.model, c("mer")) && ("REML" %in%
-				names(deviance(global.model))))
-		|| 	(inherits(global.model, c("lme")) && global.model$method == "REML")
+			(inherits(global.model, c("mer")) && (
+				"REML" %in% names(deviance(global.model)) # old lmer?
+				|| global.model@dims[["REML"]] != 0
+				))
+		|| 	(inherits(global.model, c("lme", "gls", "gam"))
+			 && !is.null(global.model$method)
+			 && global.model$method %in% c("lme.REML", "REML"))
 		||  (any(inherits(global.model, c("lmer", "glmer")))
 			  && global.model@status["REML"] != 0)
 	) {
@@ -123,9 +145,8 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	formulas <- lapply(all.comb,
 		function(.x) reformulate(c(all.terms[.x], int.term), response = "." ))
 
-	env <- attr(terms(global.model), ".Environment")
-	formulas <- lapply(formulas, `attr<-`, ".Environment",
-				 attr(terms(global.model), ".Environment"))
+	env <- attr(gterms, ".Environment")
+	formulas <- lapply(formulas, `attr<-`, ".Environment", env)
 
 	ss <- sapply(formulas, formulaAllowed, except = marg.ex)
 
@@ -164,8 +185,6 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 
 		row1 <- rep(NA, n.vars)
 		row1[match(terms1, all.terms)] <- rep(1, length(terms1))
-
-		#cl <- call("update", substitute(global.model), frm)
 
 		cl <- global.call
 		cl[[formula.arg]] <- update.formula(global.formula, frm)
@@ -216,6 +235,7 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 
 	formulas[is.na(formulas)] <- NULL
 	ms.tbl <- data.frame(ms.tbl, row.names=seq(NROW(ms.tbl)))
+
 
 	# Convert columns with presence/absence of terms to factors
 	tfac <- which(c(FALSE, !(all.terms %in% globCoefNames)))
