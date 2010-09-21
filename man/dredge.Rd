@@ -10,7 +10,8 @@ supplied model. }
 
 \usage{
 dredge(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
-    fixed = NULL, m.max = NA, subset, marg.ex = NULL, trace = FALSE, ...)
+    fixed = NULL, m.max = NA, subset, marg.ex = NULL, trace = FALSE,
+	...)
 
 \method{print}{model.selection}(x, abbrev.names = TRUE, ...)
 
@@ -18,8 +19,9 @@ dredge(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 
 \arguments{
   \item{global.model}{a fitted \sQuote{global} model object. Currently, it can
-	be a \code{lm}, \code{glm}, \code{rlm}, \code{gam}, \code{gls}, \code{lme},
-	\code{lmer}, \code{sarlm} or \code{spautolm}, but also other types are
+	be a \code{lm}, \code{glm}, \code{rlm}, \code{multinom}, \code{gam},
+	\code{gls}, \code{lme}, \code{lmer}, \code{sarlm} or \code{spautolm}, but
+	also other types are
 	likely to work (untested).
 	}
 

@@ -42,3 +42,12 @@ function(model, ...) {
 `tTable.sarlm` <-
 `tTable.spautolm` <-
 function(model, ...) return(summary(model)$Coef)
+
+
+`tTable.multinom` <-
+function(model, ...) {
+	ret <- as.data.frame(summary(model)[c("coefficients", "standard.errors")])
+	colnames(ret) <- c("Estimate", "Std. Error")
+	return(ret)
+}
+

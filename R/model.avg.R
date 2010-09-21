@@ -33,7 +33,7 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 		stop("Only one model supplied. Nothing to do")
 
 	#Try to find if all models are fitted to the same data
-	m.resp <- sapply(models, function(x) formula(x)[[2]])
+	m.resp <- lapply(models, function(x) formula(x)[[2]])
 	if(!all(m.resp[-1] == m.resp[[1]]))
 		stop("Response differs between models")
 
