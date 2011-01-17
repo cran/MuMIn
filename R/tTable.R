@@ -11,13 +11,6 @@ function(model, ...) {
      return(cbind(`Estimate`=cf, `Std. Error` = se))
 }
 
-`tTable.glmer` <-
-function(model, ...) {
-	sm <- eval(expression(summary), environment(lmer))
-	return (sm(model)@coefs)
-	#return((lme4::summary(model))@coefs)
-}
-
 `tTable.gls` <-
 function (model, ...) return(summary(model)$tTable)
 
@@ -25,14 +18,10 @@ function (model, ...) return(summary(model)$tTable)
 function(model, ...) return(summary(model)$tTable)
 
 
-`tTable.lmer` <-
-function(model, ...) {
-	sm <- eval(expression(summary), environment(lmer))
-	return (sm(model)@coefs)
-	#return((lme4::summary(model))@coefs)
-}
-
+# these are for old (buggy) versions of lme4
 `tTable.mer` <-
+`tTable.glmer` <-
+`tTable.lmer` <-
 function(model, ...) {
 	sm <- eval(expression(summary), environment(lmer))
 	return (sm(model)@coefs)
@@ -51,3 +40,5 @@ function(model, ...) {
 	return(ret)
 }
 
+`tTable.coxph` <- function (model, ...)
+	return(summary(model)$coefficients[,-2, drop=FALSE])

@@ -30,10 +30,15 @@ AICc(object, ..., k = 2)
 Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed. }
 
-\author{ Kamil Bartoń}
+
+\author{Kamil \enc{Bartoń}{Barton}}
 
 \seealso{
 Akaike's An Information Criterion: \code{\link[stats]{AIC}}
+
+\code{\link[AICcmodavg]{AICc}} in package \pkg{AICcmodavg},
+\code{\link[glmulti]{aicc}} in package \pkg{glmulti}
+
 }
 
 \keyword{models}

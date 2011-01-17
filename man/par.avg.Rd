@@ -31,7 +31,7 @@ par.avg(x, se, npar, weight, alpha = 0.05)
 Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed. }
 
-\author{Kamil Bartoń}
+\author{Kamil \enc{Bartoń}{Barton}}
 
 \seealso{
 \code{\link{model.avg}} for averaging models.

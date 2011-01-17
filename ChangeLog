@@ -1,5 +1,19 @@
 MuMIn package news/change log:
 
+Version: 0.13.21 (2011-01-16)
+dredge: handling of update'd lmer models improved
+QAICc: new function
+
+Version: 0.13.20 (2011-01-16)
+Namespace exports updated (coxph methods)
+dredge: uses now QAIC for glms with 'quasi*' family, and if no rank is specified
+
+Version: 0.13.19 (2011-01-15)
+model.avg: fixed wrong ordering of model names (thanks to Dennis Jonason for noticing this)
+
+Version: 0.13.18 (2010-10-16)
+Support for coxph (package survival)
+
 Version: 0.13.17 (2010-09-13)
 model.avg: fixed a bug with models with binary response; 
 dredge: added checking for na.omit'ting in the global model. 

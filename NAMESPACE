@@ -1,13 +1,18 @@
 export(
-	AICc, beta.weights, dredge, get.models, model.avg, par.avg, QAIC,
-	getAllTerms, coeffs, tTable
+	AICc, beta.weights, dredge, get.models, model.avg, par.avg, QAIC, QAICc,
+	getAllTerms, coeffs, tTable, Weights
 )
 
-importsFrom(stats, AIC, as.formula, coef, delete.response, deviance, fitted,
-formula, logLik, model.frame, model.matrix, na.omit, predict, qnorm, qt,
-reformulate, residuals, sd, terms, update, weighted.mean)
+# including these imports makes this package dependent on 'lme4'
+# so, until I figure out how to deal with it, no imports is used....
 
-importsFrom(methods, slot, slotNames)
+#importFrom(stats, AIC, as.formula, coef, delete.response, deviance, fitted,
+#	formula, logLik, model.frame, model.matrix, na.omit, predict, qnorm, qt,
+#	reformulate, residuals, sd, terms, update, weighted.mean)
+
+importFrom(methods, slot, slotNames)
+#importFrom(lme4, lmer, logLik, terms)
+#importMethodsFrom(lme4, deviance, formula, residuals)
 
 S3method(print, averaging)
 S3method(summary, averaging)
@@ -26,6 +31,7 @@ S3method(getAllTerms, glmer)
 S3method(getAllTerms, lme)
 S3method(getAllTerms, lmer)
 S3method(getAllTerms, mer)
+S3method(getAllTerms, coxph)
 S3method(coeffs, default)
 S3method(coeffs, glmer)
 S3method(coeffs, gls)
@@ -42,4 +48,5 @@ S3method(tTable, lmer)
 S3method(tTable, mer)
 S3method(tTable, spautolm)
 S3method(tTable, multinom)
-
+S3method(tTable, coxph)
+S3method(logLik, coxph)

@@ -4,6 +4,8 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 
 	method <- match.arg(method)
 
+	.fnull <- function(...) return(NULL)
+
 	if (!is.null(rank)) {
 	   	rankFn <- match.fun(rank)
 		rank.call <- as.call(c(as.name("rankFn"), as.symbol("x"), rank.args))
@@ -27,14 +29,15 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 		res <- IC(m1)
   		if (!is.numeric(res) || length(res) != 1)
 			stop("'rank' should return numeric vector of length 1")
+	} else {
+		IC <- AICc
 	}
 
-	if (length(models) == 1)
-		stop("Only one model supplied. Nothing to do")
+	if (length(models) == 1) stop("Only one model supplied. Nothing to do")
 
 	#Try to find if all models are fitted to the same data
 	m.resp <- lapply(models, function(x) formula(x)[[2]])
-	if(!all(m.resp[-1] == m.resp[[1]]))
+	if(!all(sapply(m.resp[-1], "==", m.resp[[1]])))
 		stop("Response differs between models")
 
 	m.data <- lapply(models, function(x) (if(mode(x) == "S4") `@` else `$`)
@@ -42,7 +45,6 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 	m.nresid <- sapply(models, function(x) length(resid(x)))
 	if(!all(m.data[-1] == m.data[[1]]) || !all(m.nresid[-1] == m.nresid[[1]]))
 		stop("Models were not fitted to the same data")
-
 
 	all.terms <- unique(unlist(lapply(models, getAllTerms)))
 	all.terms <- all.terms[order(sapply(gregexpr(":", all.terms),
@@ -64,35 +66,31 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 			model.matrix.default(object, data=data, ...)
 	}
 
-	if (is.null(rank)) {
-		aicc <- sapply(models, AICc)
-	} else {
-		aicc <- sapply(models, IC)
-	}
-
-	dev <- if (!is.null(tryCatch(deviance(models[[1]]), error = function(...)
-		NULL)))
+	aicc <- sapply(models, IC)
+	dev <- if (!is.null(tryCatch(deviance(models[[1]]), error=.fnull)))
 		sapply (models, deviance) else NA
-
 	delta <- aicc - min(aicc)
 	weight <- exp(-delta / 2) / sum(exp(-delta / 2))
-
 	model.order <- order(weight, decreasing=TRUE)
 
+	# DEBUG:
+	# sapply(sapply(sapply(models[model.order], coef), names), paste, collapse="+")
+	# sapply(models, function(x) paste(match(getAllTerms(x), all.terms), collapse="+"))
+
+	# !!! From now on, everything MUST BE SORTED by 'weight' !!!
+
 	selection.table <- data.frame(
-		Deviance = dev,	AICc = aicc, Delta = delta, Weight = weight
+		Deviance = dev,	AICc = aicc, Delta = delta, Weight = weight,
+		row.names = all.model.names
 	)[model.order, ]
 
-	weight <- selection.table$Weight
+	weight <- selection.table$Weight # sorted in table
 	models <- models[model.order]
 
 	all.par <- unique(unlist(lapply(models, function(m) names(coeffs(m)))))
-
 	all.par <- all.par[order(sapply(gregexpr(":", all.par),
 		function(x) if(x[1] == -1) 0 else length(x)), all.par)]
-
 	npar <- length(all.par)
-
 	ac <- rep(0, length = npar)
 
 	mtable <- t(sapply(models, function(m) {
@@ -101,7 +99,6 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 		m.coef <- m.tTable[,1]
 		m.var <- m.tTable[,2]
  		m.df <- n - length(m.coef)
-
 		if (beta) {
 			response.sd <- sd(model.frame(m1)[, attr(terms(m1), "response")])
 			m.vars.sd <- sd(model.matrix(m))
@@ -109,23 +106,22 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 			m.coef <- m.coef * bx
 			m.var <- m.var * bx
 		}
-
 		m.vars <- match(all.par, rownames(m.tTable))
 		return(c(coef=m.coef[m.vars], var=m.var[m.vars], df=m.df))
 	}))
 
+	# mtable is already sorted by weigth
 	all.coef <- mtable[, 1:npar]
 	all.var <- mtable[, npar + (1:npar)]
 	all.df <- mtable[, 2 * npar + 1]
 	##
+	rownames(all.var) <- rownames(all.coef) <- rownames(selection.table)
 
 	importance <- apply(weight * t(sapply(models,
 		function(x) all.terms %in% getAllTerms(x))), 2, sum)
-
 	names(importance) <- all.terms
+	importance <- sort(importance, decreasing=T)
 
-	rownames(all.var) <- rownames(all.coef) <- rownames(selection.table) <-
-		all.model.names
 
 	if (method == "0") {
 		all.coef[is.na(all.coef)] <- 0
@@ -134,13 +130,9 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 
 	avg.model <- t(sapply(seq_along(all.par),
 		function(i) par.avg(all.coef[,i], all.var[,i], all.df, weight, alpha)))
-
 	all.coef[all.coef == 0] <- NA
 	all.var[all.var == 0] <- NA
-
-	importance <- sort(importance, decreasing=T)
 	colnames(all.coef) <- colnames(all.var) <- rownames(avg.model) <-  all.par
-
     names(all.terms) <- seq_along(all.terms)
 
 	if (!is.null(rank))
@@ -151,7 +143,7 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 	#mmx <- gmm[, cnmmxx[match(colnames(gmm), cnmmxx, nomatch = 0)]]
 
 	mmxs <- tryCatch(cbindDataFrameList(lapply(models, model.matrix)),
-					 error=function(e) return(NULL))
+					 error=.fnull)
 
 	# Far less efficient:
 	#mmxs <- lapply(models, model.matrix)
@@ -160,11 +152,10 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 	#	mx <- cbind(mx, i[,!(colnames(i) %in% colnames(mx)), drop=FALSE])
 
 	# residuals averaged (with brute force)
-	rsd <- apply(sapply(models, residuals), 1, weighted.mean, w=weight)
-
+	rsd <- tryCatch(apply(sapply(models, residuals), 1, weighted.mean, w=weight),
+					error=.fnull)
 	trm <- tryCatch(terms(models[[1]]),
 			error=function(e) terms(formula(models[[1]])))
-
 	frm <- reformulate(all.terms,
 				response = attr(trm, "variables")[-1][[attr(trm, "response")]])
 
