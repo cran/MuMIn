@@ -1,14 +1,16 @@
 \name{QAIC}
 \alias{QAIC}
+\alias{QAICc}
 \encoding{utf-8}
-\title{Quasi AIC}
+\title{Quasi AIC(c))}
 \description{
-Calculates \dQuote{quasi AIC} for one or several fitted model objects. This
-function is provided just as an example of custom rank function for use with
+Calculates \dQuote{quasi AIC} (or \dQuote{quasi AICc}) for one or several fitted model objects. This
+function is provided mainly as an example of custom rank function for use with
 \code{\link{model.avg}} and \code{\link{dredge}} }
 
 \usage{
 QAIC(object, ..., chat)
+QAICc(object, ..., chat)
 }
 
 \arguments{
@@ -23,16 +25,23 @@ QAIC(object, ..., chat)
 	data.frame with rows corresponding to the objects.
 }
 
-\details{
-\code{rank} is specified as a function or a symbol (e.g. a backquoted name) or a
-character string specifying a function.
+\note{
+This implementation of \code{QAIC}/\code{QAICc} may not be correct for mixed models. \cr
+\code{\link{dredge}} will use \code{QAICc} instead of default \code{AICc} with \code{glm} with quasi*
+family.
+}
 
-Function \code{rank} must be able to accept model as a first argument and must
-always return a scalar.
+\seealso{
+\code{\link{AICc}}
+
+\code{\link[stats]{quasi}} family used for models with over-dispersion. \cr
+\code{\link[stats]{AIC}}, \code{\link[nlme]{BIC}} in \pkg{nlme} (or \code{\link[stats4]{BIC}} in \pkg{stats4}) may
+also be used as a custom rank function in \code{\link{dredge}} and \code{\link{model.avg}}.
+
 }
 
 
-\author{ Kamil Bartoń}
+\author{Kamil \enc{Bartoń}{Barton}}
 
 \examples{
 

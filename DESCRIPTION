@@ -1,19 +1,19 @@
 Package: MuMIn
 Type: Package
 Title: Multi-model inference
-Version: 0.13.17
-Date: 2010-09-13
+Version: 0.13.21
+Date: 2011-01-17
 Encoding: UTF-8
 Author: Kamil Bartoń
 Maintainer: Kamil Bartoń <kamil.barton@go2.pl>
 Description: Model selection and model averaging based on information
         criteria (AICc and alike).
-License: GPL
+License: GPL-2
 Depends: methods
-Suggests: lme4, MASS, mgcv, nlme, nnet, spdep
+Suggests: lme4, MASS, mgcv, nlme, nnet, spdep, survival
 LazyLoad: yes
 Repository: CRAN
 Repository/R-Forge/Project: mumin
-Repository/R-Forge/Revision: 56
-Date/Publication: 2010-09-21 08:14:37
-Packaged: 2010-09-20 20:48:42 UTC; rforge
+Repository/R-Forge/Revision: 68
+Date/Publication: 2011-01-19 11:15:27
+Packaged: 2011-01-18 21:36:07 UTC; rforge

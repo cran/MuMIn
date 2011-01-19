@@ -10,7 +10,7 @@ supplied model. }
 
 \usage{
 dredge(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
-    fixed = NULL, m.max = NA, subset, marg.ex = NULL, trace = FALSE,
+	fixed = NULL, m.max = NA, subset, marg.ex = NULL, trace = FALSE,
 	...)
 
 \method{print}{model.selection}(x, abbrev.names = TRUE, ...)
@@ -111,7 +111,7 @@ specified. The attribute "formulas" is a list containing model formulas.
 }
 
 
-\author{Kamil Bartoń}
+\author{Kamil \enc{Bartoń}{Barton}}
 
 
 \note{
@@ -120,7 +120,6 @@ Make sure there is no a \code{na.action} set to \code{na.omit} in
 \code{global.model}. This can result with models fitted to different data sets,
 if there are NA's present.
 
-
 }
 
 \seealso{
@@ -128,6 +127,10 @@ if there are NA's present.
 \code{\link{QAIC}} has examples of using custom rank function.
 
 There is also \code{\link{subset.model.selection}} method.
+
+Also, consider the alternatives: \code{\link[glmulti]{glmulti}} in package \pkg{glmulti},
+\code{\link[AICcmodavg]{aictab}} (\pkg{AICcmodavg}), and 
+\code{\link[bbmle]{ICtab}} (\pkg{bbmle}) for a "hand-picked" model selection tables.
 }
 
 
@@ -152,11 +155,16 @@ top.models[[1]]
 \dontrun{
 # Examples of using 'subset':
 # exclude models containing both X1 and X2
-dredge(lm1, subset = !X1 | !X2)
+dredge(lm1, subset = !(X1 & X2))
 # keep only models containing X3
 dredge(lm1, subset = X3)
 # the same, but more effective:
 dredge(lm1, fixed = "X3")
+
+#Reduce the number of combinations, by including models with up to 2 terms
+# (and intercept)
+dredge(lm1, m.max = 2)
+
 }
 }
 

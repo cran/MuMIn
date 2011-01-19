@@ -46,3 +46,17 @@ function(x) {
 	if(!is.character(x)) return(x)
 	return(sapply(lapply(strsplit(x, ":"), sort), paste, collapse=":"))
 }
+
+
+# logLik for survival::coxph model
+# https://stat.ethz.ch/pipermail/r-help/2006-December/122118.html
+# originally by Charles C. Berry, mod. by KB: correction for the null model
+`logLik.coxph` <- function(object,...) {
+# Thx to Mathieu Basille:
+    y <-  object$loglik[length(object$loglik)]
+	#y <-  if(length(object$loglik) > 1)
+	#	-1 * (object$loglik[1] - object$loglik[2]) else object$loglik
+    class(y) <- "logLik"
+    attr(y,'df') <- if(is.null(object$coef)) 0 else sum(!is.na(object$coef))
+    return(y)
+} 

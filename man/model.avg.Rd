@@ -72,19 +72,27 @@ model.avg(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 
 \details{
 
-\code{model.avg} has been tested to work with \code{lm}, \code{glm}; \code{rlm},
-\code{multinom} (\pkg{MASS}); \code{gam} (\pkg{mgcv}); \code{lme}, \code{gls}
-(\pkg{nlme}), \code{lmer} (\pkg{lme4}), as well as with \code{sarlm} and
-\code{spautolm} (\pkg{spdep}). Other types are also likely to work, in
-particular when they inherit from the supported classes. See \sQuote{Details}
-section of the \link{Miscellaneous} page to see how to provide support for other
-types of models.
+\code{model.avg} has been tested to work with the following model classes:
+\itemize{
+	\item \code{lm}, \code{glm}
+	\item \code{gam} (\pkg{mgcv})
+	\item \code{lme}, \code{gls} (\pkg{nlme})
+	\item \code{lmer} (\pkg{lme4})
+	\item \code{rlm}, \code{glm.nb} (\pkg{MASS})
+	\item \code{multinom} (\pkg{nnet})
+	\item \code{sarlm}, \code{spautolm} (\pkg{spdep})
+	\item \code{coxph} (\pkg{survival})
+}
+Other model types are also likely to be supported, in particular those inheriting
+from one of the above classes. See \sQuote{Details} section of the
+\link{Miscellaneous} page to see how to provide support for other types of
+models.
 
 \code{rank} is found by a call to \code{match.fun} and typically is specified as
 a function or a symbol (e.g. a backquoted name) or a character string specifying
 a function to be searched for from the environment of the call to lapply.
 
-Function \code{rank} must be able to accept model as a first argument and must
+\code{rank} must be a function able to accept model as a first argument and must
 always return a scalar.
 
 \code{predict.averaging} supports method="NA" only for linear, fixed effect
@@ -107,11 +115,14 @@ for the component model classes (except for \code{(g)lm}).
 Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed. }
 
-\author{Kamil Bartoń}
+\author{Kamil \enc{Bartoń}{Barton}}
 
 \seealso{
 \code{\link{dredge}}, \code{\link{get.models}}.
 \code{\link{QAIC}} has examples of using custom rank function.
+
+\code{\link[AICcmodavg]{modavg}} in package \pkg{AICcmodavg}, and \code{\link[glmulti]{coef.glmulti}}
+in package \pkg{glmulti} also perform model averaging.
 }
 
 \examples{
@@ -143,8 +154,8 @@ mav <- model.avg(top.models, rank=BIC)
 
 
 # Predicted values
-nseq <- function(x, len=length(x)) seq(min(x, na.rm=TRUE), max(x, na.rm=TRUE),
-	length=len)
+nseq <- function(x, len=length(x)) seq(min(x, na.rm=TRUE),
+	max(x, na.rm=TRUE),	length=len)
 
 # New predictors: X1 along the range of original data, other variables held
 #	constant at their means
@@ -179,8 +190,10 @@ gam1 <- gam(y ~ s(x0) + s(x1) + s(x2) +  s(x3) + (x1+x2+x3)^2,
 
 cat(dQuote(getAllTerms(gam1)), "\n")
 
-# include only models with smooth OR linear term (but not both) for each variable:
-dd <- dredge(gam1, subset=(!`s(x1)` | !x1) & (!`s(x2)` | !x2) & (!`s(x3)` | !x3))
+# include only models with smooth OR linear term (but not both)
+# for each variable:
+dd <- dredge(gam1, subset=(!`s(x1)` | !x1) &
+	(!`s(x2)` | !x2) & (!`s(x3)` | !x3))
 # ...this may take a while.
 
 subset(dd, cumsum(weight) < .95)

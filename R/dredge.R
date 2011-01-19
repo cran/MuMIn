@@ -2,22 +2,40 @@
 function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 		 fixed = NULL, m.max = NA, subset, marg.ex = NULL, trace = FALSE, ...) {
 
+	rank.custom <- !missing(rank)
+
+	# switch to QAICc if quasi* family and no rank
+	if(inherits(global.model, "glm") && family(global.model)$family %in%
+		c("quasi", "quasibinomial", "quasipoisson") && !rank.custom) {
+		rank <- "QAICc"
+		arg <- list(chat=summary(global.model)$dispersion)
+		#warning here
+		warning("QAICc used for '", family(global.model)$family,
+				"' family with c-hat = ", signif(arg$chat))
+		rank.custom <- TRUE
+	} else {
+		arg <- list(...)
+	}
+
 	rankFn <- match.fun(rank)
 	if (is.function(rank))
   		rank <- deparse(substitute(rank))
 
-	rank.custom <- !missing(rank)
+	rankFnCall <- as.call(c(as.name("rankFn"), as.symbol("x"), arg))
+	IC <- function(x) eval(rankFnCall)
+
 	if (rank.custom) {
-		arg <- list(...)
-		rankFnCall <- as.call(c(as.name("rankFn"), as.symbol("x"), arg))
-		IC <- function(x) eval(rankFnCall)
+		#IC <- function(x) eval(rankFnCall)
 		res <- IC(global.model)
   		if (!is.numeric(res) || length(res) != 1) {
 			stop("'rank' should return numeric vector of length 1")
 		}
 	} else {
-		rankFnCall <- call("AICc", as.symbol("x"))
+		#rankFnCall <- as.call(c(as.name("rankFn"), as.symbol("x"), arg))
+		#rankFnCall <- call("AICc", as.symbol("x"))
+		#IC <- AICc
 	}
+
 
 	intercept <- "(Intercept)"
 
@@ -46,7 +64,18 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 		global.call <- substitute(global.model)
 		formula.arg <- 2 # assume is a first argument
 	} else {
-		# if we have a call, try to figuse out the 'formula argument name
+
+
+		# some 'update' methods do not expand dots, which is a problem
+		# because we have expressions like ..1, ..2 in the call.
+		# So, try to replace them with respective arguments in the original call
+		is.dotted <- grep("^\\.\\.", sapply(as.list(global.call), deparse))
+		if(length(is.dotted) > 0)
+			global.call[is.dotted] <-
+				substitute(global.model)[names(global.call[is.dotted])]
+
+
+		# if we have a call, try to figure out the 'formula argument name
 		formula.arg <- if(inherits(global.model, "lme"))	"fixed" else
 			if(inherits(global.model, "gls")) "model" else {
 				tryCatch({
@@ -220,22 +249,19 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 			row1 <- c(row1, r.squared=fit1.summary$r.squared,
 				adj.r.squared=fit1.summary$adj.r.squared)
 		}
-		if (has.dev)
-			row1 <- c(row1, deviance(fit1))
+		if (has.dev)	row1 <- c(row1, deviance(fit1))
 
-		if (rank.custom) {
-			ic <- IC(fit1)
-			row1 <- c(row1, IC=ic)
-		} else {
-			aicc <- AICc(fit1)
-		    row1 <- c(row1, AIC=attr(aicc, "AIC"), AICc=aicc)
-		}
-		ms.tbl <- rbind(ms.tbl, row1)
+		ic <- IC(fit1)
+		row1 <- c(row1, AIC=attr(ic, "AIC"), IC=ic)
+
+		ms.tbl <- c(ms.tbl, row1)
 	} ### END
 
-	formulas[is.na(formulas)] <- NULL
-	ms.tbl <- data.frame(ms.tbl, row.names=seq(NROW(ms.tbl)))
 
+	formulas[is.na(formulas)] <- NULL
+
+	ms.tbl <- matrix(ms.tbl, byrow=TRUE, ncol = length(row1))
+	ms.tbl <- data.frame(ms.tbl, row.names=seq(NROW(ms.tbl)))
 
 	# Convert columns with presence/absence of terms to factors
 	tfac <- which(c(FALSE, !(all.terms %in% globCoefNames)))
@@ -260,15 +286,14 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	attr(ms.tbl, "global.call") <- global.call
 	attr(ms.tbl, "terms") <- c(intercept, all.terms)
 
-	if (rank.custom)
-		rankFnCall[[1]] <- as.name(rank)
+	#if (rank.custom)
+	rankFnCall[[1]] <- as.name(rank)
 
 	attr(ms.tbl, "rank.call") <- rankFnCall
 	attr(ms.tbl, "call") <- match.call(expand.dots = TRUE)
 
-	if (!is.null(attr(all.terms, "random.terms"))) {
+	if (!is.null(attr(all.terms, "random.terms")))
 		attr(ms.tbl, "random.terms") <- attr(all.terms, "random.terms")
-	}
 
 	return(ms.tbl)
 }
@@ -364,7 +389,5 @@ function(x, abbrev.names = TRUE, ...) {
             call <- as.call(call)
         }
     }
-    if (evaluate)
-        eval(call, parent.frame())
-    else call
+    return(if (evaluate) eval(call, parent.frame()) else call)
 }

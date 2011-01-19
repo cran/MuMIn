@@ -24,7 +24,7 @@ User level functions include:
 }
 }
 
-\author{ Kamil Bartoń \email{kamil.barton@go2.pl}}
+\author{ \enc{Kamil Bartoń}{Kamil Barton} \email{kamil.barton@go2.pl}}
 
 \references{
 Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel

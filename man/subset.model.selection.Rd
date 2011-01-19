@@ -33,7 +33,7 @@ When columns are selected (arguments \code{select} or \code{j} are provided), a
 plain \code{data.frame} is returned.
 }
 
-\author{Kamil Bartoń}
+\author{Kamil \enc{Bartoń}{Barton}}
 
 
 \seealso{
