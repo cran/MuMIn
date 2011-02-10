@@ -26,22 +26,21 @@ QAICc(object, ..., chat)
 }
 
 \note{
-This implementation of \code{QAIC}/\code{QAICc} may not be correct for mixed models. \cr
-\code{\link{dredge}} will use \code{QAICc} instead of default \code{AICc} with \code{glm} with quasi*
-family.
+	This implementation of \code{QAIC}/\code{QAICc} may not be correct for mixed
+	models. \cr \code{\link{dredge}} will use \code{QAICc} instead of default
+	\code{AICc} with \code{glm} with quasi* family.
 }
 
 \seealso{
-\code{\link{AICc}}
-
+\code{\link{AICc}} \cr
 \code{\link[stats]{quasi}} family used for models with over-dispersion. \cr
-\code{\link[stats]{AIC}}, \code{\link[nlme]{BIC}} in \pkg{nlme} (or \code{\link[stats4]{BIC}} in \pkg{stats4}) may
-also be used as a custom rank function in \code{\link{dredge}} and \code{\link{model.avg}}.
+\code{\link[stats]{AIC}}, \code{\link{BIC}}) may also be used as a custom rank
+function in \code{\link{dredge}} and \code{\link{model.avg}}.
 
 }
 
 
-\author{Kamil \enc{Bartoń}{Barton}}
+\author{Kamil Barto\enc{ń}{n}}
 
 \examples{
 
@@ -54,29 +53,41 @@ budworm$SF = cbind(numdead = budworm$numdead, numalive = 20 - budworm$numdead)
 
 budworm.lg <- glm(SF ~ sex*ldose, data = budworm, family = quasibinomial)
 
+dd <- dredge(budworm.lg, rank = "QAIC", chat = summary(budworm.lg)$dispersion)
+# Average all models
+budworm.avg <- model.avg(get.models(dd, seq(nrow(dd))), method="NA")
+#model.avg(mod[[1]], mod[[2]], rank = "QAIC", rank.args = list(chat = 1))
+
 plot(c(1,32), c(0,1), type = "n", xlab = "dose",
      ylab = "prob", log = "x")
 text(2^budworm$ldose, budworm$numdead/20, as.character(budworm$sex))
 ld <- seq(0, 5, 0.1)
-lines(2^ld, predict(budworm.lg, data.frame(ldose=ld,
-   sex=factor(rep("M", length(ld)), levels=levels(budworm$sex))),
-   type = "response"))
-lines(2^ld, predict(budworm.lg, data.frame(ldose=ld,
-   sex=factor(rep("F", length(ld)), levels=levels(budworm$sex))),
-   type = "response"))
 
+newdata <- data.frame(ldose=ld, sex=factor(rep("M", length(ld)),
+	levels=levels(budworm$sex)))
 
-dd <- dredge(budworm.lg, rank = "QAIC",
-	chat = summary(budworm.lg)$dispersion)
-mod <- get.models(dd, seq(nrow(dd)))
-budworm.avg <- model.avg(mod)
-model.avg(mod[[1]], mod[[2]], rank = "QAIC", rank.args = list(chat = 1))
+# Predictions from global model / Males
+pred.lg <- predict(budworm.lg, newdata, se.fit=TRUE, type="response")
+matplot(2^ld, cbind(pred.lg$fit, pred.lg$fit - (2 * pred.lg$se.fit),
+	pred.lg$fit + (2 * pred.lg$se.fit)), add=TRUE, type="l", col=1)
 
-linkinv <- quasibinomial()$linkinv
-lines(2^ld, linkinv(predict(budworm.avg, data.frame(ldose=ld,
-   sex=factor(rep("M", length(ld)), levels=levels(budworm$sex))))), col=2)
-lines(2^ld, linkinv(predict(budworm.avg, data.frame(ldose=ld,
-   sex=factor(rep("F", length(ld)), levels=levels(budworm$sex))))), col=2)
+# Predictions from averaged model / Males
+pred.avg <- predict(budworm.avg, newdata, se.fit=TRUE, type="response")
+matplot(2^ld, cbind(pred.avg$fit, pred.avg$fit - (2 * pred.avg$se.fit),
+	pred.avg$fit + (2 * pred.avg$se.fit)), add=TRUE, type="l", col=2)
+
+newdata$sex[] <- "F"
+
+# Predictions from global model / Females
+pred.lg <- predict(budworm.lg, newdata, se.fit=TRUE, type="response")
+matplot(2^ld, cbind(pred.lg$fit, pred.lg$fit - (2 * pred.lg$se.fit),
+	pred.lg$fit + (2 * pred.lg$se.fit)), add=TRUE, type="l", col=1)
+
+# Predictions from averaged model / Females
+pred.avg <- predict(budworm.avg, newdata, se.fit=TRUE, type="response")
+matplot(2^ld, cbind(pred.avg$fit, pred.avg$fit - (2 * pred.avg$se.fit),
+	pred.avg$fit + (2 * pred.avg$se.fit)), add=TRUE, type="l", col=2)
+
 legend("bottomright", legend=c("full", "averaged"), title="Model",
 	   col=1:2, lty=1)
 

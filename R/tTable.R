@@ -35,10 +35,10 @@ function(model, ...) return(summary(model)$Coef)
 
 `tTable.multinom` <-
 function(model, ...) {
-	ret <- as.data.frame(summary(model)[c("coefficients", "standard.errors")])
+	ret <- do.call("cbind", summary(model)[c("coefficients", "standard.errors")])
 	colnames(ret) <- c("Estimate", "Std. Error")
 	return(ret)
 }
 
 `tTable.coxph` <- function (model, ...)
-	return(summary(model)$coefficients[,-2, drop=FALSE])
+	return(summary(model)$coefficients[,-c(2, 3), drop=FALSE])

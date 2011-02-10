@@ -1,5 +1,27 @@
 MuMIn package news/change log:
 
+Version: 1.0.0 (2011-02-10)
+get.models: fixed - arguments in ... were not passed to updated models
+predict.averaging: predictions on response scale can be calculated (type=response)
+new functions (not exported): nobs, coefDf
+model.avg: now makes use of correct DF from component models in calculation of adjusted SE
+par.avg: calculates ASE if df are provided, example(QAIC) now demonstrates predictions 
+	with confidence intervals
+
+Version: 0.14.2 (2011-02-05)
+dredge: small changes, slightly faster
+manual corrected
+
+Version: 0.14.1 (2011-02-04)
+vcov.averaging, logLik.averaging: new methods, 
+revised formula for unconditional variance
+manual reworked
+
+Version: 0.14.0 (2011-01-19)
+TODO: model.avg: added npar to the selection table
+predict.averaging: now can return averaged SE
+par.avg: may use revised formula for calculating averaged SE
+
 Version: 0.13.21 (2011-01-16)
 dredge: handling of update'd lmer models improved
 QAICc: new function
