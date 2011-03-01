@@ -10,6 +10,10 @@ export(
 #	formula, logLik, model.frame, model.matrix, na.omit, predict, qnorm, qt,
 #	reformulate, residuals, sd, terms, update, weighted.mean)
 
+if (getRversion() >= "2.13.0") importFrom(stats, nobs)
+
+
+
 importFrom(methods, slot, slotNames)
 #importFrom(lme4, lmer, logLik, terms)
 #importMethodsFrom(lme4, deviance, formula, residuals)
@@ -19,6 +23,8 @@ S3method(summary, averaging)
 S3method(predict, averaging)
 S3method(coef, averaging)
 S3method(fitted, averaging)
+S3method(logLik, averaging)
+S3method(vcov, averaging)
 S3method(model.matrix, averaging)
 S3method(print, model.selection)
 S3method(subset, model.selection)
@@ -50,3 +56,13 @@ S3method(tTable, spautolm)
 S3method(tTable, multinom)
 S3method(tTable, coxph)
 S3method(logLik, coxph)
+
+S3method(nobs, mer)
+S3method(nobs, lme)
+S3method(nobs, glmmML)
+S3method(nobs, default)
+
+S3method(coefDf, lme)
+S3method(coefDf, mer)
+S3method(coefDf, gls)
+S3method(coefDf, default)

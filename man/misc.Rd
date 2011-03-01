@@ -50,7 +50,7 @@
 \code{tTable} - extracts a table of coefficients,
 	standard errors, and p-values from a model object;
 
-\code{Weights} - calculates Akaike weights (normalized relative likelihoods)
+\code{Weights} - calculates Akaike weights (normalized models likelihoods)
 
 }
 
