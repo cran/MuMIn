@@ -1,38 +1,38 @@
-`AICc` <-
-function(object, ..., k = 2) {
-	if(length(list(...))) {
-		object <- list(object, ...)
-		val <- as.data.frame(t(sapply(object,
- 							function(el) {
-					     		z <- getAICc(el, k = k)
-					     		c(attr(z, "df"), attr(z, "AIC"), z)
-						  	}
-						  )))
-		names(val) <- c("df", "AIC", "AICc")
-		   Call <- match.call()
-		   Call$k <- NULL
-		row.names(val) <- as.character(Call[-1])
-		return(val)
-	} else {
-		return(getAICc(object, k = k))
-	}
+`AICc` <- function (object, ..., k = 2, REML = NULL)
+UseMethod("AICc")
+
+`AICc.logLik` <- function (object, ..., k = 2) {
+	df <- attr(object, "df")
+	no <- attr(object, "nobs")
+	if (is.null(no)) stop("'logLik' object must have \"nobs\" attribute")
+	aic <- -2 * as.numeric(object) + k * df
+	aic + 2 * df * (df + 1) / (no - df - 1)
 }
 
-`getAICc` <-
-function(object, k = 2) {
-	# No longer needed?
-	#if (any(inherits(object, c("lmer", "glmer")))) {
-	#	mLogLik <- logLik(object, object@status["REML"])
-	#	N <- NROW(object@frame)
-	#} else {	}
+`AICc.default` <- function (object, ..., k = 2, REML = NULL) {
+	loglik <- if("stats4" %in% loadedNamespaces()) stats4:::logLik else stats::logLik
+	.aicc <- function(ll, df, no)
+		(-2 * ll + k * df) + (2 * df * (df + 1) / (no - df - 1))
 
-	mLogLik <- logLik(object)
-	N <- length(residuals(object))
+	if (length(list(...))) {
+		lls <- sapply(list(object, ...), function(x) {
+			ll <- if (!is.null(REML) && inherits(x, c("mer", "lme", "gls", "lm")))
+				loglik(x, REML = REML) else loglik(x)
+			no <- attr(ll, "nobs")
+			if (is.null(no)) no <- nobs(x, use.fallback = FALSE)
+			c(as.numeric(ll), attr(ll, "df"), if (is.null(no)) NA_integer_ else no)
+		})
+		val <- data.frame(df = lls[2L, ], AICc= .aicc(lls[1L, ], lls[2L, ], lls[3L, ]))
 
-	mK <- attr(mLogLik, "df")
-	mAIC <- -2 * c(mLogLik) + k * mK
-	ret <- mAIC + 2 * mK * (mK + 1)/(N - mK - 1)
-	attr(ret, "df") <- mK
-	attr(ret, "AIC") <- mAIC
-	return (ret)
+		Call <- match.call()
+		Call$k <- Call$REML <- NULL
+		row.names(val) <- as.character(Call[-1L])
+		val
+	} else {
+		ll <- if (!is.null(REML) && inherits(object, c("mer", "lme", "gls", "lm")))
+				loglik(object, REML = REML) else loglik(object)
+		no <- attr(ll, "nobs")
+		if (is.null(no)) no <- nobs(object, use.fallback = FALSE)
+		.aicc(as.numeric(ll), attr(ll, "df"), no)
+	}
 }

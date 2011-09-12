@@ -8,7 +8,8 @@ Averages single model coefficient based on provided weights
 }
 
 \usage{
-par.avg(x, se, weight, df = NULL, alpha = 0.05, revised.var = TRUE)
+par.avg(x, se, weight, df = NULL, alpha = 0.05, 
+    revised.var = TRUE)
 }
 
 \arguments{

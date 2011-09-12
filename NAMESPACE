@@ -1,24 +1,29 @@
 export(
 	AICc, beta.weights, dredge, get.models, model.avg, par.avg, QAIC, QAICc,
-	getAllTerms, coeffs, tTable, Weights
+	getAllTerms, coeffs, tTable, Weights, mod.sel
 )
 
-# including these imports makes this package dependent on 'lme4'
+if (getRversion() >= "2.13.0") {
+importFrom(stats, nobs)
+} else {
+S3method(nobs, default)
+}
+
+# including the lines below makes this package dependent on 'lme4'
 # so, until I figure out how to deal with it, no imports is used....
 
 #importFrom(stats, AIC, as.formula, coef, delete.response, deviance, fitted,
 #	formula, logLik, model.frame, model.matrix, na.omit, predict, qnorm, qt,
 #	reformulate, residuals, sd, terms, update, weighted.mean)
 
-if (getRversion() >= "2.13.0") importFrom(stats, nobs)
-
-
-
-importFrom(methods, slot, slotNames)
+#importFrom(stats, logLik, terms)
+#importMethodsFrom(stats, logLik, terms)
+#importFrom(methods, slot, slotNames)
 #importFrom(lme4, lmer, logLik, terms)
-#importMethodsFrom(lme4, deviance, formula, residuals)
+
 
 S3method(print, averaging)
+S3method(print, summary.averaging)
 S3method(summary, averaging)
 S3method(predict, averaging)
 S3method(coef, averaging)
@@ -30,39 +35,65 @@ S3method(print, model.selection)
 S3method(subset, model.selection)
 S3method("[", model.selection)
 S3method(update, model.selection)
+
 S3method(getAllTerms, default)
+S3method(coeffs, default)
+S3method(tTable, default)
+S3method(coefDf, default)
+
+S3method(AICc, default)
+
+S3method(AICc, logLik)
+
 S3method(getAllTerms, formula)
 S3method(getAllTerms, terms)
-S3method(getAllTerms, glmer)
-S3method(getAllTerms, lme)
-S3method(getAllTerms, lmer)
-S3method(getAllTerms, mer)
-S3method(getAllTerms, coxph)
-S3method(coeffs, default)
-S3method(coeffs, glmer)
-S3method(coeffs, gls)
-S3method(coeffs, lme)
-S3method(coeffs, lmer)
-S3method(coeffs, mer)
-S3method(coeffs, spautolm)
-S3method(tTable, default)
+
 S3method(tTable, gam)
-S3method(tTable, glmer)
-S3method(tTable, gls)
-S3method(tTable, lme)
-S3method(tTable, lmer)
-S3method(tTable, mer)
+
+S3method(nobs, sarlm)
+
 S3method(tTable, spautolm)
-S3method(tTable, multinom)
+S3method(nobs, spautolm)
+
+S3method(logLik, glmmML)
+S3method(tTable, glmmML)
+S3method(nobs, glmmML)
+S3method(summary, glmmML)
+
+S3method(getAllTerms, coxph)
 S3method(tTable, coxph)
 S3method(logLik, coxph)
+S3method(nobs, coxph)
 
-S3method(nobs, mer)
-S3method(nobs, lme)
-S3method(nobs, glmmML)
-S3method(nobs, default)
-
+S3method(getAllTerms, lme)
+S3method(coeffs, lme)
+S3method(tTable, lme)
 S3method(coefDf, lme)
+
+S3method(getAllTerms, lmer)
+S3method(coeffs, lmer)
+S3method(tTable, lmer)
+
+S3method(getAllTerms, glmer)
+S3method(coeffs, glmer)
+S3method(tTable, glmer)
+
+S3method(getAllTerms, mer)
+S3method(coeffs, mer)
+S3method(tTable, mer)
 S3method(coefDf, mer)
+S3method(nobs, mer)
+
+S3method(tTable, multinom)
+S3method(nobs, multinom)
+
+S3method(coeffs, gls)
+S3method(tTable, gls)
 S3method(coefDf, gls)
-S3method(coefDf, default)
+
+S3method(formula, unmarkedFit)
+S3method(getAllTerms, unmarkedFit)
+S3method(tTable, unmarkedFit)
+S3method(coefDf, unmarkedFit)
+S3method(nobs, unmarkedFit)
+S3method(logLik, unmarkedFit)

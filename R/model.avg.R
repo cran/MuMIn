@@ -1,54 +1,51 @@
 `model.avg` <-
-function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
-	rank.args = NULL, alpha = 0.05, revised.var = TRUE) {
+function(object, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
+	rank.args = NULL, revised.var = TRUE) {
 
+	if(inherits(object, "model.selection")) {
+		if(!("subset" %in% names(match.call(get.models))))
+			warning("'subset' argument is missing. Using the default ",
+				sQuote(deparse(formals(get.models)$subset)))
+		object <- get.models(object, ...)
+	}
+
+    alpha <- 0.05
 	method <- match.arg(method)
-
 	.fnull <- function(...) return(NULL)
 
-	if (!is.null(rank)) {
-	   	rankFn <- match.fun(rank)
-		rank.call <- as.call(c(as.name("rankFn"), as.symbol("x"), rank.args))
-		rank <- substitute(rank)
-	} else if (!is.null(attr(m1, "rank.call"))) {
-		rank.call <- attr(m1, "rank.call")
-		rank.args <- as.list(attr(m1, "rank.call"))[-(1L:2L)]
-		rankFn <- match.fun(rank.call[[1L]])
-		rank <- as.character(rank.call[[1L]])
-	}
-
-	if (inherits(m1, "list")) {
-		models <- m1
-		m1 <- models[[1L]]
+	if (inherits(object, "list")) {
+		models <- object
+		object <- object[[1L]]
+        if (!is.null(rank) || is.null(rank <- attr(models, "rank"))) {
+            rank <- .getRank(rank, rank.args = rank.args, object = object)
+      	}
 	} else {
-		models <- list(m1, ...)
+		models <- list(object, ...)
+        rank <- .getRank(rank, rank.args = rank.args, object = object)
 	}
+	ICname <- deparse(attr(rank,"call")[[1]])
 
-	if (!is.null(rank)) {
-		IC <- function(x) eval(rank.call)
-		res <- IC(m1)
-  		if (!is.numeric(res) || length(res) != 1L)
-			stop("'rank' should return numeric vector of length 1")
-	} else {
-		IC <- AICc
-	}
-
-	if (length(models) == 1L) stop("Only one model supplied. Nothing to do")
+	if (length(models) == 1L) stop("Only one model supplied. Nothing to do.")
 
 	#Try to find if all models are fitted to the same data
-	m.resp <- lapply(models, function(x) formula(x)[[2L]])
-	if(!all(vapply(m.resp[-1L], "==", logical(1), m.resp[[1L]])))
+	m.resp <- lapply(models, function(x) {
+	  f <- formula(x)
+	  if(length(f) == 2L || (length(f[[2L]]) == 2 && f[[2L]][[1L]] == "~")) 0 else f[[2L]]
+	})
+
+
+ 	if(!all(vapply(m.resp[-1L], "==", logical(1), m.resp[[1L]])))
 		stop("Response differs between models")
 
 	m.data <- lapply(models, function(x) (if(mode(x) == "S4") `@` else `$`)
 					 (x, "call")$data)
-	m.nresid <-	vapply(models, nobs, numeric(1L))
+	m.nresid <-	vapply(models, nobs, numeric(1L)) # , nall=TRUE
 	if(!all(m.data[-1L] == m.data[[1]]) || !all(m.nresid[-1L] == m.nresid[[1L]]))
 		stop("Models were not all fitted to the same dataset")
 
 	all.terms <- unique(unlist(lapply(models, getAllTerms)))
 	all.terms <- all.terms[order(vapply(gregexpr(":", all.terms),
-		function(x) if(x[1L] == -1) 0 else length(x), numeric(1L)), all.terms)]
+		function(x) if(x[1L] == -1L) 0L else length(x), numeric(1L)), all.terms)]
 
 	all.model.names <- vapply(models,
 		function(x) paste(match(getAllTerms(x), all.terms), collapse="+"), character(1L))
@@ -66,7 +63,7 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 			model.matrix.default(object, data=data, ...)
 	}
 
-	aicc <- vapply(models, IC, numeric(1))
+	aicc <- vapply(models, rank, numeric(1))
 	dev <- if (!is.null(tryCatch(deviance(models[[1L]]), error=.fnull)))
 		vapply(models, deviance, numeric(1)) else NA
 	delta <- aicc - min(aicc)
@@ -93,8 +90,7 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 	npar <- length(all.par)
 	ac <- rep(0, length = npar)
 
-	if (beta)
-		response.sd <- sd(model.response(model.frame(m1)))
+	if (beta)	response.sd <- sd(model.response(model.frame(object)))
 
 	mtable <- t(vapply(models, function(m) {
 		m.tTable <- tTable(m)
@@ -147,13 +143,12 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 		"Lower CI", "Upper CI"))))
 
 
-	all.coef[all.coef == 0] <- NA
-	all.se[all.se == 0] <- NA
-	colnames(all.coef) <- colnames(all.se) <- rownames(avg.model) <-  all.par
+	#all.coef[all.coef == 0] <- NA
+	#all.se[all.se == 0] <- NA
+	colnames(all.coef) <- colnames(all.se) <- colnames(all.df) <- rownames(avg.model) <-  all.par
     names(all.terms) <- seq_along(all.terms)
 
-	if (!is.null(rank))
-		colnames(selection.table)[2L] <- as.character(rank)
+	colnames(selection.table)[2L] <- ICname
 
 	#global.mm <- model.matrix(fit)
 	#cnmmxx2 <- unique(unlist(lapply(gm, function(x) names(coef(x)))))
@@ -169,7 +164,7 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 	#	mx <- cbind(mx, i[,!(colnames(i) %in% colnames(mx)), drop=FALSE])
 
 	# residuals averaged (with brute force)
-	rsd <- tryCatch(apply(vapply(models, residuals, residuals(m1)), 1,
+	rsd <- tryCatch(apply(vapply(models, residuals, residuals(object)), 1,
 		weighted.mean, w=weight), error=.fnull)
 	trm <- tryCatch(terms(models[[1]]),
 			error=function(e) terms(formula(models[[1L]])))
@@ -199,23 +194,6 @@ function(m1, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 	class(ret) <- "averaging"
 	return(ret)
 }
-
-
-if (!existsFunction("nobs"))
-`nobs` <- function(object, ...) UseMethod("nobs")
-
-`nobs.mer` <- function(object, ...) object@dims[["n"]]
-`nobs.lme` <- `nobs.gls` <- function(object, ...) object$dims$N
-`nobs.glmmML` <- function(object, ...) length(object$coefficients) + object$cluster.null.df
-`nobs.default` <- function(object, ...) NROW(resid(object, ...))
-
-
-`coefDf` <- function(x) UseMethod("coefDf")
-`coefDf.lme` <- function(x) x$fixDF$X
-`coefDf.mer` <- function(x) rep(NA, x@dims[["p"]])
-`coefDf.gls` <- function(x) rep(x$dims$N - x$dims$p, x$dims$p)
-`coefDf.default` <- function(x) rep(df.residual(x), length(coef(x)))
-
 
 `coef.averaging` <-
 function(object, ...) object$avg.model[,1]
@@ -280,7 +258,22 @@ function(object, newdata = NULL, se.fit = NULL, interval = NULL,
 		cl[[1]] <- as.name("predict")
 		if("type" %in% names(cl)) cl$type <- "link"
 		if(!missing(newdata)) cl$newdata <- as.name("newdata")
-		pred <- do.call("lapply", c(as.name("models"), cl[-2]))
+		#pred <- do.call("lapply", c(as.name("models"), cl[-2]))
+
+		cl <- as.call(cl)
+		pred <- lapply(models, function(x) {
+			cl[[2]] <- x
+			tryCatch(eval(cl), error=function(e) e)
+		})
+
+		err <- sapply(pred, inherits, "condition")
+		if (any(err)) {
+			lapply(pred[err], warning)
+			stop(sprintf(ngettext(sum(err), "'predict' for model %s caused error",
+				"'predict' for models %s caused errors"),
+				paste(sQuote(names(models[err])), collapse=", ")))
+		}
+
 
 		if(all(sapply(pred, function(x) c("fit", "se.fit") %in% names(x)))) {
 			fit <- do.call("cbind", lapply(pred, "[[", "fit"))
@@ -303,20 +296,19 @@ function(object, newdata = NULL, se.fit = NULL, interval = NULL,
 
 				if(!is.null(fam)) {
 					if(any(fam[,1] != fam[,-1]))
-					stop("Cannot calculate predictions of response scale",
+					stop("Cannot calculate predictions on the response scale ",
 						 "with models with different families or link functions")
 					ret$se.fit <- ret$se.fit * abs(family(models[[1]])$mu.eta(ret$fit))
 					ret$fit <- family(models[[1]])$linkinv(ret$fit)
 				}
 			}
 
-
 		} else if (all(sapply(pred, is.numeric))) {
 			ret <- apply(do.call("cbind", pred), 1, weighted.mean,
 				w = object$summary$Weight)
 		} else {
 			stop("'predict' method for the component models returned",
-				 " a value in unrecognised format")
+				 " a value in an unrecognised format")
 		}
 	}
 	return(ret)
@@ -329,25 +321,79 @@ function (object, ...) predict.averaging(object)
 function (object, ...) object$x
 
 `summary.averaging` <-
-function (object, ...) print.averaging(object)
+function (object, ...) {
 
-`print.averaging` <-
-function(x, ...) {
-	cat("\nModel summary:\n")
+	cf <- object$avg.model
+	no.ase <- all(is.na(cf[,3]))
+    z <- abs(cf[,1] / cf[, if(no.ase) 2 else 3])
+    pval <- 2 * pnorm(z, lower.tail = FALSE)
+    coefmat <- cbind(cf[, if(no.ase) 1:2 else 1:3],
+					 `z value` = z,
+					 `Pr(>|z|)` = zapsmall(pval))
+	object$coefmat <- coefmat
+
+	structure(object, class="summary.averaging")
+}
+
+`confint.averaging` <-
+function (object, parm, level = 0.95, ...) {
+    cf <- object$coefficients
+    pnames <- colnames(cf)
+    if (missing(parm))
+        parm <- pnames
+    else if (is.numeric(parm))
+        parm <- pnames[parm]
+
+    a2 <- 1 - level
+    a <- a2 / 2
+    se <- object$se
+    wts <- object$summary$Weight
+    dfs <- object$dfs
+    ci <- t(sapply(parm, function(i)
+		par.avg(cf[,i], se[,i], wts, object$dfs[,i], alpha=a2)))[,4:5]
+    pct <- stats:::format.perc(c(a, 1 - a), 3)
+    colnames(ci) <- pct
+    return(ci)
+}
+
+`print.summary.averaging` <-
+function (x, digits = max(3, getOption("digits") - 3),
+    signif.stars = getOption("show.signif.stars"), ...) {
+
+    cat("\nCall:  ", paste(deparse(x$call), sep = "\n", collapse = "\n"),
+        "\n\n", sep = "")
+
+    cat("\nModel summary:\n")
 	print(round(as.matrix(x$summary), 2), na.print="")
 
 	cat("\nVariables:\n")
 	print(x$variable.codes, quote=F)
 
-	cat("\nAveraged model parameters:\n")
+	cat("\nModel-averaged coefficients:\n")
+	#no.ase <- all(is.na(x$avg.model[,3]))
 
-	no.ase <- all(is.na(x$avg.model[,3]))
+    printCoefmat(x$coefmat, P.values=TRUE, has.Pvalue=TRUE, digits = digits,
+				 signif.stars = signif.stars)
 
-	print(signif(x$avg.model[, if(no.ase) -3 else TRUE], 3))
-	if (no.ase) cat("Confidence intervals are unadjusted \n")
+	#if (no.ase) cat("Confidence intervals are unadjusted \n")
+
+	cat("\nNon-present predictors", switch(attr(x, "method"),
+		"0"="taken to be zero", "NA"="excluded"), "\n")
 
 	cat("\nRelative variable importance:\n")
 	print(round(x$importance, 2))
+}
+
+`print.averaging` <-
+function(x, ...) {
+    cat("\nCall:  ", paste(deparse(x$call), sep = "\n", collapse = "\n"),
+        "\n\n", sep = "")
+    cat("Component models:", "\n")
+	comp.names <- rownames(x$summary)
+	comp.names[comp.names == ""] <- "null"
+	cat(format(sQuote(comp.names), justify="l"), fill=T)
+    cat("\nCoefficients:", "\n")
+    print.default(x$avg.model[,1])
 }
 
 `vcov.averaging` <- function (object, ...) {
@@ -379,6 +425,6 @@ function(x, ...) {
 }
 
 `logLik.averaging` <- function (object, ...) {
-	return(structure(lapply(attr(object, "mList"), logLik),
+	return(structure(lapply(attr(object, "mList"), .getLogLik()),
 			  names=rownames(object$summary)))
 }

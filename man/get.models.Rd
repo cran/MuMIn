@@ -5,7 +5,7 @@
 \title{Get models}
 
 \description{
-	Gets list of models from a \code{model.selection} object
+    Gets list of models from a \code{model.selection} object
 }
 
 
@@ -17,15 +17,15 @@ get.models(dd, subset = delta <= 4, ...)
   \item{dd}{ object returned by \code{\link{dredge}}}
   \item{subset}{subset of models}
   \item{\dots}{additional parameters passed to \code{update}, for example, in
-	\code{lme/lmer} one may want to use \code{method = "REML"} while using "ML"
-	for model selection}
+    \code{lme/lmer} one may want to use \code{method = "REML"} while using "ML"
+    for model selection}
 }
 
 \value{
-	\code{\link{list}} of models.
+    \code{\link{list}} of models.
 }
 
-\author{\enc{Kamil Bartoń}{Kamil Barton}}
+\author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
 \code{\link{dredge}}, \code{\link{model.avg}}
@@ -36,7 +36,7 @@ get.models(dd, subset = delta <= 4, ...)
 
 require(nlme)
 fm2 <- lme(distance ~ age + Sex, data = Orthodont,
-	random = ~ 1 | Subject, method="ML")
+    random = ~ 1 | Subject, method="ML")
 dd2 <- dredge(fm2)
 
 # Get top-most models, but fitted by REML:

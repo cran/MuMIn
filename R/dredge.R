@@ -2,35 +2,26 @@
 function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 		 fixed = NULL, m.max = NA, subset, marg.ex = NULL, trace = FALSE, ...) {
 
+	# XXX
+	if(!missing(eval) && !eval) .NotYetUsed("eval")
 	rank.custom <- !missing(rank)
+	#dots <- list(...)
 
+	# *** Rank ***
 	# switch to QAICc if quasi* family and no rank
 	if(inherits(global.model, "glm") && family(global.model)$family %in%
 		c("quasi", "quasibinomial", "quasipoisson") && !rank.custom) {
+		rankArgs <- list(chat=summary(global.model)$dispersion)
 		rank <- "QAICc"
-		arg <- list(chat=summary(global.model)$dispersion)
-		#warning here
 		warning("QAICc used for '", family(global.model)$family,
-				"' family with c-hat = ", signif(arg$chat))
+				"' family with c-hat = ", signif(rankArgs$chat))
 		rank.custom <- TRUE
 	} else {
-		arg <- list(...)
+		rankArgs <- list(...)
 	}
-
-	rankFn <- match.fun(rank)
-	if (is.function(rank))
-  		rank <- deparse(substitute(rank))
-
-	rankFnCall <- as.call(c(as.name("rankFn"), as.symbol("x"), arg))
-	IC <- function(x) eval(rankFnCall)
-
-	if (rank.custom) {
-		#IC <- function(x) eval(rankFnCall)
-		res <- IC(global.model)
-  		if (!is.numeric(res) || length(res) != 1) {
-			stop("'rank' should return numeric vector of length 1")
-		}
-	}
+	IC <- .getRank(rank, rankArgs)
+	ICName <- as.character(attr(IC, "call")[[1]])
+	# *** Rank ***
 
 	intercept <- "(Intercept)"
 	all.terms <- getAllTerms(global.model)
@@ -38,6 +29,8 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	# Just in case:
 	gterms <- tryCatch(terms(formula(global.model)),
 		error=function(...) terms(global.model))
+
+	response <- if(attr(gterms, "response") == 0) NULL else "."
 
 	if(length(grep(":", all.vars(delete.response(gterms) > 0))))
 		stop("Variable names in the model can not contain \":\"")
@@ -56,66 +49,70 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 
 	if (is.null(global.call)) {
 		global.call <- substitute(global.model)
-		formula.arg <- 2 # assume is a first argument
+		formula.arg <- 2L # assume is a first argument
 	} else {
-
 
 		# if 'update' method does not expand dots, we have a problem
 		# with expressions like ..1, ..2 in the call.
 		# So, try to replace them with respective arguments in the original call
 		is.dotted <- grep("^\\.\\.", sapply(as.list(global.call), deparse))
-		if(length(is.dotted) > 0)
+		if(length(is.dotted) > 0L)
 			global.call[is.dotted] <-
 				substitute(global.model)[names(global.call[is.dotted])]
-
 
 		# if we have a call, try to figure out the 'formula' argument name
 		formula.arg <- if(inherits(global.model, "lme"))	"fixed" else
 			if(inherits(global.model, "gls")) "model" else {
 				tryCatch({
-					arg <- names(formals(match.fun(global.call[[1]])))
-					if ("formula" %in% arg) "formula" else 2
+					arg <- names(formals(match.fun(global.call[[1L]])))
+					if ("formula" %in% arg) "formula" else 2L
 				}, error = function(e) {
-					2
+					2L
 				})
 			}
 	}
 
-	#switch(class(fm1)[1], lme="fixed", gls="model", "formula")
-	global.formula <- global.call[[formula.arg]]
+	global.formula <- tryCatch(formula(global.model), error = function(...) global.call[[formula.arg]])
+	# if (!missing(formula)) {
+		# global.formula <- update.formula(global.formula, formula)
+		# rm(formula)
+	# }
+
+	globCoefNames0 <- names(coeffs(global.model))
+	if(has.start <- !is.null(global.call$start)) {
+		if(is.null(names(global.call$start))) {
+			names(global.call$start)[-1] <- names(coeffs(global.model))
+		}
+	}
+
 
 	# Check for na.omit
 	if (!is.null(global.call$na.action) &&
 		as.character(global.call$na.action) %in% c("na.omit", "na.exclude")) {
-		stop("'global.model' should not use 'na.action' =", global.call$na.action)
+		stop("'global.model' should not use 'na.action' = ", global.call$na.action)
 	}
 
 	has.int <- attr(all.terms, "intercept")
-	globCoefNames <- fixCoefNames(names(coeffs(global.model)))
+	globCoefNames <- fixCoefNames(globCoefNames0)
+	#sglobCoefNames <- fixCoefNames(names(coeffs(global.model)))
 
 	n.vars <- length(all.terms)
-	ret <- numeric(0)
-	formulas <- character(0)
+	ret <- numeric(0L)
+	formulas <- character(0L)
 
 	is.glm <- inherits(global.model, "glm")
 	is.lm <- !is.glm & inherits(global.model, "lm")
 
-	if ((inherits(global.model, c("mer")) && (
-				"REML" %in% names(deviance(global.model)) # old lmer?
-				|| global.model@dims[["REML"]] != 0
-		))  || 	(inherits(global.model, c("lme", "gls", "gam"))
-			 && !is.null(global.model$method)
-			 && global.model$method %in% c("lme.REML", "REML"))
-		||  (any(inherits(global.model, c("lmer", "glmer")))
-			  && global.model@status["REML"] != 0)
-	) {
+
+	if(isTRUE(rankArgs$REML) || (isTRUE(.isREMLFit(global.model)) && is.null(rankArgs$REML))) {
 		warning("Comparing models with different fixed effects fitted by REML")
 	}
+
 
 	if (beta && is.null(tryCatch(beta.weights(global.model), error=function(e) NULL,
 		warning=function(e) NULL))) {
 		warning("Do not know how to calculate B-weights for ",
-				class(global.model)[1], ", argument 'beta' ignored")
+				class(global.model)[1L], ", argument 'beta' ignored")
          beta <- FALSE
 	}
 
@@ -129,7 +126,7 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	# fixed variables:
 	if (!is.null(fixed)) {
 		if (inherits(fixed, "formula")) {
-			if (fixed[[1]] != "~" || length(fixed) != 2)
+			if (fixed[[1]] != "~" || length(fixed) != 2L)
 				warning("'fixed' should be a one-sided formula")
 			fixed <- c(getAllTerms(fixed))
 		} else if (!is.character(fixed)) {
@@ -140,74 +137,76 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 			warning("Not all terms in 'fixed' exist in 'global.model'")
 			fixed <- fixed[fixed %in% all.terms]
 		}
-		m.max <- m.max - length(fixed)
 	}
 
-	if (m.max > 0) {
-		num.opt.vars <- seq.int(n.vars)
-		if (!is.null(fixed))
-			num.opt.vars <- num.opt.vars[!(all.terms %in% fixed)]
 
-		all.cbn <- lapply(seq(m.max), combn, x = num.opt.vars)
-		all.cbn <- unlist(lapply(all.cbn, function(.x) split(.x, col(.x))),
-						   recursive = FALSE)
-		all.cbn <- c(`0` = list(0), all.cbn)
+	#int.term <- if (has.int) "1" else "0"
 
-	} else {
-		all.cbn <- list(0)
-	}
+	n.fixed <- length(fixed)
+	all.terms <- do.call("structure", c(list(all.terms[order(all.terms %in%
+		fixed)]), attributes(all.terms)))
 
-	if (!is.null(fixed))
-		all.cbn <- lapply(all.cbn, append, seq_len(n.vars)[all.terms %in% fixed])
 
-	int.term <- if (has.int) "1" else "0"
+	######
 
-	formulas <- lapply(all.cbn,
-		function(.x) reformulate(c(all.terms[.x], int.term), response = "." ))
+	#if (!eval) return(formulas)
 
+	llik <- .getLogLik()
+	getK <- function(x) as.vector(attr(llik(x), "df"))
+
+	isMER <- any(inherits(global.model, c("mer", "lmer", "glmer")))
 	env <- attr(gterms, ".Environment")
-	formulas <- lapply(formulas, `attr<-`, ".Environment", env)
 
-	ss <- sapply(formulas, formulaAllowed, except = marg.ex)
 
-	all.cbn <- all.cbn[ss]
-	formulas <- formulas[ss]
-
-	## Apply subset:
-	if (!missing(subset)) {
-		xtable <- as.data.frame(!is.na(do.call("rbind", lapply(all.cbn, match,
-			x = seq.int(n.vars)))))
-		colnames(xtable) <- all.terms
-		rownames(xtable) <- NULL
-
-		ss <- eval(substitute(subset), envir = xtable)
-		formulas <- formulas[ss]
-		all.cbn <- all.cbn[ss]
-		# 10 time slower! #xtable <- !is.na(t(sapply(all.cbn, match, x=seq.int(n.vars))))
-	}
-
-	names(formulas) <- seq(formulas)
-	if (any(inherits(global.model, c("mer", "lmer", "glmer")))) {
-          formulas <- lapply(formulas, update, attr(all.terms, "random"))
-	}
-	if (!eval) return(formulas)
-
-	getK <- function(x) as.vector(attr(logLik(x), "df"))
-
-	nmodels <- length(all.cbn)
-	ret <- matrix(NA, ncol=length(all.terms) + (2 * has.rsq) + has.dev +
-		(if(rank == "AICc") 2 else 1) + 2, nrow=nmodels)
+	# DEBUG <- function(x) cat("*", deparse(substitute(x)), "=", x, "*\n")
 
 	### BEGIN:
-	#TODO: 	vapply(seq_along(all.cbn), function(j) {},	)
-	for(j in seq_len(nmodels)) {
-        terms1 <- all.terms[all.cbn[[j]]]
-		frm <- formulas[[j]]
+	nov <- as.integer(n.vars - n.fixed)
+	ncomb <- 2L ^ nov
+
+	if(nov > 31L) stop(gettextf("Maximum number of varying predictors is 31, but %d is given", nov))
+	if(nov > 10L) warning(gettextf("%d varying predictors will generate up to %d possible combinations", nov, ncomb))
+
+	#binPos <- 2L ^ seq.int(0L, nov - 1L)
+
+	ret.nchunk <- 25L
+	ret.ncol <- length(all.terms) + (2L * has.rsq) + has.dev + 3L
+	ret <- matrix(NA, ncol=ret.ncol, nrow=ret.nchunk)
+	calls <- vector(mode="list", length=ret.nchunk)
+
+	hasSubset <- !missing(subset)
+	if(hasSubset) subset <- substitute(subset)
+
+	comb.sfx <- rep(TRUE, n.fixed)
+	comb.seq <- seq.int(nov)
+	k <- 0L
+	ord <- integer(0L)
+
+	for(j in seq.int(ncomb)) {
+		#comb <- c(bitAnd(binPos, j - 1L) != 0L, rep(TRUE, n.fixed))
+		comb <- c(as.logical(intToBits(j - 1L)[comb.seq]), comb.sfx)
+		if(sum(comb) > m.max) next;
+		if(hasSubset && !eval(subset, structure(as.list(comb), names=all.terms))) next;
+
+		terms1 <- all.terms[comb]
+		frm <- reformulate(c("1", terms1), response=response, intercept=has.int)
+
+		if(!formulaAllowed(frm, marg.ex)) next;
+		attr(frm, ".Environment") <- env
+		###
 
 		row1 <- rep(NA, n.vars)
-		row1[match(terms1, all.terms)] <- rep(1, length(terms1))
+		row1[match(terms1, all.terms)] <- rep(1L, length(terms1))
 
 		cl <- global.call
+		if(has.start) {
+			cl2 <- cl
+			cl2[[1]] <- as.name("model.matrix")
+			cl2[[formula.arg]] <- update.formula(global.formula, frm)
+			names(cl2)[2] <- "object" # XXX
+			cl$start <- cl$start[c(TRUE, globCoefNames0 %in% colnames(eval(cl2)))]
+		}
+		if (isMER) frm <- update.formula(frm, attr(all.terms, "random"))
 		cl[[formula.arg]] <- update.formula(global.formula, frm)
 
 		if(trace) { cat(j, ": "); print(cl)	}
@@ -217,16 +216,15 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 				j, "skipped by dredge)", collapse="")
 			class(err) <- c("simpleError", "warning", "condition")
 
-			warning(err, immediate.=TRUE)
+			warning(err)
 			return(NULL)
 		})
 
-		if (is.null(fit1)) {
-			formulas[[as.character(j)]] <- NA
-			next;
-		}
+		if (is.null(fit1)) next;
+		k <- k + 1L # all OK, add model to table
+		ord[k] <- j
 
-		coef1 <- if (beta) beta.weights(fit1)[,3] else coeffs(fit1)
+		coef1 <- if (beta) beta.weights(fit1)[, 3L] else coeffs(fit1)
 		names(coef1) <- fixCoefNames(names(coef1))
 
 		icept <- if (has.int) coef1[intercept] else NA
@@ -243,17 +241,24 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 		if (has.dev)	row1 <- c(row1, deviance(fit1))
 
 		ic <- IC(fit1)
-		row1 <- c(row1, AIC=attr(ic, "AIC"), IC=ic)
+		row1 <- c(row1, IC=ic)
 
-		ret[j,] <- row1
+		ret.nrow <- nrow(ret)
+		if(k > ret.nrow) {
+			nadd <- min(ret.nchunk, ncomb - ret.nrow)
+			ret <- rbind(ret, matrix(NA, ncol=ret.ncol, nrow=nadd))
+			calls <- c(calls, vector("list", nadd))
+		}
+		calls[[k]] <- cl
+
+		ret[k, ] <- row1
 	} ### END
 
-	nofits <- is.na(formulas)
-	ret <- ret[!nofits, ]
-	formulas[nofits] <- NULL
+	if(k < nrow(ret)) ret <- ret[seq.int(k), , drop=FALSE]
 
 	ret <- as.data.frame(ret)
-	row.names(ret) <- seq_len(NROW(ret))
+	#row.names(ret) <- seq_len(NROW(ret))
+	row.names(ret) <- ord
 
 	# Convert columns with presence/absence of terms to factors
 	tfac <- which(c(FALSE, !(all.terms %in% globCoefNames)))
@@ -263,24 +268,24 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	colnames(ret) <- c("(int.)", all.terms, "k",
 		if (has.rsq) c("R.sq", "Adj.R.sq"),
 		if (has.dev) if (is.lm) "RSS" else "Dev.",
-		if (rank.custom) rank else c("AIC", "AICc")
+		#if (rank.custom) rank else c("AIC", "AICc")
+		ICName
 	)
 
-	o <- order(ret[, rank], decreasing = FALSE)
+	o <- order(ret[, ICName], decreasing = FALSE)
 	ret <- ret[o,]
-	ret$delta <- ret[, rank] - min(ret[, rank])
+	ret$delta <- ret[, ICName] - min(ret[, ICName])
 	ret$weight <- exp(-ret$delta / 2) / sum(exp(-ret$delta / 2))
 
 	class(ret) = c("model.selection", "data.frame")
 
-	attr(ret, "formulas") <- formulas[o]
+	attr(ret, "calls") <- calls[o]
 	attr(ret, "global") <- global.model
 	attr(ret, "global.call") <- global.call
 	attr(ret, "terms") <- c(intercept, all.terms)
 
-	rankFnCall[[1]] <- as.name(rank)
-
-	attr(ret, "rank.call") <- rankFnCall
+	attr(ret, "rank") <- IC
+	attr(ret, "rank.call") <- attr(IC,"call")
 	attr(ret, "call") <- match.call(expand.dots = TRUE)
 
 	if (!is.null(attr(all.terms, "random.terms")))
@@ -289,38 +294,37 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	return(ret)
 } ######
 
-
 `subset.model.selection` <-
 function(x, subset, select, recalc.weights = TRUE, ...) {
 	if (missing(select)) {
 		e <- substitute(subset)
-		i <- eval(e, x, parent.frame(2))
+		i <- eval(e, x, parent.frame(2L))
 		return(`[.model.selection`(x, i, recalc.weights = recalc.weights, ...))
 	} else {
 		cl <- match.call(expand.dots = FALSE)
 	    cl <- cl[c(1L, match(names(formals("subset.data.frame")), names(cl), 0L))]
 	    cl[[1L]] <- as.name("subset.data.frame")
-	    return(eval(cl, parent.frame(2)))
+	    return(eval(cl, parent.frame(2L)))
 	}
 }
+
 
 `[.model.selection` <-
 function (x, i, j, recalc.weights = TRUE, ...) {
 	res <- `[.data.frame`(x, i, j, ...)
 	if (missing(j)) {
-		for (a in c("global", "terms", "rank.call", "random.terms"))
-			attr(res, a) <- attr(x, a)
-
-		attr(res, "formulas") <- attr(x, "formulas")[i]
+		att <- attributes(x)
+		s <- c("row.names", "calls")
+		att[s] <- lapply(att[s], `[`, i)
+		attributes(res) <- att
 		if(recalc.weights)
 			res$weight <- res$weight / sum(res$weight)
-		class(res) <- class(x)
 	} else {
-		class(res) <- "data.frame"
+		cls <- class(res)
+		class(res) <- cls[cls != "model.selection"] # numeric or data.frame
 	}
 	return(res)
 }
-
 
 `print.model.selection` <-
 function(x, abbrev.names = TRUE, ...) {
@@ -337,7 +341,7 @@ function(x, abbrev.names = TRUE, ...) {
 
 		if(abbrev.names) {
 			xterms <- sapply(xterms, function(z) {
-				spl <- strsplit(rep(z, 2), c("[^\\w\\.]+",  "[\\w\\.$]+"),
+				spl <- strsplit(rep(z, 2L), c("[^\\w\\.]+",  "[\\w\\.$]+"),
 					perl=TRUE)
 				spl[[1]] <- abbreviate(spl[[1]], minlength=3)
 				o <- order(sapply(lapply(spl, `==`, ""), `[[`, 1), decreasing=TRUE)
@@ -354,11 +358,12 @@ function(x, abbrev.names = TRUE, ...) {
 		if(!is.null(cl)) {
 			cat("Global model: ")
 			print(cl)
+      cat("---\n")
 		}
 
-		cat ("---\nModel selection table \n")
+		cat ("Model selection table \n")
 		i <- sapply(x, is.numeric)
-		x[,i] <- signif(x[,i], 4)
+		x[,i] <- signif(x[,i], 4L)
 		print.default(as.matrix(x[, !sapply(x, function(.x) all(is.na(.x)))]),
 					  na.print="", quote=FALSE)
 		if (!is.null(attr(x, "random.terms"))) {

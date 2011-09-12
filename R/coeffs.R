@@ -18,9 +18,5 @@ function(model) {
 `coeffs.mer` <-
 function(model) model@fixef
 
-`coeffs.spautolm` <-
-function(model) model$fit$coefficients
-
-
 `coeffs.default` <-
 function(model) coef(model)

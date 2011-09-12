@@ -30,7 +30,6 @@ function(frm, except=NULL) {
 	return(all(factors < 2))
 }
 
-
 # Calculate Akaike weights
 `Weights` <-
 function(aic, ...) {
@@ -39,6 +38,97 @@ function(aic, ...) {
 	return (weight)
 }
 
+if (!existsFunction("nobs")) {
+
+`nobs` <- function(object, ...) UseMethod("nobs")
+`nobs.default` <- function(object, ...) NROW(resid(object, ...))
+
+}
+
+`coefDf` <- function(x) UseMethod("coefDf")
+`coefDf.lme` <- function(x) x$fixDF$X
+`coefDf.mer` <- function(x) rep(NA, x@dims[["p"]])
+`coefDf.gls` <- function(x) rep(x$dims$N - x$dims$p, x$dims$p)
+`coefDf.default` <- function(x) rep(tryCatch(df.residual(x), error=function(e) NA), length(coef(x)))
+
+# Hidden functions
+
+`.getLogLik` <- function()
+	if ("stats4" %in% loadedNamespaces())
+        stats4:::logLik else
+		logLik
+
+`.getCall` <- function(x) {
+	if(mode(x) == "S4") {
+		if ("call" %in% slotNames(x)) slot(x, "call") else
+			NULL
+	} else {
+		if(!is.null(x$call)) {
+			x$call
+		} else if(!is.null(attr(x, "call"))) {
+			attr(x, "call")
+		} else
+			NULL
+	}
+}
+
+`.isREMLFit` <- function(x) {
+	if (inherits(x, "mer")) return (x@dims[["REML"]] != 0)
+	if (inherits(x, c("lme", "gls", "gam")) && !is.null(x$method))
+		return(x$method %in% c("lme.REML", "REML"))
+	if (any(inherits(x, c("lmer", "glmer"))))
+		return(x@status["REML"] != 0)
+	return(NA)
+}
+
+
+`.getRank` <- function(rank = NULL, rank.args = NULL, object = NULL, ...) {
+	rank.args <- c(rank.args, list(...))
+
+	if(is.null(rank)) {
+		IC <- AICc
+		attr(IC, "call") <- call("AICc", as.name("x"))
+		return(IC)
+	}
+	srank <- substitute(rank, parent.frame())
+	if(srank == "rank") srank <- substitute(rank)
+
+	rank <- match.fun(rank)
+	ICName <- switch(mode(srank), call=as.name("IC"), character=as.name(srank), name=, srank)
+	ICarg <- c(list(as.name("x")), rank.args)
+	ICCall <- as.call(c(ICName, ICarg)) 
+	if(is.null(rank.args) || length(rank.args) == 0L) {
+		IC <- rank
+	} else {
+		IC <- as.function(c(alist(x=), list(substitute(do.call("rank", ICarg), list(ICarg=ICarg)))))   
+	}
+
+	if(!is.null(object)) {
+		test <- IC(object)
+		if (!is.numeric(test) || length(test) != 1L)
+			stop("'rank' should return numeric vector of length 1")
+	}
+	
+	attr(IC, "call") <- ICCall
+	IC
+}
+
+`matchCoef` <- function(m1, m2, all.terms = getAllTerms(m2)) {
+	int <- attr(all.terms, "intercept")
+	if(!is.null(int) && int != 0L) all.terms <- c("(Intercept)", all.terms)
+	terms1 <- getAllTerms(m1)
+	if(attr(terms1, "intercept")) terms1 <- c("(Intercept)", terms1)
+	if(any((terms1 %in% all.terms) == FALSE)) stop("'m1' is not nested within 'm2")
+	
+	row <- structure(rep(NA, length(all.terms)), names=all.terms)
+	coef1 <- coeffs(m1)
+	row[terms1] <- NaN
+	cf <- coef1[match(terms1, names(coef1), nomatch=0)]
+	row[names(cf)]  <- cf
+	row
+}
+
+
 
 #sorts alphabetically interaction components in model term names
 `fixCoefNames` <-
@@ -46,17 +136,3 @@ function(x) {
 	if(!is.character(x)) return(x)
 	return(sapply(lapply(strsplit(x, ":"), sort), paste, collapse=":"))
 }
-
-
-# logLik for survival::coxph model
-# https://stat.ethz.ch/pipermail/r-help/2006-December/122118.html
-# originally by Charles C. Berry, mod. by KB: correction for the null model
-`logLik.coxph` <- function(object,...) {
-# Thx to Mathieu Basille:
-    y <-  object$loglik[length(object$loglik)]
-	#y <-  if(length(object$loglik) > 1)
-	#	-1 * (object$loglik[1] - object$loglik[2]) else object$loglik
-    class(y) <- "logLik"
-    attr(y,'df') <- if(is.null(object$coef)) 0 else sum(!is.na(object$coef))
-    return(y)
-} 

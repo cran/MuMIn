@@ -8,7 +8,7 @@ function(model, ...) return(summary(model)$coefficients)
 function(model, ...) {
 	cf <- model$coefficients
 	se <- summary(model)$se
-     return(cbind(`Estimate`=cf, `Std. Error` = se))
+    return(cbind(`Estimate`=cf, `Std. Error` = se))
 }
 
 `tTable.gls` <-
@@ -30,7 +30,11 @@ function(model, ...) {
 
 `tTable.sarlm` <-
 `tTable.spautolm` <-
-function(model, ...) return(summary(model)$Coef)
+function(model, ...) {
+	cf <- coef(model)
+	se <- sqrt(diag(summary(model)$resvar))[names(cf)]
+	return(cbind(`Estimate`=cf, `Std. Error` = se))
+}
 
 
 `tTable.multinom` <-
