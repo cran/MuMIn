@@ -1,8 +1,6 @@
 `par.avg` <-
 function(x, se, weight, df = NULL, alpha = 0.05, revised.var = TRUE) {
 
-	#print(match.call())
-
 	if (!(is.numeric(x) && is.numeric(se) && is.numeric(weight)))
 		stop("'x', 'se' and 'weight' must be numeric vectors")
 	n <- length(x)
@@ -19,8 +17,10 @@ function(x, se, weight, df = NULL, alpha = 0.05, revised.var = TRUE) {
 
 	do.ase <- !(missing(df) || is.null(df) || all(is.na(df)))
 
+	a <- 1 - (alpha / 2)
+
 	if(do.ase) {
-		z <- c((qt(1 - (alpha / 2), df) / qnorm(1 - (alpha / 2)))^2)
+		z <- c(qt(a, df) / qnorm(a))^2
 		#print(cbind(x, z, weight))
 
 		i <- is.na(df) & !is.na(x)
@@ -28,7 +28,6 @@ function(x, se, weight, df = NULL, alpha = 0.05, revised.var = TRUE) {
 
 		#print(cbind(x, z, weight))
 	}
-	#print(rbind(xvar, weight))
 
 	if(revised.var) {
 		# Unconditional sqrt-Variance, revised in B&A2004
@@ -44,7 +43,7 @@ function(x, se, weight, df = NULL, alpha = 0.05, revised.var = TRUE) {
 			ase <- weighted.mean(sqrt((xvar * z) + x.sqdiff), weight, na.rm = TRUE)
 	}
 
-	ci <- qnorm(1 - (alpha / 2)) * (if (do.ase) ase else use)
+	ci <- qnorm(a, lower.tail = TRUE) * (if (do.ase) ase else use)
 
 	return(c(`Coefficient` = wx, `SE` = use,
 			 `Adjusted SE` = if(do.ase) ase else NA,

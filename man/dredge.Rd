@@ -11,8 +11,8 @@ model, with optional restrictions.
 
 \usage{
 dredge(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
-	fixed = NULL, m.max = NA, subset, marg.ex = NULL, trace = FALSE,
-	...)
+    fixed = NULL, m.max = NA, subset, marg.ex = NULL,
+    trace = FALSE, ...)
 
 \method{print}{model.selection}(x, abbrev.names = TRUE, ...)
 
@@ -20,10 +20,11 @@ dredge(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 
 \arguments{
   \item{global.model}{a fitted \sQuote{global} model object. Currently, it can
-	be a \code{lm}, \code{glm}, \code{rlm}, \code{multinom}, \code{gam},
-	\code{gls}, \code{lme}, \code{lmer}, \code{sarlm} or \code{spautolm}, but
-	also other types are likely to work (untested).
-	}
+    be a \code{lm}, \code{glm}, \code{rlm}, \code{polr}, \code{multinom}, \code{gam},
+    \code{gls}, \code{lme}, \code{lmer}, \code{coxph}, \code{glmmML},
+    \code{sarlm} or \code{spautolm}, but also other types are likely to work
+    (yet this is untested).
+    }
 
   \item{beta}{logical, should standardized coefficients be returned?}
 
@@ -40,50 +41,52 @@ dredge(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
   defaults to the number of terms in \code{global.model}.}
 
   \item{subset}{
-	logical expression to put constraints for the set of models. Can contain any
-	of the \code{global.model} terms (use \code{getAllTerms(global.model)} to
-	list them). Complex expressions (e.g smooth functions in
-	\code{\link[mgcv]{gam}} models) should be treated as non-syntactic names and
-	enclosed in back-ticks (see \link[base]{Quotes}). Mind the spacing, names
-	must match exactly the term names in model's formula.
-	To simply keep certain variables in all models, use of \code{fixed} is
-	preferred. }
+    logical expression to put constraints for the set of models. Can contain any
+    of the \code{global.model} terms (use \code{getAllTerms(global.model)} to
+    list them). Complex expressions (e.g smooth functions in
+    \code{\link[mgcv]{gam}} models) should be treated as non-syntactic names and
+    enclosed in back-ticks (see \link[base]{Quotes}). Mind the spacing, names
+    must match exactly the term names in model's formula.
+    To simply keep certain variables in all models, use of \code{fixed} is
+    preferred. }
 
   \item{marg.ex}{
-	a character vector specifying names of variables for which NOT to check for
-	marginality restrictions when generating model formulas. If this argument is
-	set to \code{TRUE}, all model formulas are used (i.e. no checking). See
-	\sQuote{Details}.}
+    a character vector specifying names of variables for which NOT to check for
+    marginality restrictions when generating model formulas. If this argument is
+    set to \code{TRUE}, all model formulas are used (i.e. no checking). See
+    \sQuote{Details}.}
 
   \item{trace}{
-	if \code{TRUE}, all calls to the fitting function (i.e. updated
-	\code{global.model} calls) are printed. }
+    if \code{TRUE}, all calls to the fitting function (i.e. updated
+    \code{global.model} calls) are printed. }
 
 
   \item{x}{
-	a \code{model.selection} object, returned by \code{dredge}.	}
+    a \code{model.selection} object, returned by \code{dredge}.    }
 
   \item{abbrev.names}{
-	Should variable names be abbreviated when printing? (useful with many
-		variables). }
+    Should variable names be abbreviated when printing? (useful with many
+        variables). }
 
   \item{\dots}{optional arguments for the \code{rank} function. Any can be
-	an expression (of mode \code{call}), in which case any \code{x} within it
-	will be substituted with a current model. }
+    an expression (of mode \code{call}), in which case any \code{x} within it
+    will be substituted with a current model. }
 }
 
 
 \details{
 
-Models are run one by one by evaluating modified call of the \code{global.model}
-\code{formula} argument (or \code{fixed} in \code{lme}). This method, while
-robust in that it can be applied to a variety of different models is not very
-efficient, and may be time consuming.
+Models are run one by one by repeated evaluation of the call to
+\code{global.model} with modified formula argument (or \code{fixed} in
+\code{lme}). This method, while robust in that it can be applied to a variety of
+different models is not very efficient and may be considerably time-intensive.
 
-Because there is potentially a large number of models to evaluate, to avoid
-memory overflow the fitted model objects are not stored. To get (a subset of)
-the models, use \code{\link{get.models}} with the object returned by
-\code{dredge} as an argument.
+Note that the number of combinations grows exponentially with number of
+predictor variables
+(\ifelse{latex}{\eqn{2^{N}}}{2^N}). Because there is potentially a large number of
+models to evaluate, to avoid memory overflow the fitted model objects are not
+stored. To get (a subset of) the models, use \code{\link{get.models}} with the
+object returned by \code{dredge} as an argument.
 
 Handling interactions, \code{dredge} respects marginality constraints, so
 \dQuote{all possible combinations} do not include models containing interactions
@@ -100,7 +103,6 @@ Function \code{rank} must be able to accept model as a first argument and must
 always return a scalar. Typical choice for \code{rank} would be "AIC", "QAIC" or
 "BIC" (\pkg{stats} or \pkg{nlme}).
 
-
 Use of \code{na.action = na.omit} (\R's default) in \code{global.model} should
 be avoided, as it results with sub-models fitted to different data sets, if
 there are missing values. In versions >= 0.13.17 a warning is given in such a
@@ -112,14 +114,15 @@ case.
 \code{dredge} returns an object of class \code{model.selection}, being a
 \code{\link{data.frame}} with models' coefficients (or \code{TRUE}/\code{FALSE}
 for factors), k, deviance/RSS, R-squared, AIC, AICc, delta and weight. This
-depends on a type of model. Models are ordered according to \code{\link{AICc}}
-(lowest on top), or by \code{rank} function if specified.
+depends on a type of model. Models are ordered according to the used information
+criterion (lowest on top), specified by \code{rank}.
 
-The attribute "formulas" is a list containing model formulas (arranged in the
-same order as the models).
+The attribute \code{"calls"} is a list containing the model calls used (arranged
+in the same order as the models).
+
 }
 
-\author{Kamil \enc{Bartoń}{Barton}}
+\author{Kamil Barto\enc{ń}{n}}
 
 \note{
 Users should keep in mind the hazards that such a \dQuote{thoughtless approach}
@@ -130,6 +133,7 @@ model, due to model selection bias.
 \emph{\dQuote{Let the computer find out} is a poor strategy and usually reflects
 the fact that the researcher did not bother to think clearly about the problem
 of interest and its scientific setting} (Burnham and Anderson, 2002).
+
 }
 
 \seealso{

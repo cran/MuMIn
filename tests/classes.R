@@ -1,6 +1,7 @@
 # Test support for different classes of models
 
 require(MuMIn)
+.checkPkg <- function(package) length(find.package(package, quiet=TRUE)) != 0
 
 # TEST gls --------------------------------------------------------------------------------
 library(nlme)
@@ -10,6 +11,10 @@ fm1 <- gls(follicles ~ sin(2*pi*Time) + cos(2*pi*Time), Ovary,
 dd <- dredge(fm1, trace=T)
 gm <- get.models(dd, 1:4)
 ma <- model.avg(gm, revised=T)
+
+summary(ma)
+confint(ma)
+
 #ma <- model.avg(gm, revised=F)
 
 predict(ma)
@@ -20,39 +25,51 @@ detach(package:nlme); rm(list=ls())
 #dredge(fm1, rank=BIC)
 #dredge(fm1, rank=AIC)
 
-# TEST nlme -------------------------------------------------------------------------------
+# TEST (quasi)poisson --------------------------------------------------------------------
+
+d.AD <- data.frame(counts =c(18,17,15,20,10,20,25,13,12), outcome = gl(3,1,9),
+treatment = gl(3,3))
+glm.qD93 <- glm(counts ~ outcome + treatment, family=quasipoisson(), data=d.AD)
+glm.D93 <- glm(counts ~ outcome + treatment, family=poisson(), data=d.AD)
+dd <- dredge(glm.qD93)
+summary(model.avg(dd, subset= delta <= 10))
+dd <- dredge(glm.D93)
+summary(model.avg(dd, subset= delta <= 10))
+
+
+# TEST nlme --------------------------------------------------------------------
 library(nlme)
 #library(lme4)
 data(Orthodont, package = "nlme")
 
+#:: Model-averaging mixed models :::::::::::::::::::::::::::::::::::::::::::::::
+# Fitting by REML
 fm2 <- lme(distance ~ Sex*age + age*Sex, data = Orthodont,
-		   random = ~ 1|Subject / Sex,  method = "ML")
+		   random = ~ 1|Subject / Sex, method = "REML")
 
+# Model selection: ranking by AICc which uses ML
+dd <- dredge(fm2, trace=T, rank="AICc", REML=FALSE)
 
-dd <- dredge(fm2, trace=T)
+#attr(dd, "rank.call")
 
-#vapply(gm, function(x) {
-#	tt <- tTable(x)
-#	tt[, "DF"][match(alln, rownames(tt))]
-#}, structure(double(length(alln)), names=alln))
-
+# Get models (which are fitted by REML, like the global model)
 gm <- get.models(dd, 1:4)
+
+##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#maML <- model.avg(gm, method = "NA", rank="AICc", rank.args = list(REML=FALSE))
+#maREML <- model.avg(gm, method = "NA", rank="AICc", rank.args = list(REML=TRUE))
+
+#summary(maML)
+#summary(maREML)
+
 #ma <- model.avg(gm, revised = F)
-(ma <- model.avg(gm, revised = T, method = "NA"))
-(ma <- model.avg(gm, revised = T, method = "0"))
-
-
-#mana <- model.avg(gm, revised = T, method = "NA")
-#mazero <- model.avg(gm, revised = T, method = "0")
-#
-#options(digits=3)
-#
-#mana$avg.model
-#mazero$avg.model
-
+summary(maNA <- model.avg(gm, revised = T, method = "NA"))
+summary(ma0 <- model.avg(gm, revised = T, method = "0"))
+confint(maNA)
+confint(ma0)
 
 #dredge(fm2, rank=BIC)
-predict(ma, data.frame(Sex="Male", Subject="M01", age=8:12))
+predict(ma0, data.frame(Sex="Male", Subject="M01", age=8:12))
 
 detach(package:nlme); rm(list=ls())
 
@@ -66,7 +83,6 @@ fm2 <- lmer(distance ~ Sex*age + (1|Subject) + (1|Sex), data = Orthodont)
 dd <- dredge(fm2, trace=T)
 gm <- get.models(dd, 1:4)
 (ma <- model.avg(gm))
-
 
 #predict(ma)
 #predict(ma, data.frame(Sex="Male", Subject="M01", age=8:12))
@@ -90,6 +106,8 @@ gm <- get.models(dd, 1:4)
 ma <- model.avg(gm, revised=F)
 
 vcov(ma)
+summary(ma)
+confint(ma)
 
 predict(ma)
 predict(ma, se=T)
@@ -115,6 +133,7 @@ ma <- model.avg(gm, method="NA")
 ma <- model.avg(gm, method="0")
 vcov(ma)
 
+summary(ma)
 predict(ma) == predict(ma, Cement)
 predict(ma, se.fit=T)
 predict(ma, lapply(Cement, nseq))
@@ -132,36 +151,8 @@ fm1 <- rlm(y ~ X+X1+X2*X3, data = Cement)
 dd <- dredge(fm1, trace=T)
 gm <- get.models(dd, 1:10)
 ma <- model.avg(gm)
-predict(ma) == predict(ma, Cement)
+stopifnot(all(predict(ma) == predict(ma, Cement)))
 predict(ma, lapply(Cement, nseq, len=30), se.fit=TRUE)
-
-#
-#modavgpred1 <- modavgpred(gm, seq_along(gm), as.data.frame(Cement2), uncond.se = "revised")
-#
-#
-#
-#
-#Cement2 <- lapply(Cement, nseq, len=30)
-#
-#modavgpred1$mod.avg.pred / predict(ma, newdata=Cement2, se.fit=TRUE)$fit
-#modavgpred1$uncond.se / predict(ma, newdata=Cement2, se.fit=TRUE)$se.fit
-
-
-#par(mfrow=n2mfrow(ncol(Cement)))
-#for (i in names(Cement)) {
-#	Cement2 <- lapply(Cement, mean)
-#	Cement2[[i]] <- nseq(Cement[[i]], 30)
-#	pred <- predict(ma, newdata=as.data.frame(Cement2), se.fit=TRUE)
-#	plot(Cement2[[i]], pred$fit)
-#	lines(Cement2[[i]], pred$fit - (2 * pred$se.fit))
-#	lines(Cement2[[i]], pred$fit + (2 * pred$se.fit))
-#	pred <- predict(fm1, newdata=as.data.frame(Cement2), se.fit=TRUE)
-#	lines(Cement2[[i]], pred$fit, col=2)
-#	lines(Cement2[[i]], pred$fit - (2 * pred$se.fit), col=2)
-#	lines(Cement2[[i]], pred$fit + (2 * pred$se.fit), col=2)
-#}
-
-
 
 rm(list=ls()); detach(package:MASS)
 
@@ -183,6 +174,7 @@ bwt.mu <- multinom(low ~ ., data = bwt)
 dd <- dredge(bwt.mu, trace=T)
 gm <- get.models(dd, seq(nrow(dd)))
 ma <- model.avg(gm)
+summary(ma)
 #predict(bwt.mu)
 # predict(ma) // Cannot average factors!
 
@@ -190,43 +182,45 @@ rm(list=ls()); detach(package:nnet)
 
 # TEST gam --------------------------------------------------------------------------------
 suppressPackageStartupMessages(library(mgcv))
-
 RNGkind("Mersenne")
-set.seed(8)
-dat <- gamSim(1, n = 50, dist="poisson", scale=0.1)
+set.seed(0) ## simulate some data...
+dat <- gamSim(1,n=400,dist="normal",scale=2)
+#gam1 <- gam(y~s(x0)+s(x1)+s(x2)+s(x3), data=dat)
+
+ops <- options(warn = -1)
+
 gam1 <- gam(y ~ s(x0) + s(x1) + s(x2) +  s(x3) + (x1+x2+x3)^2,
-	family = poisson, data = dat, method = "REML")
-dd <- dredge(gam1, subset=!`s(x0)` & (!`s(x1)` | !x1) & (!`s(x2)` | !x2) & (!`s(x3)` | !x3),
-			 fixed="x1", trace=T)
+	data = dat, method = "ML")
+dd <- dredge(gam1, subset=!`s(x0)` & (!`s(x1)` | !x1) & (!`s(x2)` | !x2) & (!`s(x3)` | !x3), fixed="x1", trace=T)
 gm <- get.models(dd, cumsum(weight) <= .95)
 ma <- model.avg(gm)
-predict(ma)
+
 predict(ma, se.fit=T)
-
-#vcov(ma)
-#
-#plot(predict(gam1), predict(ma, se.fit=F))
-
+options(ops)
 
 
 rm(list=ls()); detach(package:mgcv)
 
 # TEST spautolm ---------------------------------------------------------------------------
-suppressPackageStartupMessages(library(spdep))
+
+if (.checkPkg("spdep"))
+if(!is.null(tryCatch(suppressPackageStartupMessages(library(spdep)), error=function(e) NULL))) {
+
 suppressMessages(example(NY_data, echo = FALSE))
 
 esar1f <- spautolm(Z ~ PEXPOSURE * PCTAGE65P + PCTOWNHOME,
  data=nydata, listw=listw_NY, family="SAR", method="full", verbose=FALSE)
 
-dd <- dredge(esar1f, fixed = ~ PEXPOSURE)
+dd <- dredge(esar1f, m.max=3, fixed=~PEXPOSURE)
 gm <- get.models(dd, cumsum(weight) <= .99)
 ma <- model.avg(gm)
+summary(ma)
 signif(resid(ma), 5)[1:10]
 
-rm(list=ls()); detach(package:spdep)
+rm(list=ls())
 
 # TEST spautolm ---------------------------------------------------------------------------
-suppressPackageStartupMessages(library(spdep))
+#suppressPackageStartupMessages(library(spdep))
 data(oldcol)
 
 COL.errW.eig <- errorsarlm(CRIME ~ INC * HOVAL * OPEN, data=COL.OLD,
@@ -235,9 +229,16 @@ COL.errW.eig <- errorsarlm(CRIME ~ INC * HOVAL * OPEN, data=COL.OLD,
 dd <- dredge(COL.errW.eig)
 gm <- get.models(dd, cumsum(weight) <= .98)
 ma <- model.avg(gm)
+
+# XXX: Error in t(vapply(models, function(m) {: error in evaluating the argument 'x' in selecting a method for function 't': Error in m.tTable[, 2L] : incorrect number of dimensions
+summary(ma)
 predict(ma)[1:10]
 
 rm(list=ls()); detach(package:spdep)
+
+} # library(spdep)
+
+
 
 # TEST glm.nb ---------------------------------------------------------------------------
 require(MASS)
@@ -245,10 +246,10 @@ require(MASS)
 quine.nb1 <- glm.nb(Days ~ 0+Sex/(Age + Eth*Lrn), data = quine)
 
 dredge(quine.nb1) # Wrong
-dd <- dredge(quine.nb1, marg.ex="Sex") # Right
-(ma <- model.avg(get.models(dd, 1:5)))
+#dredge(quine.nb1, marg.ex="Sex") # Right
+ma <- model.avg(dredge(quine.nb1, marg.ex="Sex"), subset=cumsum(weight)<=.9999)
 
-pred <- predict(ma, se=T)
+pred <- predict(ma, se=TRUE)
 #pred <- cbind(pred$fit, pred$fit - (2 * pred$se.fit), pred$fit + (2 * pred$se.fit))
 #matplot(pred, type="l")
 #matplot(family(quine.nb1)$linkinv(pred), type="l")
@@ -262,8 +263,8 @@ budworm <- data.frame(ldose = rep(0:5, 2), numdead = c(1, 4, 9, 13, 18, 20, 0,
 budworm$SF = cbind(numdead = budworm$numdead, numalive = 20 - budworm$numdead)
 
 budworm.lg <- glm(SF ~ sex*ldose + sex*I(ldose^2), data = budworm, family = quasibinomial)
+budworm.lg1 <- glm(SF ~ sex*ldose + sex*I(ldose^2), data = budworm, family = binomial)
 
-#summary(budworm.lg)
 dd <- dredge(budworm.lg, rank = "QAIC", chat = summary(budworm.lg)$dispersion)
 dd <- dredge(budworm.lg) # should be the same
 mod <- get.models(dd, seq(nrow(dd)))
@@ -275,7 +276,7 @@ mod <- get.models(dd, seq(nrow(dd)))
 # so, need to supply them
 ma <- model.avg(mod[1:5], rank="QAICc", rank.args = list(chat = 0.403111))
 
-rm(list=ls())
+rm(list=ls());
 
 # TEST polr {MASS} ---------------------------------------------------------------------------
 

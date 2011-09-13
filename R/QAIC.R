@@ -1,10 +1,11 @@
 `QAIC` <-
 function(object, ..., chat) {
 	#chat <- summary(gm)$dispersion
+	ll <- .getLogLik()
 
 	.getQAIC <- function(object, chat) {
-		mLogLik <- logLik(object)
-		N <- length(residuals(object))
+		mLogLik <- ll(object)
+		N <- attr(mLogLik, "nobs")
 		k <- attr(mLogLik, "df") + 1
 		ret <- (deviance(object) / chat) + 2 * k
 		return (ret)
@@ -26,10 +27,11 @@ function(object, ..., chat) {
 `QAICc` <-
 function(object, ..., chat) {
 	#chat <- summary(gm)$dispersion
+	ll <- .getLogLik()
 
 	.getQAICc <- function(object, chat) {
-		mLogLik <- logLik(object)
-		N <- length(residuals(object))
+		mLogLik <- ll(object)
+		N <- attr(mLogLik, "nobs")
 		k <- attr(mLogLik, "df") + 1
 		ret <- (deviance(object) / chat) + (2 * k) * (1 + ((k + 1) / (N - k - 1)))
 		return (ret)
@@ -46,8 +48,6 @@ function(object, ..., chat) {
 		return(.getQAICc(object, chat = chat))
 	}
 }
-
-
 
 #QAIC = -2log Likelihood/c-hat + 2K
 #QAICc = -2log Likelihood/c-hat + 2K + 2K(K + 1)/(n - K - 1)
