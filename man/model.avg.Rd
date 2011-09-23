@@ -79,6 +79,7 @@ An object of class \code{averaging} with following elements:
     \item \code{sarlm}, \code{spautolm} (\pkg{spdep})
     \item \code{glmmML} (\pkg{glmmML})
     \item \code{coxph} (\pkg{survival})
+	\item \code{unmarkedFit} (\pkg{unmarked})
 }
 
 \code{model.avg} may be used with a list of models, or an object returned by
@@ -114,7 +115,7 @@ Some generic methods such as \code{\link{predict.averaging}}, \code{\link{coef}}
 \note{
 
 From version 1.0.1, \code{print} method provides only a concise output
-(similarly as for \code{lm}), to print a full summary of the results use
+(similarly as for \code{lm}). To print a full summary of the results use
 \code{summary} function. Confidence intervals can be obtained with
 \code{\link{confint}}.
 
@@ -133,7 +134,6 @@ See \code{\link{par.avg}} for details of averaged model calculation.
 \code{\link{dredge}}, \code{\link{get.models}}. \code{\link{QAIC}} has examples
 of using custom rank function and prediction with confidence intervals. \cr
 \code{\link{AICc}} has examples of averaging models fitted by REML.
-
 
 \code{\link[AICcmodavg]{modavg}} in package \pkg{AICcmodavg}, and
 \code{\link[glmulti]{coef.glmulti}} in package \pkg{glmulti} also perform model

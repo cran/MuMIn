@@ -18,14 +18,15 @@ function (model, ...) return(summary(model)$tTable)
 function(model, ...) return(summary(model)$tTable)
 
 
-# these are for old (buggy) versions of lme4
+# these are for old versions of lme4
 `tTable.mer` <-
-`tTable.glmer` <-
-`tTable.lmer` <-
+#`tTable.glmer` <-
+# `tTable.lmer` <-
 function(model, ...) {
-	sm <- eval(expression(summary), environment(lmer))
+	#sm <- eval(expression(summary), as.environment("package:lme4"))
+	sm <- eval(expression(summary), asNamespace("lme4"))
 	return (sm(model)@coefs)
-	#return((lme4::summary(model))@coefs)
+	#return((summary(model))@coefs)
 }
 
 `tTable.sarlm` <-

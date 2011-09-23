@@ -1,15 +1,30 @@
 MuMIn package news:
 
+Version: 1.3.10 (2011-09-23)
+Reverted changes made in previous version (package dependencies) to succesfully
+	pass checks.
+
+Version: 1.3.9 (2011-09-17)
+removed  *.lmer *.glmer methods, added dependency on lme4 >= 0.999375-16
+tTable.mer: minor change
+
+Version: 1.3.8 (2011-09-17)
+Restored compatibility with R 2.12.2
+getAllTerms: new attribute 'intercept'
+
+Version: 1.3.7 (2011-09-16)
+handling double intercept (phi(Int) and p(Int)) in 'unmarked'
+
 Version: 1.3.6 (2011-09-12)
 changes in the documentation and vignette
 
 Version: 1.3.5 (2011-08-05)
 mod.sel: new function
-added methods for 'unmarkedFit' objects (package 'unmarked'), to provide limited 
+added methods for 'unmarkedFit' objects (package 'unmarked'), to provide (limited) 
 	support in 'model.avg'
 
 Version: 1.3.4 (2011-08-03)
-Added vignette document on using gamm
+Added vignette document on model selection with 'gamm' and 'gamm4'
 
 Version: 1.3.3 (2011-08-01)
 dredge: small improvements, no longer dependent on 'bitops'

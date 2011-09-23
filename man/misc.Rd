@@ -58,7 +58,7 @@
 beta.weights(model)
 coeffs(model)
 getAllTerms(x, ...)
-\method{getAllTerms}{terms}(x, offset = TRUE, ...)
+\method{getAllTerms}{terms}(x, offset = TRUE, intercept = FALSE, ...)
 tTable(model, ...)
 Weights(aic, ...)
 
@@ -72,7 +72,8 @@ rbindDataFrameList(x)
   for \code{*bindDataFrameList}, a list of \code{data.frames}
   }
   \item{offset}{should \sQuote{offset} terms be included?}
-  \item{\dots}{other arguments, not used}
+  \item{intercept}{should terms names include the intercept?}
+  \item{\dots}{other arguments, often not used}
   \item{aic}{a vector of AIC (or other information criterion) values }
 }
 
@@ -99,13 +100,8 @@ use \code{MuMIn:::cbindDataFrameList} to access them.
 
 \seealso{
 
-Vignette \sQuote{\Sexpr[echo=TRUE,results=rd,stage=install]{
-paste("\\\\href{file:///", system.file(package="MuMIn", "doc", "gamm.pdf"), "}",
-"{Extending \\\\code{MuMIn}'s functionality}", sep="")
-}} has information on using with other model types
+Vignette \sQuote{\ifelse{html}{\href{/library/MuMIn/doc/gamm.pdf}{Extending \pkg{MuMIn}'s functionality}}{Extending \pkg{MuMIn}'s functionality}} has information on using with other model types
 }
-
-
 
 \keyword{models}
 \keyword{manip}

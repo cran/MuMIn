@@ -39,7 +39,10 @@ function(object, ..., beta = FALSE, method = c("0", "NA"), rank = NULL,
 
 	m.data <- lapply(models, function(x) (if(mode(x) == "S4") `@` else `$`)
 					 (x, "call")$data)
-	m.nresid <-	vapply(models, nobs, numeric(1L)) # , nall=TRUE
+	# when using only nobs - seems to be evaluated first outside of MuMIn namespace
+	# which e.g. gives an error in glmmML - the glmmML::nobs method is faulty.
+	m.nresid <-	vapply(models, function(x) nobs(x), numeric(1L)) # , nall=TRUE
+	
 	if(!all(m.data[-1L] == m.data[[1]]) || !all(m.nresid[-1L] == m.nresid[[1L]]))
 		stop("Models were not all fitted to the same dataset")
 

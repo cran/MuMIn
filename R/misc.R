@@ -1,3 +1,19 @@
+# compatibility with olrer versions of R
+
+if(!("intercept" %in% names(formals(stats::reformulate)))) {
+
+`reformulate` <- function (termlabels, response = NULL, intercept = TRUE) {
+	ret <- stats::reformulate(termlabels, response = response)
+	if (!intercept) ret <- update.formula(ret, .~. -1)
+	attr(ret, ".Environment") <- parent.frame()
+	ret
+}
+
+}
+
+
+
+
 # cbind list of data.frames omitting duplicated column (names)
 `cbindDataFrameList` <-
 function(x) {
@@ -38,7 +54,8 @@ function(aic, ...) {
 	return (weight)
 }
 
-if (!existsFunction("nobs")) {
+
+if (!existsFunction("nobs", where = "package:stats")) {
 
 `nobs` <- function(object, ...) UseMethod("nobs")
 `nobs.default` <- function(object, ...) NROW(resid(object, ...))
@@ -96,11 +113,11 @@ if (!existsFunction("nobs")) {
 	rank <- match.fun(rank)
 	ICName <- switch(mode(srank), call=as.name("IC"), character=as.name(srank), name=, srank)
 	ICarg <- c(list(as.name("x")), rank.args)
-	ICCall <- as.call(c(ICName, ICarg)) 
+	ICCall <- as.call(c(ICName, ICarg))
 	if(is.null(rank.args) || length(rank.args) == 0L) {
 		IC <- rank
 	} else {
-		IC <- as.function(c(alist(x=), list(substitute(do.call("rank", ICarg), list(ICarg=ICarg)))))   
+		IC <- as.function(c(alist(x=), list(substitute(do.call("rank", ICarg), list(ICarg=ICarg)))))
 	}
 
 	if(!is.null(object)) {
@@ -108,27 +125,26 @@ if (!existsFunction("nobs")) {
 		if (!is.numeric(test) || length(test) != 1L)
 			stop("'rank' should return numeric vector of length 1")
 	}
-	
+
 	attr(IC, "call") <- ICCall
 	IC
 }
 
-`matchCoef` <- function(m1, m2, all.terms = getAllTerms(m2)) {
-	int <- attr(all.terms, "intercept")
-	if(!is.null(int) && int != 0L) all.terms <- c("(Intercept)", all.terms)
-	terms1 <- getAllTerms(m1)
-	if(attr(terms1, "intercept")) terms1 <- c("(Intercept)", terms1)
+`matchCoef` <- function(m1, m2, all.terms = getAllTerms(m2, intercept = TRUE), beta=FALSE) {
+	terms1 <- getAllTerms(m1, intercept = TRUE)
 	if(any((terms1 %in% all.terms) == FALSE)) stop("'m1' is not nested within 'm2")
-	
+
 	row <- structure(rep(NA, length(all.terms)), names=all.terms)
-	coef1 <- coeffs(m1)
+	#coef1 <- coeffs(m1)
+	coef1 <- if (beta) beta.weights(m1)[, 3L] else coeffs(m1)
+	names(coef1) <- fixCoefNames(names(coef1))
+
+
 	row[terms1] <- NaN
 	cf <- coef1[match(terms1, names(coef1), nomatch=0)]
 	row[names(cf)]  <- cf
 	row
 }
-
-
 
 #sorts alphabetically interaction components in model term names
 `fixCoefNames` <-

@@ -24,7 +24,7 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	# *** Rank ***
 
 	intercept <- "(Intercept)"
-	all.terms <- getAllTerms(global.model)
+	all.terms <- getAllTerms(global.model, intercept = TRUE)
 
 	# Just in case:
 	gterms <- tryCatch(terms(formula(global.model)),
@@ -96,7 +96,7 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	globCoefNames <- fixCoefNames(globCoefNames0)
 	#sglobCoefNames <- fixCoefNames(names(coeffs(global.model)))
 
-	n.vars <- length(all.terms)
+	n.vars <- length(all.terms) - has.int
 	ret <- numeric(0L)
 	formulas <- character(0L)
 
@@ -170,7 +170,7 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	#binPos <- 2L ^ seq.int(0L, nov - 1L)
 
 	ret.nchunk <- 25L
-	ret.ncol <- length(all.terms) + (2L * has.rsq) + has.dev + 3L
+	ret.ncol <- n.vars + (2L * has.rsq) + has.dev + 2L + has.int
 	ret <- matrix(NA, ncol=ret.ncol, nrow=ret.nchunk)
 	calls <- vector(mode="list", length=ret.nchunk)
 
@@ -186,7 +186,9 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 		#comb <- c(bitAnd(binPos, j - 1L) != 0L, rep(TRUE, n.fixed))
 		comb <- c(as.logical(intToBits(j - 1L)[comb.seq]), comb.sfx)
 		if(sum(comb) > m.max) next;
+		if(has.int) comb <- c(FALSE, comb)
 		if(hasSubset && !eval(subset, structure(as.list(comb), names=all.terms))) next;
+
 
 		terms1 <- all.terms[comb]
 		frm <- reformulate(c("1", terms1), response=response, intercept=has.int)
@@ -194,9 +196,6 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 		if(!formulaAllowed(frm, marg.ex)) next;
 		attr(frm, ".Environment") <- env
 		###
-
-		row1 <- rep(NA, n.vars)
-		row1[match(terms1, all.terms)] <- rep(1L, length(terms1))
 
 		cl <- global.call
 		if(has.start) {
@@ -221,24 +220,19 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 		})
 
 		if (is.null(fit1)) next;
+
+
 		k <- k + 1L # all OK, add model to table
 		ord[k] <- j
 
-		coef1 <- if (beta) beta.weights(fit1)[, 3L] else coeffs(fit1)
-		names(coef1) <- fixCoefNames(names(coef1))
+		row1 <- c(matchCoef(fit1, all.terms=all.terms, beta=beta)[all.terms], k=getK(fit1))
 
-		icept <- if (has.int) coef1[intercept] else NA
-
-		coef1 <- coef1[c(na.omit(match(all.terms, names(coef1))))]
-		row1[match(names(coef1), all.terms)] <- coef1
-
-		row1 <- c(icept, row1, k=getK(fit1))
 		if (has.rsq) {
 			fit1.summary <- summary(fit1)
 			row1 <- c(row1, r.squared=fit1.summary$r.squared,
 				adj.r.squared=fit1.summary$adj.r.squared)
 		}
-		if (has.dev)	row1 <- c(row1, deviance(fit1))
+		if (has.dev)	row1 <- c(row1, dev=deviance(fit1))
 
 		ic <- IC(fit1)
 		row1 <- c(row1, IC=ic)
@@ -261,11 +255,11 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	row.names(ret) <- ord
 
 	# Convert columns with presence/absence of terms to factors
-	tfac <- which(c(FALSE, !(all.terms %in% globCoefNames)))
+	tfac <- which(!(all.terms %in% globCoefNames))
 
-	ret[tfac] <- lapply(ret[tfac], factor, levels=1, labels="+")
+	ret[tfac] <- lapply(ret[tfac], factor, levels=NaN, labels="+")
 
-	colnames(ret) <- c("(int.)", all.terms, "k",
+	colnames(ret) <- c(all.terms, "k",
 		if (has.rsq) c("R.sq", "Adj.R.sq"),
 		if (has.dev) if (is.lm) "RSS" else "Dev.",
 		#if (rank.custom) rank else c("AIC", "AICc")
@@ -282,7 +276,7 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 	attr(ret, "calls") <- calls[o]
 	attr(ret, "global") <- global.model
 	attr(ret, "global.call") <- global.call
-	attr(ret, "terms") <- c(intercept, all.terms)
+	attr(ret, "terms") <- all.terms
 
 	attr(ret, "rank") <- IC
 	attr(ret, "rank.call") <- attr(IC,"call")
@@ -293,6 +287,8 @@ function(global.model, beta = FALSE, eval = TRUE, rank = "AICc",
 
 	return(ret)
 } ######
+
+
 
 `subset.model.selection` <-
 function(x, subset, select, recalc.weights = TRUE, ...) {
