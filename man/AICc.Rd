@@ -52,7 +52,7 @@ library(nlme)
 data(Orthodont, package = "nlme")
 
 # Fit model by REML
-fm2 <- lme(distance ~ Sex*age + age*Sex, data = Orthodont,
+fm2 <- lme(distance ~ Sex*age, data = Orthodont,
     random = ~ 1|Subject / Sex, method = "REML")
 
 # Model selection: ranking by AICc using ML
@@ -63,7 +63,7 @@ dd <- dredge(fm2, trace=TRUE, rank="AICc", REML=FALSE)
 # Get the models (fitted by REML, as in the global model)
 gm <- get.models(dd, 1:4)
 
-# Because the models originate from 'dredge(..., rank=AICc, REML=FALSE)', 
+# Because the models originate from 'dredge(..., rank=AICc, REML=FALSE)',
 # the default weights in 'model.avg' are ML based:
 model.avg(gm, method = "NA")
 # same result

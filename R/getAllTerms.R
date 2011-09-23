@@ -2,7 +2,7 @@
 function(x, ...) getAllTerms.formula(as.formula(formula(x)), ...)
 
 `getAllTerms.terms` <-
-function(x, offset = TRUE, ...) {
+function(x, offset = TRUE, intercept = FALSE, ...) {
 	if (!is.null(attr(x, "offset"))){
 		offs <- sapply((attr(x, "variables")[-1])[attr(x, "offset")], deparse)
 	} else {
@@ -29,6 +29,8 @@ function(x, offset = TRUE, ...) {
 	# finally, sort by order and then alphabetically
 	ret <- unname(ret[order(attr(x, "order")[ifx], ret)])
 
+	if(intercept && attr(x, "intercept"))
+		ret <- c("(Intercept)", ret)
 
 	if (!is.null(offs[1])) {
 		if (offset)
@@ -36,6 +38,7 @@ function(x, offset = TRUE, ...) {
 		attr(ret, "offset") <- offs
 	}
 	attr(ret, "intercept") <- attr(x, "intercept")
+
 	if (length(ran) > 0) {
 		attr(ret, "random.terms") <- ran
 		attr(ret, "random") <- reformulate(c(".", paste("(", ran, ")",
@@ -50,7 +53,7 @@ function(x, ...) getAllTerms.terms(terms(x), ...)
 
 `getAllTerms.lme` <-
 function(x, ...) {
-	ret <- getAllTerms(terms(x))
+	ret <- getAllTerms(terms(x), ...)
 	attr(ret, "random") <- . ~ .
 
 	# Code from nlme:::print.reStruct, modified slightly
@@ -70,15 +73,15 @@ function(x, ...) {
 	return(ret)
 }
 
-`getAllTerms.glmer` <- # For backwards compatibility
-`getAllTerms.lmer` <-  # with older versions of lme4
+# `getAllTerms.glmer` <- # For backwards compatibility
+# `getAllTerms.lmer` <-  # with older versions of lme4
 `getAllTerms.mer` <-
 function(x, ...) getAllTerms(lme4::formula(x), ...)
 
 # Apparently there is no (explicit) intercept in coxph, but 'terms' gives
 # attr(,"intercept") == 1.
 `getAllTerms.coxph` <- function (x, ...) {
-	ret <- getAllTerms.default(x)
+	ret <- getAllTerms.default(x, ...)
 	attr(ret,"intercept") <- 0
 	return(ret)
 }

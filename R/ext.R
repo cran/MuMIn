@@ -90,7 +90,7 @@ function(object, ...) NROW(fitted(object))
 
 
 
-#limited support for unmarked
+#(limited) support for unmarked
 
 logLik.unmarkedFit <- function(object, ...) {
   ll <- -object@negLogLike
@@ -103,13 +103,22 @@ logLik.unmarkedFit <- function(object, ...) {
 
 formula.unmarkedFit <- function (x, ...) x@formula
 
-getAllTerms.unmarkedFit <- function (x, ...)  {
+getAllTerms.unmarkedFit <- function (x, intercept = FALSE, ...)  {
   f <- formula(x)
   t1 <- getAllTerms(f[[2]])
+  int1 <- attr(t1, "intercept")
+  if(intercept && int1) t1 <- c("Int", t1)
   t2 <- getAllTerms(f[-2])
+  int2 <- attr(t2, "intercept")
+  if(intercept && int2) t2 <- c("Int", t2)
+  
   structure(c(sprintf("psi(%s)",t1), sprintf("p(%s)",t2)), 
-            intercept=c(attr(t1, "intercept"), attr(t2, "intercept")))
+            intercept=c(int1, int2),
+			interceptLabel=c("psi(Int)", "p(Int)")[as.logical(c(int1, int2))]
+			)
 }
+
+#srcc <- function() sys.source("clipboard", .GlobalEnv)
 
 tTable.unmarkedFit <- function (model, ...) {
   do.call("rbind", lapply(model@estimates@estimates, function(y) {

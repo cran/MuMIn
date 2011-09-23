@@ -10,7 +10,8 @@ UseMethod("AICc")
 }
 
 `AICc.default` <- function (object, ..., k = 2, REML = NULL) {
-	loglik <- if("stats4" %in% loadedNamespaces()) stats4:::logLik else stats::logLik
+	loglik <- .getLogLik()
+	
 	.aicc <- function(ll, df, no)
 		(-2 * ll + k * df) + (2 * df * (df + 1) / (no - df - 1))
 
@@ -36,3 +37,4 @@ UseMethod("AICc")
 		.aicc(as.numeric(ll), attr(ll, "df"), no)
 	}
 }
+
