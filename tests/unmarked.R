@@ -1,5 +1,7 @@
 library(MuMIn)
 
+# rm(list=ls(all=TRUE))
+
 .checkPkg <- function(package) length(.find.package(package, quiet=TRUE)) != 0
 if(.checkPkg("unmarked")) {
 library(unmarked)
@@ -7,7 +9,7 @@ library(unmarked)
 # Simulate occupancy data
 nSites <- 100
 nReps <- 5
-covariates <- data.frame(veght=rnorm(nSites), 
+covariates <- data.frame(veght=rnorm(nSites),
     habitat=factor(c(rep('A', 50), rep('B', 50))))
 
 psipars <- c(-1, 1, -1)
@@ -28,17 +30,13 @@ umf <- unmarkedFrameOccu(y = y, siteCovs = covariates)
 
 
 # Fit some models
-fm1 <- occu(~1 ~1, umf)
-fm2 <- occu(~veght+habitat ~veght+habitat, umf)
-fm3 <- occu(~veght ~veght+habitat, umf)
+fm1oc <- occu(~1 ~1, umf)
+fm2oc <- occu(~veght+habitat ~veght+habitat, umf)
+fm3oc <- occu(~veght ~veght+habitat, umf)
 
 
 # Model selection
-print(mod.sel(fm1, fm2, fm3))
-print(summary(model.avg(fm1, fm2, fm3)))
+print(mod.sel(fm1oc, fm2oc, fm3oc))
+print(summary(model.avg(fm1oc, fm2oc, fm3oc)))
 
 }
-
-
-
-

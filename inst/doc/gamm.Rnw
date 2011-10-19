@@ -21,44 +21,54 @@
 \maketitle
 
 <<echo=FALSE,eval=TRUE,results=hide>>=
+suppressPackageStartupMessages(suppressWarnings({
 library(gamm4)
 library(mgcv)
 library(MuMIn)
+}))
+
 set.seed(0)
 @
 
 \section{Extending \pkg{MuMIn}'s functionality to support \code{gamm} }
 
+This document describes how to implement the interface between the routines
+performing model selection and averaging in \pkg{MuMIn} and a class of models
+not supported by default, using \code{gamm} from package \pkg{mgcv} as
+an example.
+
 The two principal functions in \pkg{MuMIn}, \code{model.avg} and \code{dredge}
-rely on availability of methods for a several generic function for the class of
-the given fitted model object.
-These generic functions include ones defined in package \code{stats}
+rely on the availability of methods for several generic functions for the class
+of the given fitted model object.
+These generic functions include the ones defined in package \code{stats}
 (\code{logLik}, \code{formula}, \code{nobs},
 and optionally \code{deviance} which may simply return \code{NULL}), as well
 as ones defined in \pkg{MuMIn} itself (\code{coeffs},
 \code{getAllTerms} and \code{tTable}). In some cases the default methods may
 work as well.
 
-In case of \code{gamm} and \code{gamm4}, the returned object has no special
-class, it is a list with two items: \code{lme} or \code{mer}, and \code{gam}
-(with some information stripped from it).
-Therefore no specific methods can be applied.
+In the case of \code{gamm} and \code{gamm4}, the returned object has no special
+class, and it is a \code{list} with two items: \code{lme} or \code{mer}, and
+\code{gam} (with some information stripped from it). Therefore no specific
+methods can be applied.
 
-The solution is to provide a wrapper function for \code{gamm} that evaluates
+The solution is to provide a \sQuote{wrapper} function for \code{gamm} that evaluates
 the model and adds a class attribute onto it, e.g.:
 <<results=hide>>=
 gamm <-
     function(...)
-    structure(c(mgcv::gamm(...), list(call=match.call())), class=c("gamm", "list"))
+    structure(c(mgcv::gamm(...), list(call=match.call(mgcv::gamm))),
+	class=c("gamm", "list"))
 @
 similarly for \code{gamm4} (but assign the same class \code{gamm}):
 <<results=hide>>=
 gamm4 <-
     function(...)
-    structure(c(gamm4::gamm4(...), list(call=match.call())), class=c("gamm", "list"))
+    structure(c(gamm4::gamm4(...), list(call=match.call(gamm4::gamm4))),
+	class=c("gamm", "list"))
 @
 
-As the wrappers have the same names as the actual functions, use of them is
+As these wrappers have the same names as the actual functions, use of them is
 invisible for the user, and they mask the original functions on the level of
 \code{.GlobalEnv}.
 
@@ -89,7 +99,7 @@ terms to make the comparison adequate) have identical values.
 
 <<>>=
 
-dat <- gamSim(6,n=100,scale=.2,dist="gaussian")
+dat <- gamSim(6,n=100,scale=.2,dist="normal")
 fm1 <- gamm(y~x0+x1+x2+x3,data=dat,random=list(fac=~1), method="ML")
 fm2 <- lme(y~x0+x1+x2+x3,data=dat,random=list(fac=~1), method="ML")
 
@@ -107,12 +117,14 @@ logLik(fmg1$mer)
 logLik(fmg2)
 @
 
-Similarly, comparison of \code{gamm4} with a smooth term, with fixed two degrees
-of freedom gives log-likelihood which is very close to that of \code{lmer} that
-includes a linear and quadratic term.
+A comparison of \code{gamm4} including a smooth term with fixed two degrees
+of freedom gives log-likelihood which is very close to that of \code{lmer}
+including a linear and quadratic term.
+
 <<>>=
 
-fmgs1 <- gamm4(y ~ x0+ s(x1, k=3, fx=TRUE)+ x2+ x3, family=poisson, data=dat, random=~ (1|fac))
+fmgs1 <- gamm4(y ~ x0+ s(x1, k=3, fx=TRUE)+ x2+ x3, family=poisson, data=dat,
+	random=~ (1|fac))
 fmgs2 <- lmer(y ~ x0+ x1 + I(x1^2) + x2+ x3 + (1|fac), family=poisson, data=dat)
 logLik(fmgs1$mer)
 logLik(fmgs2)
@@ -121,7 +133,7 @@ logLik(fmgs2)
 
 Normally, the object returned by \code{gam} inherits also from glm, so the
 \code{nobs} method for \code{glm} is called, but in case of \code{gamm} the
-\code{gam} element has only class \code{gam}, so we need to define method
+\code{gam} element has only class \code{gam}, so we need to define the method
 directly (it just calls \code{nobs.glm}):
 
 <<results=hide>>=
@@ -131,8 +143,8 @@ nobs.gam <- function (object, ...)  stats:::nobs.glm(object, ...)
 Methods for generic functions defined in \pkg{MuMIn}:
 <<results=hide>>=
 coeffs.gamm <- function (model) coef(model$gam)
-getAllTerms.gamm <- function (x, ...) getAllTerms(x$gam)
-tTable.gamm <- function (model, ...) tTable(model$gam)
+getAllTerms.gamm <- function (x, ...) getAllTerms(x$gam, ...)
+tTable.gamm <- function (model, ...) tTable(model$gam, ...)
 @
 (the name \code{tTable} is somewhat misleading, as the \code{data.frame}
 returned does not need to contain \emph{t}-values, two columns are obligatory:
@@ -140,22 +152,19 @@ returned does not need to contain \emph{t}-values, two columns are obligatory:
 
 \section{Model selection}
 
-
 Now we have all the prerequisites to proceed with the model selection:
-
 
 <<>>=
 
 set.seed(0)
-dat <- gamSim(6, n=100, scale=.5, dist="normal")
+dat <- gamSim(6, n=100, scale=5, dist="normal")
 
-fmgs2 <- gamm(y ~ s(x0)+ s(x3) + f0, family=gaussian, data=dat,
+fmgs2 <- gamm(y ~1+ s(x0)+ s(x3) + s(x2), family=gaussian, data=dat,
 	random = list(fac=~1))
 @
-This model fits quite poor. This is deliberate, to justify the model averaging.
+This model fits poorly, but this is deliberate, to justify the model averaging.
 
 <<>>=
-
 head(dd2 <- dredge(fmgs2))
 @
 (Note that we get quite different results using \code{gamm4})
@@ -163,7 +172,6 @@ head(dd2 <- dredge(fmgs2))
 <<>>=
 
 summary(model.avg(dd2, subset= cumsum(weight) <= .95))
-
 
 @
 

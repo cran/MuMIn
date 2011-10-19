@@ -8,8 +8,10 @@ Averages single model coefficient based on provided weights
 }
 
 \usage{
-par.avg(x, se, weight, df = NULL, alpha = 0.05, 
-    revised.var = TRUE)
+par.avg(x, se, weight, df = NULL, level = 1 - alpha, alpha = 0.05,
+revised.var = TRUE, adjusted = TRUE)
+
+
 }
 
 \arguments{
@@ -17,9 +19,12 @@ par.avg(x, se, weight, df = NULL, alpha = 0.05,
   \item{se}{vector of standard errors}
   \item{weight}{vector of weights}
   \item{df}{(optional) vector of degrees of freedom}
-  \item{alpha}{significance level for calculating confidence intervals}
+  \item{alpha, level}{significance level for calculating confidence intervals}
   \item{revised.var}{logical, should the revised formula for standard errors be
-	used? See \sQuote{Details}.}
+	used? See \sQuote{Details}}
+  \item{adjusted}{logical, should the inflated standard errors be calculated? See
+  \sQuote{Details}. }
+
 }
 
 \value{
@@ -32,12 +37,14 @@ par.avg(x, se, weight, df = NULL, alpha = 0.05,
 
 \details{
 Unconditional standard errors are square root of the variance estimator,
-calculated either according to the original formula in
-Burnham and Anderson (2002, p. 160, equation 4.7),
+calculated either according to the original equation in Burnham and Anderson
+(2002, equation 4.7),
 or a newer, revised formula from Burnham and Anderson (2004, equation 4)
 (if \code{revised.var = TRUE}, this is the default).
-If degrees of freedom are given, the confidence intervals are based on adjusted
-standard error estimator (Burnham and Anderson 2002, page 164).
+If \code{adjusted = TRUE} (the default) and degrees of freedom are given, the
+confidence intervals are based on adjusted standard error estimator (Burnham and
+Anderson 2002, section 4.3.3).
+
 }
 
 \references{
@@ -49,12 +56,13 @@ understanding AIC and BIC in model selection}. Sociological Methods & Research
 33(2): 261-304.
 }
 
-
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
 \code{\link{model.avg}} for model averaging.
 }
+
+%% \examples{}
 
 
 \keyword{models}

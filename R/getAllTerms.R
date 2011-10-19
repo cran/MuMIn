@@ -53,7 +53,7 @@ function(x, ...) getAllTerms.terms(terms(x), ...)
 
 `getAllTerms.lme` <-
 function(x, ...) {
-	ret <- getAllTerms(terms(x), ...)
+	ret <- getAllTerms.terms(terms(x), ...)
 	attr(ret, "random") <- . ~ .
 
 	# Code from nlme:::print.reStruct, modified slightly

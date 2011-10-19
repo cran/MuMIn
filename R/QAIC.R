@@ -1,52 +1,76 @@
-`QAIC` <-
-function(object, ..., chat) {
-	#chat <- summary(gm)$dispersion
-	ll <- .getLogLik()
+# AIC = -2 * LL + 2 * n
+# LL = -1/2 * log(dev) * n + C
+# AIC = log(dev) * n + C + 2 * n
 
-	.getQAIC <- function(object, chat) {
-		mLogLik <- ll(object)
-		N <- attr(mLogLik, "nobs")
-		k <- attr(mLogLik, "df") + 1
-		ret <- (deviance(object) / chat) + 2 * k
+`QAIC` <-
+function(object, ..., chat, k = 2) {
+	#chat <- summary(gm)$dispersion
+	# chat <- deviance(object) / df.residual(object)
+	logLik <- .getLogLik()
+
+
+	if(chat < 1) {
+		warning("'chat' given is < 1, increased to 1")
+		chat <- 1
+	}
+	npar.adj <- if(chat == 1) 0 else 1
+
+	qaic <- function(object, chat, k) {
+		ll <- logLik(object)
+		n <- attr(ll, "nobs")
+		# df is the number of parameters plus 1 for estimating c-hat
+		df <- attr(ll, "df") + npar.adj
+		#neg2ll <- log(deviance(object)) * n # + Constant...
+		neg2ll <- -2 * c(ll)
+		#ret <- (neg2ll * n / chat) + k * df
+		#ret <- -2 * ll / chat + k * df
+		ret <- neg2ll / chat + k * df
 		return (ret)
 	}
 
 	if(length(list(...))) {
 		object <- list(object, ...)
-		val <- data.frame(QAIC=sapply(object, .getQAIC, chat = chat))
-		   Call <- match.call()
-		   Call$chat <- NULL
+		val <- data.frame(QAIC=sapply(object, qaic, chat = chat, k = k))
+		Call <- match.call()
+		Call$chat <- NULL
 		row.names(val) <- as.character(Call[-1])
 		return(val)
 	} else {
-		return(.getQAIC(object, chat = chat))
+		return(qaic(object, chat, k))
 	}
 }
 
 
 `QAICc` <-
-function(object, ..., chat) {
-	#chat <- summary(gm)$dispersion
-	ll <- .getLogLik()
+function(object, ..., chat, k = 2) {
+	logLik <- .getLogLik()
+	if(chat < 1) {
+		warning("'chat' given is < 1, increased to 1")
+		chat <- 1
+	}
+	npar.adj <- if(chat == 1) 0 else 1
 
-	.getQAICc <- function(object, chat) {
-		mLogLik <- ll(object)
-		N <- attr(mLogLik, "nobs")
-		if (is.null(N)) N <- nobs(object, use.fallback = FALSE)
-		k <- attr(mLogLik, "df") + 1
-		ret <- (deviance(object) / chat) + (2 * k) * (1 + ((k + 1) / (N - k - 1)))
+	qaicc <- function(object, chat, k) {
+		ll <- logLik(object)
+		n <- attr(ll, "nobs")
+		if (is.null(n)) n <- nobs(object, use.fallback = FALSE)
+		# df is the number of parameters plus 1 for estimating c-hat
+		df <- attr(ll, "df") + npar.adj
+		#neg2ll <- log(deviance(object)) * n # + Constant...
+		neg2ll <- -2 * c(ll) # + Constant...
+		ret <- (neg2ll / chat) + (k * df) * (1 + ((df + 1) / (n - df - 1)))
 		return (ret)
 	}
 
 	if(length(list(...))) {
 		object <- list(object, ...)
-		val <- data.frame(QAIC=sapply(object, .getQAICc, chat = chat))
+		val <- data.frame(QAIC=sapply(object, qaicc, chat = chat, k = k))
 		   Call <- match.call()
 		   Call$chat <- NULL
 		row.names(val) <- as.character(Call[-1])
 		return(val)
 	} else {
-		return(.getQAICc(object, chat = chat))
+		return(qaicc(object, chat, k))
 	}
 }
 

@@ -5,24 +5,25 @@
 \title{Get models}
 
 \description{
-    Gets list of models from a \code{model.selection} object
+    Generates a list of fitted model objects from a \code{model.selection} table
 }
 
 
 \usage{
-get.models(dd, subset = delta <= 4, ...)
+get.models(object, subset = delta <= 4, ...)
 }
 
 \arguments{
-  \item{dd}{ object returned by \code{\link{dredge}}}
-  \item{subset}{subset of models}
-  \item{\dots}{additional parameters passed to \code{update}, for example, in
+  \item{object}{ object returned by \code{\link{dredge}}}
+  \item{subset}{subset of models, an expression evaluated within the model
+  selection table, see \link[=subset.model.selection]{subset method}}
+  \item{\dots}{additional parameters passed to \code{update}. For example, in
     \code{lme/lmer} one may want to use \code{method = "REML"} while using "ML"
-    for model selection}
+    for model selection.}
 }
 
 \value{
-    \code{\link{list}} of models.
+    \code{\link{list}} of fitted model objects
 }
 
 \author{Kamil Barto\enc{ń}{n}}
@@ -37,10 +38,10 @@ get.models(dd, subset = delta <= 4, ...)
 require(nlme)
 fm2 <- lme(distance ~ age + Sex, data = Orthodont,
     random = ~ 1 | Subject, method="ML")
-dd2 <- dredge(fm2)
+ms2 <- dredge(fm2)
 
 # Get top-most models, but fitted by REML:
-(top.models.2 <- get.models(dd2, subset = delta < 4, method = "REML"))
+(confset.d4 <- get.models(ms2, subset = delta < 4, method = "REML"))
 
 }
 
