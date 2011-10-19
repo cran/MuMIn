@@ -1,0 +1,285 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\addtolength{\textwidth}{1.25in}
+\addtolength{\oddsidemargin}{-.75in}
+\setlength{\evensidemargin}{\oddsidemargin}
+
+%\VignettePackage{MuMIn}
+%\VignetteIndexEntry{Model selection with GAMM}
+%\VignetteDepends{mgcv,gamm4}
+
+\usepackage{url}
+\newcommand{\code}[1]{{\tt #1}}
+\newcommand{\pkg}[1]{{\tt #1}}
+\newcommand{\sQuote}[1]{{`#1'}}
+\newcommand{\dQuote}[1]{{``#1''}}
+
+\title{Model selection using GAMM with \pkg{MuMIn} }
+\date{\today}
+\author{Kamil Bartoń}
+\usepackage{Sweave}
+\begin{document}
+\maketitle
+
+
+\section{Extending \pkg{MuMIn}'s functionality to support \code{gamm} }
+
+This document describes how to implement the interface between the routines
+performing model selection and averaging in \pkg{MuMIn} and a class of models
+that is not supported by default, using \code{gamm} from package \pkg{mgcv} as
+an example.
+The two principal functions in \pkg{MuMIn}, \code{model.avg} and \code{dredge}
+rely on the availability of methods for several generic functions for the class
+of the given fitted model object.
+These generic functions include the ones defined in package \code{stats}
+(\code{logLik}, \code{formula}, \code{nobs},
+and optionally \code{deviance} which may simply return \code{NULL}), as well
+as ones defined in \pkg{MuMIn} itself (\code{coeffs},
+\code{getAllTerms} and \code{tTable}). In some cases the default methods may
+work as well.
+
+In the case of \code{gamm} and \code{gamm4}, the returned object has no special
+class, it is a list with two items: \code{lme} or \code{mer}, and \code{gam}
+(with some information stripped from it). Therefore no specific methods can be
+applied.
+
+The solution is to provide a \sQuote{wrapper} function for \code{gamm} that evaluates
+the model and adds a class attribute onto it, e.g.:
+\begin{Schunk}
+\begin{Sinput}
+> gamm <- function(...) structure(c(mgcv::gamm(...), list(call = match.call())), 
++     class = c("gamm", "list"))
+\end{Sinput}
+\end{Schunk}
+similarly for \code{gamm4} (but assign the same class \code{gamm}):
+\begin{Schunk}
+\begin{Sinput}
+> gamm4 <- function(...) structure(c(gamm4::gamm4(...), list(call = match.call())), 
++     class = c("gamm", "list"))
+\end{Sinput}
+\end{Schunk}
+
+As these wrappers have the same names as the actual functions, use of them is
+invisible for the user, and they mask the original functions on the level of
+\code{.GlobalEnv}.
+
+In addition, these wrappers add a \code{call} element, containing the original
+call to the wrapper function. It is not necessary, but makes things easier later
+on for \code{dredge}.
+
+Once we have an object of class \code{gamm}, it is possible to provide methods
+for it. First let us define the generic methods from \pkg{stats}.
+
+\begin{Schunk}
+\begin{Sinput}
+> logLik.gamm <- function(object, ...) logLik(object[[if (is.null(object$lme)) "mer" else "lme"]], 
++     ...)
+> formula.gamm <- function(x, ...) formula(x$gam, ...)
+> nobs.gamm <- function(object, ...) nobs(object$gam, ...)
+\end{Sinput}
+\end{Schunk}
+
+It should be noted here that the issue of what the log-likelihood for GAMM
+should be is not entirely clear. The documentation for \code{gamm} states that
+the log-likelihood of \code{lme} is not the one of the fitted GAMM. However,
+comparing alternative models presents some evidence that it may be still
+appropriate for \code{gamm}. Namely both the log-likelihood of fitted
+\code{lme}, and one of the \code{lme} part of \code{gamm} (including only linear
+terms to make the comparison adequate) have identical values.
+
+\begin{Schunk}
+\begin{Sinput}
+> dat <- gamSim(6, n = 100, scale = 0.2, dist = "normal")
+\end{Sinput}
+\begin{Soutput}
+4 term additive + random effectGu & Wahba 4 term additive model
+\end{Soutput}
+\begin{Sinput}
+> fm1 <- gamm(y ~ x0 + x1 + x2 + x3, data = dat, random = list(fac = ~1), 
++     method = "ML")
+> fm2 <- lme(y ~ x0 + x1 + x2 + x3, data = dat, random = list(fac = ~1), 
++     method = "ML")
+> logLik(fm1$lme)
+\end{Sinput}
+\begin{Soutput}
+'log Lik.' -224.2712 (df=7)
+\end{Soutput}
+\begin{Sinput}
+> logLik(fm2)
+\end{Sinput}
+\begin{Soutput}
+'log Lik.' -224.2712 (df=7)
+\end{Soutput}
+\end{Schunk}
+
+Likewise is in the generalised case of \code{gamm4} and \code{lmer}:
+\begin{Schunk}
+\begin{Sinput}
+> dat <- gamSim(6, n = 100, scale = 0.2, dist = "poisson")
+\end{Sinput}
+\begin{Soutput}
+4 term additive + random effectGu & Wahba 4 term additive model
+\end{Soutput}
+\begin{Sinput}
+> fmg1 <- gamm4(y ~ x0 + x1 + x2 + x3, family = poisson, data = dat, 
++     random = ~(1 | fac))
+> fmg2 <- lmer(y ~ x0 + x1 + x2 + x3 + (1 | fac), family = poisson, 
++     data = dat)
+> logLik(fmg1$mer)
+\end{Sinput}
+\begin{Soutput}
+'log Lik.' -703.5312 (df=6)
+\end{Soutput}
+\begin{Sinput}
+> logLik(fmg2)
+\end{Sinput}
+\begin{Soutput}
+'log Lik.' -703.5312 (df=6)
+\end{Soutput}
+\end{Schunk}
+
+A comparison of \code{gamm4} including a smooth term with fixed two degrees
+of freedom gives log-likelihood which is very close to that of \code{lmer}
+including a linear and quadratic term.
+
+\begin{Schunk}
+\begin{Sinput}
+> fmgs1 <- gamm4(y ~ x0 + s(x1, k = 3, fx = TRUE) + x2 + x3, family = poisson, 
++     data = dat, random = ~(1 | fac))
+> fmgs2 <- lmer(y ~ x0 + x1 + I(x1^2) + x2 + x3 + (1 | fac), family = poisson, 
++     data = dat)
+> logLik(fmgs1$mer)
+\end{Sinput}
+\begin{Soutput}
+'log Lik.' -676.0842 (df=7)
+\end{Soutput}
+\begin{Sinput}
+> logLik(fmgs2)
+\end{Sinput}
+\begin{Soutput}
+'log Lik.' -661.7715 (df=7)
+\end{Soutput}
+\end{Schunk}
+
+Normally, the object returned by \code{gam} inherits also from glm, so the
+\code{nobs} method for \code{glm} is called, but in case of \code{gamm} the
+\code{gam} element has only class \code{gam}, so we need to define method
+directly (it just calls \code{nobs.glm}):
+
+\begin{Schunk}
+\begin{Sinput}
+> nobs.gam <- function(object, ...) stats:::nobs.glm(object, ...)
+\end{Sinput}
+\end{Schunk}
+
+Methods for generic functions defined in \pkg{MuMIn}:
+\begin{Schunk}
+\begin{Sinput}
+> coeffs.gamm <- function(model) coef(model$gam)
+> getAllTerms.gamm <- function(x, ...) getAllTerms(x$gam, ...)
+> tTable.gamm <- function(model, ...) tTable(model$gam, ...)
+\end{Sinput}
+\end{Schunk}
+(the name \code{tTable} is somewhat misleading, as the \code{data.frame}
+returned does not need to contain \emph{t}-values, two columns are obligatory:
+\sQuote{Estimate} and \sQuote{Std. Error})
+
+\section{Model selection}
+
+Now we have all the prerequisites to proceed with the model selection:
+
+\begin{Schunk}
+\begin{Sinput}
+> set.seed(0)
+> dat <- gamSim(6, n = 100, scale = 5, dist = "normal")
+\end{Sinput}
+\begin{Soutput}
+4 term additive + random effectGu & Wahba 4 term additive model
+\end{Soutput}
+\begin{Sinput}
+> fmgs2 <- gamm(y ~ 1 + s(x0) + s(x3) + s(x2), family = gaussian, 
++     data = dat, random = list(fac = ~1))
+\end{Sinput}
+\end{Schunk}
+This model fits poorly, but this is deliberate, to justify the model averaging.
+
+\begin{Schunk}
+\begin{Sinput}
+> head(dd2 <- dredge(fmgs2))
+\end{Sinput}
+\begin{Soutput}
+Global model: gamm(y ~ 1 + s(x0) + s(x3) + s(x2), family = gaussian, data = dat, 
+    random = list(fac = ~1))
+---
+Model selection table 
+  (Int) s(x0) s(x2) s(x3) k AICc  delta  weight
+3 16.58       +           5 662.3 0.0000 0.480 
+7 16.58       +     +     7 663.0 0.7499 0.330 
+4 16.58 +     +           7 665.2 2.9500 0.110 
+8 16.58 +     +     +     9 667.0 4.7160 0.045 
+1 16.58                   3 668.3 6.0370 0.023 
+5 16.58             +     5 669.9 7.5870 0.011 
+\end{Soutput}
+\end{Schunk}
+(Note that we get quite different results using \code{gamm4})
+
+\begin{Schunk}
+\begin{Sinput}
+> summary(model.avg(dd2, subset = cumsum(weight) <= 0.95))
+\end{Sinput}
+\begin{Soutput}
+Call:  model.avg(object = dd2, subset = cumsum(weight) <= 0.95)
+
+
+Model summary:
+    Deviance   AICc Delta Weight
+2            662.30  0.00   0.52
+2+3          663.05  0.75   0.36
+1+2          665.25  2.95   0.12
+
+Variables:
+    1     2     3 
+s(x0) s(x2) s(x3) 
+
+Model-averaged coefficients:
+            Coefficient         SE z value Pr(>|z|)    
+(Intercept)   1.658e+01  1.737e+00   9.545   <2e-16 ***
+s(x0).1       1.526e-09  5.145e-05   0.000    1.000    
+s(x0).2      -1.255e-09  8.062e-05   0.000    1.000    
+s(x0).3       1.952e-10  1.870e-05   0.000    1.000    
+s(x0).4      -8.765e-10  4.874e-05   0.000    1.000    
+s(x0).5       2.019e-10  1.453e-05   0.000    1.000    
+s(x0).6      -9.397e-10  4.441e-05   0.000    1.000    
+s(x0).7      -3.657e-10  1.845e-05   0.000    1.000    
+s(x0).8       3.821e-09  1.515e-04   0.000    1.000    
+s(x0).9       8.909e-02  3.150e-01   0.283    0.777    
+s(x2).1      -4.393e+00  2.983e+00   1.472    0.141    
+s(x2).2      -1.208e+01  7.979e+00   1.513    0.130    
+s(x2).3      -1.157e+00  2.126e+00   0.544    0.586    
+s(x2).4      -2.318e+00  5.211e+00   0.445    0.656    
+s(x2).5      -1.129e+00  1.606e+00   0.703    0.482    
+s(x2).6      -3.211e+00  4.609e+00   0.697    0.486    
+s(x2).7      -1.581e+00  1.707e+00   0.926    0.354    
+s(x2).8       1.426e+01  1.169e+01   1.219    0.223    
+s(x2).9       3.243e+00  4.770e+00   0.680    0.497    
+s(x3).1      -1.788e-09  9.993e-05   0.000    1.000    
+s(x3).2      -2.371e-09  1.393e-04   0.000    1.000    
+s(x3).3       3.706e-10  3.274e-05   0.000    1.000    
+s(x3).4      -2.953e-09  8.138e-05   0.000    1.000    
+s(x3).5      -6.183e-10  2.068e-05   0.000    1.000    
+s(x3).6      -2.878e-09  7.690e-05   0.000    1.000    
+s(x3).7       1.590e-09  4.110e-05   0.000    1.000    
+s(x3).8       1.526e-08  2.506e-04   0.000    1.000    
+s(x3).9      -4.121e-01  6.524e-01   0.632    0.528    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+
+Non-present predictors taken to be zero 
+
+Relative variable importance:
+s(x2) s(x3) s(x0) 
+ 1.00  0.36  0.12 
+\end{Soutput}
+\end{Schunk}
+
+\end{document}

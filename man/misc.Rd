@@ -1,6 +1,6 @@
-\name{miscellaneous}
+\name{Miscellaneous}
 \alias{Miscellaneous}
-
+\alias{miscellaneous}
 \alias{coeffs}
 \alias{beta.weights}
 \alias{tTable}
@@ -31,7 +31,6 @@
 %%\alias{tTable.mer}
 %%\alias{tTable.spautolm}
 
-\alias{Weights}
 \alias{cbindDataFrameList}
 \alias{rbindDataFrameList}
 
@@ -47,10 +46,8 @@
 
 \code{getAllTerms} - extracts independent variable names from a model object;
 
-\code{tTable} - extracts a table of coefficients,
-	standard errors, and p-values from a model object;
-
-\code{Weights} - calculates Akaike weights (normalized models likelihoods)
+\code{tTable} - extracts a table of coefficients, standard errors, and p-values
+from a model object.
 
 }
 
@@ -60,7 +57,6 @@ coeffs(model)
 getAllTerms(x, ...)
 \method{getAllTerms}{terms}(x, offset = TRUE, intercept = FALSE, ...)
 tTable(model, ...)
-Weights(aic, ...)
 
 cbindDataFrameList(x)
 rbindDataFrameList(x)
@@ -74,34 +70,32 @@ rbindDataFrameList(x)
   \item{offset}{should \sQuote{offset} terms be included?}
   \item{intercept}{should terms names include the intercept?}
   \item{\dots}{other arguments, often not used}
-  \item{aic}{a vector of AIC (or other information criterion) values }
 }
 
+
 \details{
-	The functions \code{coeffs}, \code{getAllTerms} and \code{tTable} provide an
-	interface between the model and \code{model.avg} (as well as \code{dredge}).
-	Custom methods can be written to provide support for additional classes of
-	models.
+	The functions \code{coeffs}, \code{getAllTerms} and \code{tTable} provide
+	interface between the fitted model object and \code{model.avg} (and
+	\code{dredge}). Custom methods can be written to provide support for
+	additional classes of models. The vignette
+	\sQuote{\ifelse{html}{\href{/library/MuMIn/doc/gamm.pdf}{Extending
+	\pkg{MuMIn}'s functionality}}{Extending \pkg{MuMIn}'s functionality}}
+	describes it in more detail.
 }
 
 \note{
 
 \code{coeffs}'s value is in most cases identical to that returned by
-\code{\link{coef}}, the only difference is that it returns fixed
+\code{\link{coef}}, the only difference being it returns fixed
 effects' coefficients for mixed models.
 
-Functions \code{*bindDataFrameList} are not exported from the name space, \cr
-use \code{MuMIn:::cbindDataFrameList} to access them.
+Whimsically, the functions \code{*bindDataFrameList} are not exported from the
+name space, use \code{MuMIn:::cbindDataFrameList} to access them.
 
 }
 
 \author{Kamil Barto\enc{ń}{n}}
 
-
-\seealso{
-
-Vignette \sQuote{\ifelse{html}{\href{/library/MuMIn/doc/gamm.pdf}{Extending \pkg{MuMIn}'s functionality}}{Extending \pkg{MuMIn}'s functionality}} has information on using with other model types
-}
 
 \keyword{models}
 \keyword{manip}

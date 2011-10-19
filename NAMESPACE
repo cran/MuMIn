@@ -1,11 +1,13 @@
 export(
 	AICc, beta.weights, dredge, get.models, model.avg, par.avg, QAIC, QAICc,
-	getAllTerms, coeffs, tTable, Weights, mod.sel
+	getAllTerms, coeffs, tTable, Weights, model.sel, mod.sel, importance,
+	gamm, Cp, ICOMP
 )
 
 if (getRversion() >= "2.13.0") {
 importFrom(stats, nobs)
 } else {
+#export(nobs)
 S3method(nobs, default)
 }
 
@@ -29,12 +31,27 @@ S3method(predict, averaging)
 S3method(coef, averaging)
 S3method(fitted, averaging)
 S3method(logLik, averaging)
+S3method(confint, averaging)
 S3method(vcov, averaging)
 S3method(model.matrix, averaging)
 S3method(print, model.selection)
 S3method(subset, model.selection)
 S3method("[", model.selection)
 S3method(update, model.selection)
+
+S3method(mod.sel, model.selection)
+S3method(mod.sel, default)
+
+S3method(plot, model.selection)
+
+S3method(importance, averaging)
+S3method(importance, model.selection)
+S3method(importance, default)
+
+S3method(Weights, model.selection)
+S3method(Weights, averaging)
+S3method(Weights, data.frame)
+S3method(Weights, default)
 
 S3method(getAllTerms, default)
 S3method(coeffs, default)
@@ -97,3 +114,12 @@ S3method(tTable, unmarkedFit)
 S3method(coefDf, unmarkedFit)
 S3method(nobs, unmarkedFit)
 S3method(logLik, unmarkedFit)
+
+S3method(update, gamm)
+S3method(print, gamm)
+S3method(logLik, gamm)
+S3method(formula, gamm)
+S3method(nobs, gamm)
+S3method(coeffs, gamm)
+S3method(getAllTerms, gamm)
+S3method(tTable, gamm)
