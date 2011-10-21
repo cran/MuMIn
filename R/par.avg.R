@@ -29,7 +29,7 @@ function(x, se, weight, df = NULL, level = 1 - alpha, alpha = 0.05,
 		# Unconditional sqrt-Variance, revised in B&A2004
 		use <- sqrt(weighted.mean(xvar + x.sqdiff, weight, na.rm = TRUE))
 		if (do.ase)
-			# Adjusted std. error - formula modified analogically to the previous
+			# Adjusted std. error - formula modified  by analogy to the previous
 			ase <- sqrt(weighted.mean((xvar * z) + x.sqdiff, weight, na.rm = TRUE))
 	} else {
 		# Unconditional sqrt-Variance, original formula (B&A2002, eqn 4.7)

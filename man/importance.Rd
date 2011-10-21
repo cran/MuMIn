@@ -52,13 +52,13 @@ importance(get.models(ms1, delta <= 4))
 # 'nobs' is not used here for backwards compatibility
 lognobs <- log(length(resid(fm1)))
 
-importance(subset(mod.sel(ms1, rank=AIC, rank.args=list(k = lognobs)),
+importance(subset(mod.sel(ms1, rank = AIC, rank.args = list(k = lognobs)),
 	cumsum(weight) <= .95))
 
 # This gives a different result than previous command, because 'subset' is
 # applied to the original selection table that is ranked with 'AICc'
-importance(model.avg(ms1, rank=AIC, rank.args=list(k = lognobs),
-	subset=cumsum(weight) <= .95))
+importance(model.avg(ms1, rank = AIC, rank.args = list(k = lognobs),
+	subset = cumsum(weight) <= .95))
 
 }
 

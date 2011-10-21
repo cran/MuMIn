@@ -2,8 +2,7 @@
 function(object, ..., beta = FALSE,
 	#method = c("0", "NA"), method.var = c("NA", "0"),
 	rank = NULL, rank.args = NULL, revised.var = TRUE) {
-
-
+	
 	if (isTRUE("method" %in% names(match.call())))
 		stop("the argument 'method' is no longer accepted")
 

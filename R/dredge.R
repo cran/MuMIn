@@ -36,6 +36,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 
 	response <- if(attr(gterms, "response") == 0L) NULL else "."
 
+
 	if(length(grep(":", all.vars(delete.response(gterms) > 0L))))
 		stop("Variable names in the model formula cannot contain \":\"")
 
@@ -146,11 +147,11 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	#fixed <- c(fixed, interceptLabel)
 
 	n.fixed <- length(fixed)
-	#DebugPrint(all.terms)
 	termsOrder <- order(all.terms %in% fixed)
-	all.terms <- do.call("structure", c(list(all.terms[termsOrder]), attributes(all.terms)))
-	#DebugPrint(all.terms)
-
+	ordAllTerms <- all.terms[termsOrder]
+	mostattributes(ordAllTerms) <- 	attributes(all.terms)
+	all.terms <- ordAllTerms
+	rm(ordAllTerms)
 
 	llik <- .getLogLik()
 	getK <- function(x) as.vector(attr(llik(x), "df"))
@@ -264,9 +265,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 				updateArgs <- sapply(varying.names, function(x)
 					varying[[x]][[variantsIdx[ivar, x]]], simplify=FALSE)
 				for(i in varying.names) {
-					#DebugPrint(i)
-					#TODO: NULL handling
-					#if(!is.null(updateArgs[[i]])) clVariant[[i]] <- updateArgs[[i]]
+
 					clVariant[i] <- updateArgs[i]
 				}
 			}
@@ -332,6 +331,11 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 
 	ret[tfac] <- lapply(ret[tfac], factor, levels=NaN, labels="+")
 
+	i <- seq_along(all.terms)
+	v <- order(termsOrder)
+	ret[, i] <- ret[, v]
+	all.terms <- all.terms[v]
+
 	colnames(ret) <- c(all.terms, varying.names, "k",
 		if (has.rsq) c("R.sq", "Adj.R.sq"),
 		if (has.dev) if (is.lm) "RSS" else "Dev.",
@@ -339,17 +343,14 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		ICName
 	)
 
+
 	if(nvarying) {
 		variant.names <- lapply(varying, function(x) make.unique(if(is.null(names(x))) as.character(x) else names(x)))
-		for (i in varying.names) ret[, i] <-
+		for (i in varying.names)
+			ret[, i] <-
 			factor(ret[, i], levels = seq_along(variant.names[[i]]),
 				labels = variant.names[[i]])
 	}
-
-	i <- seq_along(all.terms)
-	v <- order(termsOrder)
-	ret[, i] <- ret[, v]
-	all.terms <- all.terms[v]
 
 
 	o <- order(ret[, ICName], decreasing = FALSE)
