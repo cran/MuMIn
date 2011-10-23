@@ -4,11 +4,15 @@ export(
 	gamm, Cp, ICOMP
 )
 
+# XXX: compatibility with R < 2.13.0
 if (getRversion() >= "2.13.0") {
 importFrom(stats, nobs)
 } else {
+# I couldn't find a way to make version-dependent documentation, so I can't
+# export nobs here...
 #export(nobs)
 S3method(nobs, default)
+S3method(nobs, glm)
 }
 
 # including the lines below makes this package dependent on 'lme4'

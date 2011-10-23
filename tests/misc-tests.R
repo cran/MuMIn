@@ -15,17 +15,11 @@ dd <- dredge(budworm.lg, trace=FALSE)
 gm <- get.models(dd, 1:4)
 model.avg(gm)
 
-
 # The same, but use cbind directly in the formula
 budworm.lg <- glm(cbind(numdead, numalive=20-numdead) ~ sex*ldose, family=binomial)
 dd <- dredge(budworm.lg, trace=TRUE)
 gm <- get.models(dd, 1:4)
 avgmod <- model.avg(gm)
-
-confint(avgmod)
-vcov(avgmod)
-formula(avgmod)
-all(coef(avgmod, T) / coef(avgmod) == c(1, importance(avgmod)))
 
 
 # TEST for consistency of vcov and se calculation ------------------------------

@@ -69,7 +69,7 @@ fm2 <- lme(distance ~ Sex*age, data = Orthodont,
     random = ~ 1|Subject / Sex, method = "REML")
 
 # Model selection: ranking by AICc using ML
-ms2 <- dredge(fm2, trace=TRUE, rank="AICc", REML=FALSE)
+ms2 <- dredge(fm2, trace = TRUE, rank = "AICc", REML = FALSE)
 
 (attr(ms2, "rank.call"))
 
@@ -81,9 +81,9 @@ fmList <- get.models(ms2, 1:4)
 model.avg(fmList)
 
 # same result
-#model.avg(fmList, rank="AICc", rank.args = list(REML=FALSE))
+#model.avg(fmList, rank = "AICc", rank.args = list(REML=FALSE))
 # REML based weights
-model.avg(fmList, rank="AICc", rank.args = list(REML=TRUE))
+model.avg(fmList, rank = "AICc", rank.args = list(REML=TRUE))
 
 }
 

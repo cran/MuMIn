@@ -36,8 +36,21 @@ function (object, ...)
 `formula.gamm` <-
 function (x, ...) formula(x$gam, ...)
 
+# XXX: compatibility with R < 2.13.0
+if (exists("nobs", mode = "function", where = "package:stats", inherits = FALSE)) {
+
 `nobs.gamm` <-
 function (object, ...)  stats:::nobs.glm(object$gam, ...)
+
+
+} else {
+
+`nobs.gamm` <-
+function (object, ...) nobs.glm(object$gam, ...)
+
+
+}
+
 
 `coeffs.gamm` <-
 function (model) coef(model$gam)
