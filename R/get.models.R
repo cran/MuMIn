@@ -7,7 +7,8 @@ function(object, subset = delta <= 4, ...) {
 	calls <- attr(object, "calls")[subset]
 
 	arg <- list(substitute(gmod), NA, ...)
-	env <- attr(tryCatch(terms(gmod), error=function(...) terms(formula(gmod))),".Environment")
+	env <- attr(tryCatch(terms(gmod), error=function(...) terms(formula(gmod))),
+		".Environment")
 
 	models <- lapply(calls, eval, envir=env)
 

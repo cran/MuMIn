@@ -63,13 +63,12 @@ rbindDataFrameList(x)
 }
 
 \arguments{
-  \item{model}{a fitted model object}
-  \item{x}{a fitted model object or a \code{\link{formula}}.
-  for \code{*bindDataFrameList}, a list of \code{data.frames}
-  }
-  \item{offset}{should \sQuote{offset} terms be included?}
+  \item{model}{a fitted model object. }
+  \item{x}{a fitted model object or a \code{\link{formula}}. 
+	for \code{*bindDataFrameList}, a list of \code{data.frames}. }
+  \item{offset}{should \sQuote{offset} terms be included? }
   \item{intercept}{should terms names include the intercept?}
-  \item{\dots}{other arguments, often not used}
+  \item{\dots}{other arguments, often not used. }
 }
 
 

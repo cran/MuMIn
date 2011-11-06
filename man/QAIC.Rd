@@ -2,10 +2,11 @@
 \alias{QAIC}
 \alias{QAICc}
 \encoding{utf-8}
-\title{Quasi AIC or AIC\eqn{_{c}}}
+\title{Quasi AIC or AICc}
 \description{
-Calculates a modification of Akaike's Information Criterion for overdispersed
-count data (or its version corrected for small sample, \dQuote{quasi AIC\eqn{_{c}}}), for one or several fitted model objects.
+Calculate a modification of Akaike's Information Criterion for overdispersed
+count data (or its version corrected for small sample,
+\dQuote{quasi-AIC\eqn{_{c}}{c}}), for one or several fitted model objects.
 }
 
 \usage{
@@ -16,13 +17,13 @@ QAICc(object, ..., chat, k = 2)
 \arguments{
   \item{object}{a fitted model object.}
   \item{\dots}{ optionally, more fitted model objects.}
-  \item{chat}{ \eqn{\hat{c}}{c-hat}, the variance inflation factor }
-  \item{k}{the \sQuote{penalty} per parameter }
+  \item{chat}{ \eqn{\hat{c}}{c-hat}, the variance inflation factor. }
+  \item{k}{the \sQuote{penalty} per parameter. }
 }
 
 \value{
     If only one object is provided, returns a numeric value with the
-    corresponding QAIC or QAICc; otherwise returns a
+    corresponding QAIC or QAIC\eqn{_{c}}{c}; otherwise returns a
     \code{data.frame} with rows corresponding to the objects.
 }
 
@@ -34,7 +35,7 @@ residual degrees of freedom.
 
 In calculation of QAIC, the number of model parameters is increased by 1 to
 account for estimating the overdispersion parameter. Without overdispersion,
-\eqn{\hat{c} = 1}{c - hat = 1} and QAIC is equal to AIC.
+\eqn{\hat{c} = 1}{c-hat = 1} and QAIC is equal to AIC.
 
 Note that \code{glm} does not compute maximum-likelihood estimates in models
 within the \emph{quasi-} family. In case it is justified, and with a proper
@@ -72,7 +73,7 @@ x.quasibinomial <- function(...) {
     res$aic <- binomial(...)$aic
     res
 }
-QAIC(update(budworm.lg, family = x.quasibinomial), chat=chat)
+QAIC(update(budworm.lg, family = x.quasibinomial), chat = chat)
 }
 }
 

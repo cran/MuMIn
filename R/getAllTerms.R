@@ -1,10 +1,20 @@
 `getAllTerms.default` <-
 function(x, ...) getAllTerms.formula(as.formula(formula(x)), ...)
 
+
+`getAllTerms.lm` <-
+function(x, ...)
+	if(inherits(x, "gam"))
+		getAllTerms.terms(terms(formula(x)), ...) else
+		getAllTerms.terms(terms(x), ...)
+
 `getAllTerms.terms` <-
 function(x, offset = TRUE, intercept = FALSE, ...) {
+
+	variables <- attr(x, "variables")[-1]
+
 	if (!is.null(attr(x, "offset"))){
-		offs <- sapply((attr(x, "variables")[-1])[attr(x, "offset")], deparse)
+		offs <- sapply(variables[attr(x, "offset")], deparse)
 	} else {
 		offs <- NULL
 	}
@@ -19,22 +29,29 @@ function(x, offset = TRUE, intercept = FALSE, ...) {
 
 	# Leave out random terms (lmer type)
 	#ran <- attr(x, "variables")[-1][-c(attr(x, "offset"), attr(x, "response"))]
-	ran <- attr(x, "variables")[-1]
+	ran <- variables
 	ran <- as.character(ran[sapply(ran,
 		function(x) length(x) == 3 && x[[1]] == as.name("|"))])
 	ifx <- !(ret %in% ran)
 
-	ret <- ret[ifx]
+	ret <- ret[ifx] # ifx - indexes of fixed terms
+	#retUnsorted <- ret
 
 	# finally, sort by order and then alphabetically
-	ret <- unname(ret[order(attr(x, "order")[ifx], ret)])
+	#ret <- unname(ret[order(attr(x, "order")[ifx], ret)])
+	ord <- order(attr(x, "order")[ifx], gsub("I\\((.*)\\)", "\\1", ret))
+	ret <- unname(ret[ord])
 
-	if(intercept && attr(x, "intercept"))
+	if(intercept && attr(x, "intercept")) {
 		ret <- c("(Intercept)", ret)
+		ord <- c(1, ord + 1)
+	}
 
 	if (!is.null(offs[1])) {
-		if (offset)
+		if (offset) {
 			ret <- c(ret, offs)
+			ord <- c(ord, length(ord) + 1)
+		}
 		attr(ret, "offset") <- offs
 	}
 	attr(ret, "intercept") <- attr(x, "intercept")
@@ -44,6 +61,11 @@ function(x, offset = TRUE, intercept = FALSE, ...) {
 		attr(ret, "random") <- reformulate(c(".", paste("(", ran, ")",
 			sep = "")), response = ".")
 	}
+
+	response <- attr(x, "response")
+	response <- if(response == 0L) NULL else variables[[response]]
+	attr(ret, "response") <- response
+	attr(ret, "order") <- order(ord)
 
 	return(ret)
 }
@@ -82,8 +104,15 @@ function(x, ...) getAllTerms(lme4::formula(x), ...)
 # attr(,"intercept") == 1.
 `getAllTerms.coxph` <- function (x, ...) {
 	ret <- getAllTerms.default(x, ...)
-	attr(ret,"intercept") <- 0
+	attr(ret, "intercept") <- 0
 	return(ret)
+}
+
+`getAllTerms.glmmML` <- function (x, ...) {
+	ret <- getAllTerms.terms(terms(x), ...)
+	#attr(ret, "random.terms") <-  deparse(call("|", 1,  x$call$cluster))
+	attr(ret, "random.terms") <-  paste("1 |",  x$call$cluster)
+	ret
 }
 
 `getAllTerms` <-
