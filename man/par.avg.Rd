@@ -4,24 +4,24 @@
 
 \title{Parameter averaging}
 \description{
-Averages single model coefficient based on provided weights
+Average a single model coefficient based on provided weights.
 }
 
 \usage{
 par.avg(x, se, weight, df = NULL, level = 1 - alpha, alpha = 0.05,
-revised.var = TRUE, adjusted = TRUE)
+    revised.var = TRUE, adjusted = TRUE)
 
 
 }
 
 \arguments{
-  \item{x}{vector of parameters}
-  \item{se}{vector of standard errors}
-  \item{weight}{vector of weights}
-  \item{df}{(optional) vector of degrees of freedom}
-  \item{alpha, level}{significance level for calculating confidence intervals}
+  \item{x}{vector of parameters. }
+  \item{se}{vector of standard errors. }
+  \item{weight}{vector of weights. }
+  \item{df}{(optional) vector of degrees of freedom. }
+  \item{alpha, level}{significance level for calculating confidence intervals. }
   \item{revised.var}{logical, should the revised formula for standard errors be
-	used? See \sQuote{Details}}
+	used? See \sQuote{Details}. }
   \item{adjusted}{logical, should the inflated standard errors be calculated? See
   \sQuote{Details}. }
 
@@ -29,10 +29,10 @@ revised.var = TRUE, adjusted = TRUE)
 
 \value{
   \code{par.avg} returns a vector with named elements:
-  \item{Coefficient}{model coefficients}
-  \item{SE}{unconditional standard error}
-  \item{Adjusted SE}{adjusted standard error}
-  \item{Lower CI, Upper CI}{unconditional confidence intervals}
+  \item{Coefficient}{model coefficients,}
+  \item{SE}{unconditional standard error,}
+  \item{Adjusted SE}{adjusted standard error,}
+  \item{Lower CI, Upper CI}{unconditional confidence intervals.}
 }
 
 \details{
@@ -42,8 +42,9 @@ calculated either according to the original equation in Burnham and Anderson
 or a newer, revised formula from Burnham and Anderson (2004, equation 4)
 (if \code{revised.var = TRUE}, this is the default).
 If \code{adjusted = TRUE} (the default) and degrees of freedom are given, the
-confidence intervals are based on adjusted standard error estimator (Burnham and
-Anderson 2002, section 4.3.3).
+ adjusted standard error estimator and 
+confidence intervals with improved coverage are returned (see Burnham and Anderson 2002, 
+section 4.3.3).
 
 }
 

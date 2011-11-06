@@ -4,7 +4,7 @@
 
 \title{Akaike weights}
 \description{
-Calculate or extract Akaike weights (normalized model likelihoods)
+Calculate or extract normalized model likelihoods (\sQuote{Akaike weights}).
 }
 
 \usage{
@@ -20,7 +20,7 @@ Weights(x)
 }
 
 \value{
-	a numeric vector of normalized likelihoods
+	a numeric vector of normalized likelihoods.
 }
 
 
@@ -29,7 +29,7 @@ Weights(x)
 \seealso{
 \code{\link{importance}}
 
-\code{\link{weights}}, which extracts fitting weights from model objects
+\code{\link{weights}}, which extracts fitting weights from model objects.
 
 }
 

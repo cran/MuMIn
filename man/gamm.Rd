@@ -14,7 +14,7 @@ gamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 
 \arguments{
   \item{formula, random, \dots}{ arguments passed to \code{gamm} or
-	\code{gamm4} }
+	\code{gamm4}. }
   \item{lme4}{ logical, if \code{TRUE} \code{gamm4} is used rather than
 	\code{gamm}. If \code{TRUE}, the \code{random} argument must be provided as
 	a \code{formula}.

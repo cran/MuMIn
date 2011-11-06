@@ -6,7 +6,7 @@
 \encoding{utf-8}
 \title{Various information criteria}
 \description{
-Calculate Mallows' \emph{Cp} and Bozdogan's ICOMP information criterion
+Calculate Mallows' \emph{Cp} and Bozdogan's ICOMP information criterion.
 }
 
 \usage{
@@ -16,14 +16,13 @@ ICOMP(object, ..., REML = NULL)
 
 \arguments{
   \item{object}{a fitted model object (in case of ICOMP, a \code{logLik} method
-	must exist for the object)}
-  \item{\dots}{optionally more fitted model objects}
+	must exist for the object). }
+  \item{\dots}{optionally more fitted model objects. }
   \item{dispersion}{the dispersion parameter. If \code{NULL}, it is inferred
 	from object. }
    \item{REML}{ optional logical value, passed to the \code{logLik} method
     indicating whether the restricted log-likelihood or log-likelihood should be
-    used. The default is to use the method used for model estimation.
-   }
+    used. The default is to use the method used for model estimation. }
 }
 
 \value{
@@ -56,15 +55,15 @@ complexity of the model, rather than the number of parameters directly.
 % Information Complexity. \emph{J. Math. Psych.} 44: 62-91
 
 \references{
-Mallows, C. L. (1973) Some Comments on CP. \emph{Technometrics} 15: 661–675
+Mallows, C. L. (1973) Some Comments on CP. \emph{Technometrics} 15: 661–675.
 
 Bozdogan, H. and Haughton, D.M.A. (1998) Information complexity criteria for
-regression models. \emph{Comp. Stat. & Data Analysis} 28: 51-76
+regression models. \emph{Comp. Stat. & Data Analysis} 28: 51-76.
 
 }
 
 \seealso{
-\code{\link{AIC}}, \code{\link{AICc}} and \code{\link{BIC}}
+\code{\link{AIC}} and \code{\link{BIC}} in \pkg{stats}, \code{\link{AICc}}
 }
 
 % \examples{}

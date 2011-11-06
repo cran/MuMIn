@@ -19,28 +19,13 @@ varying <- list(
 	weights = alist(vp.press=varPower(form = ~ pressure), NULL)
 	)
 
-dd <- dredge(fm1Dial.gls, m.max=1, m.min=1, fixed=~pressure, varying=varying)
-
-#traceback()
-
+dd <- dredge(fm1Dial.gls, m.max=1, m.min=1, fixed=~pressure, varying=varying, extra="R^2")
 models <- get.models(dd, 1:4)
 ma <- model.avg(models, revised=T)
 
 summary(ma)
-
 predict(ma)
 predict(ma, data.frame(QB=300, pressure=seq(0.24, 3, length=10)))
-
-
-
-
-
-#traceback()
-#...
-#4: .makeModelNames(models)
-#3: eval(expr, envir, enclos)
-#2: eval(x, envir)
-#1: withVisible(eval(x, envir))
 
 # example(corGaus)
 fm1BW.lme <- lme(weight ~ Time * Diet, data = BodyWeight, random = ~ Time, method="ML")
@@ -62,6 +47,7 @@ ma <- model.avg(models, revised=T)
 mod.sel(models)
 
 summary(ma)
+
 confint(ma)
 
 #ma <- model.avg(gm, revised=F)
@@ -150,7 +136,8 @@ if(.checkPkg("lme4")) {
 library(lme4)
 data(Orthodont, package = "nlme")
 
-fm2 <- lmer(distance ~ Sex*age + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
+fm2 <- lmer(log(distance) ~ Sex*age + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
+
 #fm0 <- lmer(distance ~ 1 + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
 #fm00 <- lm(distance ~ 1 , data = Orthodont)
 
@@ -201,7 +188,7 @@ data(Cement, package = "MuMIn")
 nseq <- function(x, len=length(x)) seq(min(x, na.rm=TRUE), max(x, na.rm=TRUE),
 	length=len)
 
-fm1 <- glm(y ~ (X+X1+X2+X3)^2, data = Cement)
+fm1 <- glm(y ~ (X1+X2+X3+X4)^2, data = Cement)
 dd <- dredge(fm1, trace=T)
 
 gm <- get.models(dd, 1:10)
@@ -224,7 +211,7 @@ data(Cement, package = "MuMIn")
 nseq <- function(x, len=length(x)) seq(min(x, na.rm=TRUE), max(x, na.rm=TRUE),
 	length=len)
 
-fm1 <- rlm(y ~ X+X1+X2*X3, data = Cement)
+fm1 <- rlm(y ~X1+X2*X3+X4, data = Cement)
 dd <- dredge(fm1, trace=T)
 gm <- get.models(dd, 1:10)
 ma <- model.avg(gm)
@@ -342,10 +329,12 @@ rm(list=ls()); detach(package:spdep)
 if (.checkPkg("MASS")) {
 require(MASS)
 
-quine.nb1 <- glm.nb(Days ~ 0+Sex/(Age + Eth*Lrn), data = quine)
+quine.nb1 <- glm.nb(Days ~ 0 + Sex/(Age + Eth*Lrn), data = quine)
 #quine.nb1 <- glm.nb(Days ~ Sex/(Age + Eth*Lrn), data = quine)
 
-models <- get.models(dredge(quine.nb1, marg.ex="Sex"), 1:5)
+ms <- dredge(quine.nb1, marg.ex = "Sex")
+models <- get.models(ms, 1:5)
+summary(model.avg(models))
 
 dredge(quine.nb1) # Wrong
 dredge(quine.nb1, marg.ex="Sex") # Right
@@ -359,8 +348,7 @@ pred <- predict(ma, se=TRUE)
 rm(list=ls()); detach(package:MASS)
 }
 
-# TEST quasibinomial ---------------------------------------------------------------------------
-
+# TEST quasibinomial -----------------------------------------------------------
 
 budworm <- data.frame(ldose = rep(0:5, 2), numdead = c(1, 4, 9, 13, 18, 20, 0,
 	2, 6, 10, 12, 16), sex = factor(rep(c("M", "F"), c(6, 6))))
@@ -371,7 +359,6 @@ qbinomial <- function(...) {
 	res$aic <- binomial(...)$aic
 	res
 }
-
 budworm.qqlg <- glm(SF ~ sex*ldose + sex*I(ldose^2), data = budworm, family = qbinomial)
 #budworm.qlg <- glm(SF ~ sex*ldose + sex*I(ldose^2), data = budworm, family = quasibinomial)
 budworm.lg <- glm(SF ~ sex*ldose + sex*I(ldose^2), data = budworm, family = binomial)
@@ -387,9 +374,9 @@ mod <- get.models(dd, seq(nrow(dd)))
 # so, need to supply them
 ma <- model.avg(mod[1:5], rank="QAICc", rank.args = list(chat = 0.403111))
 
-rm(list=ls());
+rm(list=ls())
 
-# TEST polr {MASS} ---------------------------------------------------------------------------
+# TEST polr {MASS} -------------------------------------------------------------
 #if (.checkPkg("MASS")) {
 #library(MASS)
 #library(MuMIn)
@@ -401,4 +388,100 @@ rm(list=ls());
 #model.avg(mod)
 #}
 
+
+# TEST coxph -------------------------------------------------------------------
+
+library(survival)
+
+bladder1 <- bladder[bladder$enum < 5, ]
+
+fmcph <- coxph(Surv(stop, event) ~ (rx + size + number) * strata(enum) +  cluster(id), bladder1)
+
+r.squared.coxph <- function(object, ...) {
+	logtest <- -2 * (object$loglik[1L] - object$loglik[2L])
+	c(rsq = 1 - exp(-logtest/object$n), maxrsq = 1 - exp(2 * object$loglik[1L]/object$n))
+}
+
+ms <- dredge(fmcph, fixed=c("cluster(id)", "strata(enum)"), extra = "r.squared.coxph")
+fits <- get.models(ms, delta < 5)
+summary(model.avg(fits))
+
+fmsrvrg <- survreg(Surv(futime, fustat) ~ ecog.ps + rx, ovarian, dist='weibull',
+    scale=1)
+summary(model.avg(dredge(fmsrvrg), delta  < 4))
+# nobs(fmsrvrg)
+
+rm(list=ls())
+detach(package:survival)
+
 # END TESTS
+
+###model1 <- glm(cbind(ncases, ncontrols) ~ agegp + tobgp * alcgp,
+###              data = esoph, family = binomial())
+###model1 <- glm(cbind(ncases, ncontrols) ~ agegp,
+###              data = esoph, family = binomial())
+###model2 <- update(model1, contrasts = list(agegp="contr.treatment"))
+###model3 <- update(model1, .~. + tobgp, contrasts = list(agegp="contr.treatment"))
+###model3$contrasts
+###
+###models <- list(model1, model2, model3)
+###x <- rbindDataFrameList(lapply(sapply(models, getElement, "contrasts"), as.data.frame))
+###
+###as.list(x)
+###
+###any(apply(x, 2, function(x) length(na.omit(unique(x)))) > 1)
+###
+####system.time(for(i in 1:5000) lapply(lapply(lapply(x, unique), na.omit), length))
+####system.time(for(i in 1:5000) lapply(x, function(x) length(na.omit(unique(x)))))
+###
+###summary(model.avg(model1, model2, model3))
+###
+###
+###model1$contrasts
+###
+###model2$contrasts
+###
+###
+###ms1 <- dredge(model1, rank=Cp)
+###
+####plot(dredge(model1, rank=ICOMP))
+###dredge(model1, rank=BIC, extra="R^2")
+###
+###model1$contrasts
+###summary(model.avg(ms1, delta <=10))
+###
+###summary(model2 <- glm(case ~ age+parity+education+spontaneous+induced,
+###                data=infert, family = binomial()))
+###
+###dredge(model2, rank=BIC, extra="nobs")
+
+# require(survival)
+# model3 <- clogit(case~spontaneous+induced+strata(stratum),data=infert)
+# model3 <- clogit(case~spontaneous+strata(stratum),data=infert)
+
+#require(quantreg)
+#data(stackloss)
+#fm1 <- rq(stack.loss ~ Water.Temp + Acid.Conc. + Air.Flow, tau = .5, data = stackloss)
+#ms <- dredge(fm1, varying = list(tau=list(.75, .5, .25)), extra="R^2")
+#fm1 <- lm(stack.loss ~ Water.Temp + Acid.Conc. + Air.Flow,  data = stackloss)
+#models <- get.models(ms, delta <= 4)
+#model.avg(ms, delta <= 4)
+#plot(ms)
+
+#
+#library(brglm)
+#data(lizards)
+#lizg <- glm(cbind(grahami, opalinus) ~ (height + diameter +
+#    light + time)^2, family = binomial(logit), data=lizards)
+#
+#glm(cbind(grahami, opalinus) ~ (height + diameter +
+#    light + time)^3, family = poisson("log"), data=lizards)
+#dd <- dredge(lizg)
+#plot(dd, col=6:7)
+
+#brglm(cbind(grahami, opalinus) ~ height + diameter + light + time,
+#	family = binomial(logit), data=lizards, method = "brglm.fit")
+#
+#lizards.brglm <- brglm(cbind(grahami, opalinus) ~ height + diameter +
+#                  light + time, family = binomial(logit), data=lizards,
+#                  method = "brglm.fit")

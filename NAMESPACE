@@ -1,8 +1,11 @@
 export(
 	AICc, beta.weights, dredge, get.models, model.avg, par.avg, QAIC, QAICc,
 	getAllTerms, coeffs, tTable, Weights, model.sel, mod.sel, importance,
-	gamm, Cp, ICOMP
+	gamm, Cp, ICOMP, r.squaredLR, null.fit
 )
+
+importFrom(stats, family)
+
 
 # XXX: compatibility with R < 2.13.0
 if (getRversion() >= "2.13.0") {
@@ -68,6 +71,7 @@ S3method(AICc, logLik)
 
 S3method(getAllTerms, formula)
 S3method(getAllTerms, terms)
+S3method(getAllTerms, lm)
 
 S3method(tTable, gam)
 
@@ -85,6 +89,10 @@ S3method(getAllTerms, coxph)
 S3method(tTable, coxph)
 S3method(logLik, coxph)
 S3method(nobs, coxph)
+
+S3method(tTable, survreg)
+S3method(logLik, survreg)
+S3method(nobs, survreg)
 
 S3method(getAllTerms, lme)
 S3method(coeffs, lme)
@@ -127,3 +135,17 @@ S3method(nobs, gamm)
 S3method(coeffs, gamm)
 S3method(getAllTerms, gamm)
 S3method(tTable, gamm)
+
+S3method(makeArgs, default)
+S3method(makeArgs, gls)
+S3method(makeArgs, lme)
+S3method(makeArgs, mer)
+S3method(makeArgs, unmarkedFitOccu)
+S3method(makeArgs, unmarkedFitColExt)
+S3method(makeArgs, unmarkedFit)
+
+S3method(family, default)
+S3method(family, gls)
+S3method(family, lme)
+
+S3method(nobs, rq)

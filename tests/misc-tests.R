@@ -48,4 +48,31 @@ budworm$SF <- cbind(numdead = budworm$numdead, numalive = 20 - budworm$numdead)
 
 rm(list=ls())
 
+### Bootstrap
+##data(Cement)
+##bCement <- Cement
+##nobs <- nrow(Cement)
+##gm1 <- lm(y~X1+X2+X3+X4, bCement)
+##ms <- dredge(gm1, m.min=1)
+##nrow(ms)
+##cl <- attr(ms, "calls")
+##bootCement2 <- t(sapply(1:5000, function(i) {
+##	bCement <- Cement[sample(nobs, replace=TRUE), ]
+##	models <- lapply(cl, eval, sys.frame(sys.nframe()))
+##	m <- which.min(sapply(models, AICc))
+##	matchCoef(models[[m]], gm1)
+##}))
+##bootCement <- rbind(bootCement2, bootCement)
+##
+##cbind(
+##global = coef(gm1),
+##mavg = coef(model.avg(get.models(ms, 1:5))),
+##average = apply(bootCement, 2, mean, na.rm=T),
+##se = apply(bootCement, 2, sd, na.rm=T) /
+##	sqrt(colSums(!apply(bootCement, 2, is.na))),
+##sd = apply(bootCement, 2, sd, na.rm=T)
+##)
+##model.avg(get.models(ms, 1:5))$avg.model
+
+
 # END TESTS
