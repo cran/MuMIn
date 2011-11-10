@@ -4,7 +4,7 @@ UseMethod("AICc")
 `AICc.logLik` <- function (object, ..., k = 2) {
 	df <- attr(object, "df")
 	no <- attr(object, "nobs")
-	if (is.null(no)) stop("'logLik' object must have \"nobs\" attribute")
+	if (is.null(no)) stop("'logLik' object must have a \"nobs\" attribute")
 	aic <- -2 * as.numeric(object) + k * df
 	aic + 2 * df * (df + 1) / (no - df - 1)
 }

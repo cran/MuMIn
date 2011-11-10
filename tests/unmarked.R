@@ -1,46 +1,38 @@
 library(MuMIn)
-
-# rm(list=ls(all=TRUE))
-
-.checkPkg <- function(package) length(.find.package(package, quiet=TRUE)) != 0
-if(.checkPkg("unmarked")) {
 library(unmarked)
 
 # Simulate occupancy data
-umf <- local({
+set.seed(1)
+umfOccu <- local({
 	nSites <- 100
 	nReps <- 5
 	covariates <- data.frame(veght=rnorm(nSites),
 		habitat=factor(c(rep('A', 50), rep('B', 50))))
-
 	psipars <- c(-1, 1, -1)
 	ppars <- c(1, -1, 0)
 	X <- model.matrix(~veght+habitat, covariates) # design matrix
 	psi <- plogis(X %*% psipars)
 	p <- plogis(X %*% ppars)
-
 	y <- matrix(NA, nSites, nReps)
 	Z <- rbinom(nSites, 1, psi)       # true occupancy state
-	for(i in 1:nSites) {
-		y[i,] <- rbinom(nReps, 1, Z[i]*p[i])
-		}
+	for(i in 1:nSites) y[i,] <- rbinom(nReps, 1, Z[i]*p[i])
 	unmarkedFrameOccu(y = y, siteCovs = covariates)
 })
 
-
-
-#head(umf)
-#summary(umf)
-
-
 # Fit some models
-fm1oc <- occu(~1 ~1, umf)
-fm2oc <- occu(~veght+habitat ~veght*habitat, umf)
-fm3oc <- occu(~veght ~veght+habitat, umf)
+fm1oc <- occu(~1 ~1, umfOccu)
+fm2oc <- occu(~veght+habitat ~veght*habitat, umfOccu)
+fm3oc <- occu(~habitat ~veght+habitat, umfOccu)
+fm4oc <- occu(~veght ~veght+habitat, umfOccu)
 
-dd <- dredge(fm2oc, fixed=~p(habitat))
+# dredge(fm2oc, eval=F, fixed=~psi(habitat))
 
-stopifnot(!any(is.na(dd[, "p(habitat)"])))
+(dd <- dredge(fm2oc, fixed=~psi(habitat)))
+
+#attr(dd, "terms")
+#coef(fm4oc)
+
+stopifnot(!any(is.na(dd[, "psi(habitat)"])))
 
 summary(model.avg(dd, delta <= 4))
 
@@ -48,4 +40,47 @@ summary(model.avg(dd, delta <= 4))
 print(mod.sel(fm1oc, fm2oc, fm3oc))
 print(summary(model.avg(fm1oc, fm2oc, fm3oc)))
 
-}
+
+
+########################
+### **** Example UnmarkedFit ****
+
+# 'stats4' is needed for AIC to work with unmarked-models but is not loaded
+# automatically with unmarked.
+library(stats4)
+
+# from example(distsamp)
+
+ltUMF <- local({
+data(linetran)
+dbreaksLine <- c(0, 5, 10, 15, 20)
+lengths <- linetran$Length * 1000
+with(linetran, {
+	unmarkedFrameDS(y = cbind(dc1, dc2, dc3, dc4),
+	siteCovs = data.frame(Length, area, habitat), dist.breaks = dbreaksLine,
+	tlength = lengths, survey = "line", unitsIn = "m")
+	})
+})
+
+# global model - possibly nonsensical:
+fmUnmDS <- distsamp( ~ Length ~ area + habitat, ltUMF)
+
+
+
+# The default null model used for R^2 has a formula ~ 1 ~ 1
+dd <- dredge(fmUnmDS, rank = AIC, extra = "R^2")
+
+
+# fit the models from the 'top' and a null model.
+models <- get.models(dd, delta < 4 | df == min(df))
+
+model.names(models, labels = getAllTerms(fmUnmDS))
+
+subset(dd, delta < 4 | df == min(df))
+
+# Compare with the model selection table from unmarked - the statistics should
+# be identical
+modSel(fitList(fits = structure(models, names = model.names(models,
+	labels = getAllTerms(fmUnmDS)))), nullmod = "(Null)")
+
+########################

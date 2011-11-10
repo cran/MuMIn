@@ -39,17 +39,12 @@ varying <- list(
 )
 
 dd <- dredge(fm1BW.lme, m.max=1, fixed=~Time, varying=varying)
-
 #dd <- dredge(fm1, trace=T)
 models <- get.models(dd, 1:4)
 ma <- model.avg(models, revised=T)
-
 mod.sel(models)
-
 summary(ma)
-
 confint(ma)
-
 #ma <- model.avg(gm, revised=F)
 
 detach(package:nlme); rm(list=ls())
@@ -62,18 +57,21 @@ detach(package:nlme); rm(list=ls())
 
 d.AD <- data.frame(counts =c(18,17,15,20,10,20,25,13,12), outcome = gl(3,1,9),
 treatment = gl(3,3))
-#glm.qD93 <- glm(counts ~ outcome + treatment, family=quasipoisson(), data=d.AD)
-glm.D93 <- glm(counts ~ outcome + treatment, family=poisson(), data=d.AD)
+#fm2 <- glm(counts ~ outcome + treatment, family=quasipoisson(), data=d.AD)
+fm2 <- glm(counts ~ outcome + treatment, family=poisson(), data=d.AD)
 
-#dd <- dredge(glm.qD93)
+#dd <- dredge(fm2)
 #summary(model.avg(dd, subset= delta <= 10))
-dd <- dredge(glm.D93, rank=QAIC, chat=deviance(glm.D93) / df.residual(glm.D93))
-dd <- dredge(glm.D93)
+dd <- dredge(fm2, rank=QAIC, chat=deviance(fm2) / df.residual(fm2))
+dd <- dredge(fm2)
 summary(model.avg(dd, subset= delta <= 10))
+
+dredge(fm2, rank=QAIC, chat=deviance(fm2) / df.residual(fm2))
+MuMIn::dredge(fm2, rank=QAIC, chat=deviance(fm2) / df.residual(fm2))
+
 
 subset(dd, delta <= 10)
 mod.sel(get.models(dd, subset=delta <= 10))
-
 
 
 rm(list=ls())

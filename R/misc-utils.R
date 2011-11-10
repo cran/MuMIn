@@ -1,5 +1,8 @@
 `DebugPrint` <- function(x) { cat(deparse(substitute(x)), "= \n") ; print(x) }
-`srcc` <- function() sys.source("clipboard", .GlobalEnv)
+`srcc` <- function() {
+	ret <- eval(expression(source("clipboard", local = TRUE)), .GlobalEnv)
+	return(if(ret$visible) ret$value else invisible(ret$value))
+}
 
 
 #if (!exists("getElement", mode = "function", where = "package:base", inherits = FALSE)) {
@@ -9,7 +12,6 @@ getElement <- function (object, name) {
     else object[[name, exact = TRUE]]
 }
 #}
-
 
 # cbind list of data.frames omitting duplicated column (names)
 `cbindDataFrameList` <-

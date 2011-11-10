@@ -221,7 +221,8 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		#terms1 <- allTerms[comb]
 		newArgs <- makeArgs(global.model, allTerms[comb], comb, argsOptions)
 
-		formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs else attr(newArgs, "formulaList")
+		formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs else
+			attr(newArgs, "formulaList")
 		if(!all(vapply(formulaList, formulaAllowed, logical(1), marg.ex))) next;
 
 		if(!is.null(attr(newArgs, "problems"))) {
@@ -231,7 +232,6 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		}
 
 		cl <- gmCall
-
 		cl[names(newArgs)] <- newArgs
 
 		for (ivar in seq.variants) { ## --- Variants ---------------------------
@@ -251,21 +251,18 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			}
 
 			if(evaluate) {
-				fit1 <- tryCatch(eval(clVariant, gmEnv), error=function(err) {
+				# begin row1: (clVariant, gmEnv, modelId, IC(), applyExtras(),
+				#              nextra, allTerms, beta,
+				#              if(nvarying) variantsIdx[ivar] else NULL
+				fit1 <- tryCatch(eval(clVariant, gmEnv), error = function(err) {
 					err$message <- paste(conditionMessage(err), "(model",
-						modelId, "skipped)", collapse="")
+						modelId, "skipped)", collapse = "")
 					class(err) <- c("simpleError", "warning", "condition")
 					warning(err)
 					return(NULL)
 				})
-
 				if (is.null(fit1)) next;
 
-				k <- k + 1L # all OK, add model to table
-
-				ord[k] <- modelId
-				ll <- logLik(fit1)
-				ic <- IC(fit1)
 				if(nextra != 0L) {
 					extraResult1 <- applyExtras(fit1)
 					if(length(extraResult1) < nextra) {
@@ -275,12 +272,16 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 					}
 					#row1 <- c(row1, extraResult1)
 				}
+				ll <- logLik(fit1)
 				row1 <- c(
 					matchCoef(fit1, all.terms = allTerms, beta = beta)[allTerms],
 					if(nvarying) unlist(variantsIdx[ivar, ]),
-					extraResult1,
-					df = attr(ll, "df"), ll = ll, ic = ic
+					extraResult1, df = attr(ll, "df"), ll = ll, ic = IC(fit1)
 				)
+				## end -> row1
+
+				k <- k + 1L # all OK, add model to table
+				ord[k] <- modelId
 
 				ret.nrow <- nrow(ret)
 				if(k > ret.nrow) {
@@ -366,7 +367,6 @@ function(x, subset, select, recalc.weights = TRUE, ...) {
 	}
 }
 
-
 `[.model.selection` <-
 function (x, i, j, recalc.weights = TRUE, ...) {
 	ret <- `[.data.frame`(x, i, j, ...)
@@ -450,3 +450,6 @@ function(x, abbrev.names = TRUE, ...) {
     }
     return(if (evaluate) eval(cl, parent.frame()) else cl)
 }
+
+`coef.model.selection` <- function (object, ...)
+	object[, attr(object, "terms")]

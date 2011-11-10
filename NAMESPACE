@@ -1,7 +1,7 @@
 export(
 	AICc, beta.weights, dredge, get.models, model.avg, par.avg, QAIC, QAICc,
 	getAllTerms, coeffs, tTable, Weights, model.sel, mod.sel, importance,
-	gamm, Cp, ICOMP, r.squaredLR, null.fit
+	gamm, Cp, ICOMP, r.squaredLR, null.fit, model.names, CAICF
 )
 
 importFrom(stats, family)
@@ -30,7 +30,6 @@ S3method(nobs, glm)
 #importFrom(methods, slot, slotNames)
 #importFrom(lme4, lmer, logLik, terms)
 
-
 S3method(print, averaging)
 S3method(print, summary.averaging)
 S3method(summary, averaging)
@@ -45,6 +44,7 @@ S3method(print, model.selection)
 S3method(subset, model.selection)
 S3method("[", model.selection)
 S3method(update, model.selection)
+S3method(coef, model.selection)
 
 S3method(mod.sel, model.selection)
 S3method(mod.sel, default)
@@ -125,7 +125,9 @@ S3method(getAllTerms, unmarkedFit)
 S3method(tTable, unmarkedFit)
 S3method(coefDf, unmarkedFit)
 S3method(nobs, unmarkedFit)
-S3method(logLik, unmarkedFit)
+S3method(getAllTerms, unmarkedFitDS)
+# this is done by setting S4 method with an .onLoad hook:
+# S3method(logLik, unmarkedFit)
 
 S3method(update, gamm)
 S3method(print, gamm)
@@ -140,9 +142,10 @@ S3method(makeArgs, default)
 S3method(makeArgs, gls)
 S3method(makeArgs, lme)
 S3method(makeArgs, mer)
-S3method(makeArgs, unmarkedFitOccu)
-S3method(makeArgs, unmarkedFitColExt)
 S3method(makeArgs, unmarkedFit)
+# S3method(makeArgs, unmarkedFitOccu)
+# S3method(makeArgs, unmarkedFitColExt)
+S3method(makeArgs, unmarkedFitDS)
 
 S3method(family, default)
 S3method(family, gls)

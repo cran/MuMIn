@@ -2,8 +2,6 @@
 # it does not do anything except for printing the model output.
 `summary.glmmML` <- function(object, ...) object
 
-
-
 # family
 `family.default` <- function (object, ...)  {
 	cl <- getElement(object, "call")
@@ -18,8 +16,6 @@
 `family.gls` <-
 `family.lme` <-
 stats:::family.lm
-
-
 
 `nobs.rq` <-
 function (object, ...) length(object$y)

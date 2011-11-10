@@ -34,7 +34,6 @@ makeArgs.default <- function(obj, termNames, comb, opt, ...) {
 
 makeArgs.gls <- function(obj, termNames, comb, opt, ...) {
 	ret <- makeArgs.default(obj, termNames, comb, opt)
-	#DebugPrint(ret)
 	names(ret)[1] <- "model"
 	ret
 }
@@ -50,7 +49,7 @@ makeArgs.mer <- function(obj, termNames, comb, opt, ...) {
 }
 
 # used by makeArgs.unmarkedFit*
-.makeUnmarkedFitFunnyFormulas <- function(termNames, opt, fnames) {
+`.makeUnmarkedFitFunnyFormulas` <- function(termNames, opt, fnames) {
 	i <- termNames %in% opt$interceptLabel
 	termNames[i] <- gsub("(Int)", "(1)", termNames[i], fixed = TRUE)
 	zexpr <- lapply(termNames, function(x) parse(text = x)[[1L]])
@@ -61,31 +60,63 @@ makeArgs.mer <- function(obj, termNames, comb, opt, ...) {
 	i <- sapply(zarg, is.null)
 	zarg[i] <- rep(list(~ 1), sum(i))
 	zarg <- lapply(zarg, `environment<-`, opt$gmFormulaEnv)
+	#print(zarg)
 	zarg
 }
 
-makeArgs.unmarkedFitColExt <- function(obj, termNames, comb, opt, ...)  {
-	zarg <- .makeUnmarkedFitFunnyFormulas(termNames, opt, c("psi", "col", "ext", "p"))
-	#names(formals(colext)[seq_along(zarg)])
-	names(zarg) <- c("psiformula", "gammaformula", "epsilonformula", "pformula")
-	zarg
-}
+# This works for all the child classes provided that the arguments containing
+# formulas are named *formula, and they are at the beginnning of the call, and
+# if there is no more than 6 of them, and if there is a single 'formula'
+# argument, it is double-one-sided.
+# Guessing the argument names is only negligibly slower than when they are
+# provided to the function, so the methods for child classes are commented out.
 
-makeArgs.unmarkedFit  <- function(obj, termNames, comb, opt, ...)  {
-	fNames <- sapply(obj@estimates@estimates, slot, "short.name")
+`makeArgs.unmarkedFit` <- function(obj, termNames, comb, opt,
+	fNames = sapply(obj@estimates@estimates, slot, "short.name"),
+	formula.arg = "formula",
+	...) {
 	zarg <- .makeUnmarkedFitFunnyFormulas(termNames, opt, fNames)
-	i <- sapply(zarg, is.null)
-	zarg[i] <- rep(list(~ 1), sum(i))
-	ret <- list(formula = call("~", zarg[[2]], zarg[[1]][[2]]))
-	attr(ret, "formulaList") <- zarg
-	ret
+	if(missing(formula.arg)) { # fallback
+		nm <- names(opt$gmCall)[-1]
+		formula.arg <- nm[grep(".*formula$", nm[1:7])]
+		#print(formula.arg)
+	}
+	if(length(formula.arg) == 1L && formula.arg == "formula") {
+		i <- sapply(zarg, is.null)
+		zarg[i] <- rep(list(~ 1), sum(i))
+		ret <- list(formula = call("~", zarg[[2]], zarg[[1]][[2]]))
+		attr(ret, "formulaList") <- zarg
+		ret
+	} else {
+		names(zarg) <- formula.arg
+		zarg
+	}
 }
 
-makeArgs.unmarkedFitOccu <- function(obj, termNames, comb, opt, ...)  {
-	zarg <- .makeUnmarkedFitFunnyFormulas(termNames, opt, c("psi", "p"))
-	i <- sapply(zarg, is.null)
-	zarg[i] <- rep(list(~ 1), sum(i))
-	ret <- list(formula = call("~", zarg$p, zarg$psi[[2]]))
-	attr(ret, "formulaList") <- zarg
-	ret
+`makeArgs.unmarkedFitDS` <-
+function(obj, termNames, comb, opt, ...)  {
+	termNames <- sub("^p\\(sigma(.+)\\)", "p(\\1)", termNames, perl = TRUE)
+	termNames[termNames == "p((Intercept))"] <- "p(1)"
+	makeArgs.unmarkedFit(obj, termNames, comb, opt, c("lam", "p"),
+		"formula")
 }
+
+
+#`makeArgs.unmarkedFitColExt` <- function(obj, termNames, comb, opt, ...)
+#	makeArgs.unmarkedFit(obj, termNames, comb, opt, c("psi", "col", "ext", "p"),
+#		c("psiformula", "gammaformula", "epsilonformula", "pformula"))
+#
+#
+#`makeArgs.unmarkedFitGMM` <- function(obj, termNames, comb, opt, ...)
+#	makeArgs.unmarkedFit(obj, termNames, comb, opt,
+#		c("lambda", "phi", "p"),
+#		c("lambdaformula", "phiformula", "pformula") )
+#
+#`makeArgs.unmarkedFitPCO` <- function(obj, termNames, comb, opt, ...)
+#	makeArgs.unmarkedFit(obj, termNames, comb, opt,
+#		c("lam", "gamConst", "omega", "p"),
+#		c("lambdaformula", "gammaformula", "omegaformula", "pformula"))
+#
+#`makeArgs.unmarkedFitOccu` <- function(obj, termNames, comb, opt, ...)
+#	makeArgs.unmarkedFit(obj, termNames, comb, opt, c("psi", "p"),
+#		"formula")

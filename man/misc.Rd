@@ -2,34 +2,12 @@
 \alias{Miscellaneous}
 \alias{miscellaneous}
 \alias{coeffs}
+\alias{model.names}
 \alias{beta.weights}
 \alias{tTable}
 \alias{getAllTerms}
-
-%%\alias{coeffs.default}
-%%\alias{coeffs.glmer}
-%%\alias{coeffs.gls}
-%%\alias{coeffs.lme}
-%%\alias{coeffs.lmer}
-%%\alias{coeffs.mer}
-%%\alias{coeffs.spautolm}
-
-%%\alias{getAllTerms.default}
-%%\alias{getAllTerms.formula}
 \alias{getAllTerms.terms}
-%%\alias{getAllTerms.glmer}
-%%\alias{getAllTerms.lme}
-%%\alias{getAllTerms.lmer}
-%%\alias{getAllTerms.mer}
 
-%%\alias{tTable.default}
-%%\alias{tTable.gam}
-%%\alias{tTable.glmer}
-%%\alias{tTable.gls}
-%%\alias{tTable.lme}
-%%\alias{tTable.lmer}
-%%\alias{tTable.mer}
-%%\alias{tTable.spautolm}
 
 \alias{cbindDataFrameList}
 \alias{rbindDataFrameList}
@@ -39,15 +17,18 @@
 \title{Helper functions}
 \description{
 
-\code{beta.weights} - computes standardized coefficients (beta weights) for
+\code{beta.weights} computes standardized coefficients (beta weights) for
 	a model;
 
-\code{coeffs} - extracts model coefficients;
+\code{coeffs} extracts model coefficients;
 
-\code{getAllTerms} - extracts independent variable names from a model object;
+\code{getAllTerms} extracts independent variable names from a model object;
 
-\code{tTable} - extracts a table of coefficients, standard errors, and p-values
-from a model object.
+\code{tTable} extracts a table of coefficients, standard errors, and p-values
+from a model object;
+
+\code{model.names} generates shorthand numeric names for one or several fitted
+models.
 
 }
 
@@ -57,6 +38,7 @@ coeffs(model)
 getAllTerms(x, ...)
 \method{getAllTerms}{terms}(x, offset = TRUE, intercept = FALSE, ...)
 tTable(model, ...)
+model.names(object, ..., labels = NULL)
 
 cbindDataFrameList(x)
 rbindDataFrameList(x)
@@ -64,11 +46,20 @@ rbindDataFrameList(x)
 
 \arguments{
   \item{model}{a fitted model object. }
-  \item{x}{a fitted model object or a \code{\link{formula}}. 
+  \item{object}{a fitted model object or a list of such objects. }
+  \item{x}{a fitted model object or a \code{\link{formula}}.
 	for \code{*bindDataFrameList}, a list of \code{data.frames}. }
   \item{offset}{should \sQuote{offset} terms be included? }
   \item{intercept}{should terms names include the intercept?}
-  \item{\dots}{other arguments, often not used. }
+  \item{labels}{optionally, a character vector with names of all the terms,
+	e.g. from a global model. \code{model.names} enumerates the model terms in
+	order of their appearance in the list and in the models. So, changing the
+	order of the models would lead to different names. The argument 'labels' can
+	be used to prevent this happening.
+ }
+  \item{\dots}{ For \code{model.names}, more fitted model objects.
+	In other functions often not used.
+  }
 }
 
 
