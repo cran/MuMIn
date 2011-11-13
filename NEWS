@@ -1,5 +1,11 @@
 MuMIn package news:
 
+Version: 1.6.1 (2011-11-11)
+dredge: added generic support for all 'unmarked' models, and fixed some bugs 
+	with it.
+model.names: new function (previously was internal only)
+CAICF: adds to the collection of rarely used information criteria
+
 Version: 1.6.0 (2011-11-07)
 dredge: most important change (although invisible to the user) is in the way the
 	model objects are updated. The new function 'makeArgs' is used to generate 

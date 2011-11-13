@@ -31,9 +31,11 @@ By default, AIC\eqn{_{c}}{c} is used to rank the models and to obtain model
 selection probabilities, though any other information criteria can be 
 utilised. At least the following ones are currently implemented in \R: 
 \code{\link{AIC}} and \code{\link{BIC}} in package \pkg{stats}, and
-\code{\link{QAIC}}, \code{\link{QAICc}}, \code{\link{ICOMP}} and \link{Mallows' Cp} in \pkg{MuMIn}.
+\code{\link{QAIC}}, \code{\link{QAICc}}, \code{\link{ICOMP}}, 
+\code{\link{CAICF}}, and \link{Mallows' Cp} in \pkg{MuMIn}.
 
-Most of \R's common modelling functions are supported, for a full list refer to the help pages for \code{dredge} and \code{model.avg}.
+Most of \R's common modelling functions are supported, for a full list refer to 
+the help pages for \code{dredge} and \code{model.avg}.
 }
 
 \author{ Kamil Barto\enc{ń}{n} }

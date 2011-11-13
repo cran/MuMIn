@@ -1,9 +1,10 @@
 `null.fit` <- function(x, evaluate = FALSE, envir = environment(as.formula(formula(x)))) {
 	cl <- .getCall(x)
-	mClasses <- c("glmmML", "lm", "lme", "gls", "mer")
-	mClass <- mClasses[inherits(x, mClasses, which = TRUE) != 0L]
-	if(length(mClass) == 0) mClass <- "default"
+	mClasses <- c("glmmML", "lm", "lme", "gls", "mer", "unmarkedFit")
+	mClass <- mClasses[inherits(x, mClasses, which = TRUE) != 0L][1]
+	if(is.na(mClass)) mClass <- "default"
 	formulaArgName <- "formula"
+	Fun <- "glm"
 	switch(mClass,
 		glmmML = {
 			REML <- FALSE
@@ -21,18 +22,30 @@
 		}, mer = {
 			arg <- formals(match.fun(cl[[1L]]))
 			REML <- if(is.null(cl$REML)) arg$REML else cl$REML
+		}, unmarkedFit = {
+			nm <- names(cl)[-1]
+			if("formula" %in% nm) {
+				cl$formula <- ~1~1
+			} else {
+				formula.arg <- nm[grep(".+formula$", nm[1:7])]
+				for (i in formula.arg) cl[[i]] <- ~1
+			}
+			cl$starts <- NULL
+			Fun <- NA
 		}, {
 			REML <- FALSE
 		}
 	)
-	if(formulaArgName != "formula")
-		names(cl)[names(cl) == formulaArgName] <- "formula"
-	cl$formula <- update(as.formula(cl$formula), . ~ 1)
-	cl[[1L]] <- as.name("glm")
-	cl$method <- cl$start <- cl$offset <- contrasts <- NULL
-	#cl <- cl[c(TRUE, names(cl)[-1] %in% names(formals(match.fun(cl[[1L]]))))]
-	cl <- cl[c(TRUE, names(cl)[-1] %in% names(formals("glm")))]
 
+	if(!is.na(Fun)) cl[[1L]] <- as.name(Fun)
+	if(identical(Fun, "glm")) {
+		if(formulaArgName != "formula")
+			names(cl)[names(cl) == formulaArgName] <- "formula"
+		cl$formula <- update(as.formula(cl$formula), . ~ 1)
+		cl$method <- cl$start <- cl$offset <- contrasts <- NULL
+		#cl <- cl[c(TRUE, names(cl)[-1] %in% names(formals(match.fun(cl[[1L]]))))]
+		cl <- cl[c(TRUE, names(cl)[-1] %in% names(formals("glm")))]
+	}
 	if(evaluate) eval(cl, envir = envir) else cl
 }
 

@@ -3,20 +3,22 @@
 \alias{Mallows' Cp}
 \alias{Cp}
 \alias{ICOMP}
+\alias{CAICF}
 \encoding{utf-8}
 \title{Various information criteria}
 \description{
-Calculate Mallows' \emph{Cp} and Bozdogan's ICOMP information criterion.
+Calculate Mallows' \emph{Cp} and Bozdogan's ICOMP and CAIFC information criteria.
 }
 
 \usage{
 Cp(object, dispersion = NULL)
 ICOMP(object, ..., REML = NULL)
+CAICF(object, ..., REML = NULL)
 }
 
 \arguments{
-  \item{object}{a fitted model object (in case of ICOMP, a \code{logLik} method
-	must exist for the object). }
+  \item{object}{a fitted model object (in case of ICOMP and CAICF, \code{logLik}
+	and \code{vcov} methods must exist for the object). }
   \item{\dots}{optionally more fitted model objects. }
   \item{dispersion}{the dispersion parameter. If \code{NULL}, it is inferred
 	from object. }
@@ -37,14 +39,24 @@ Mallows' \emph{Cp} statistic is the residual deviance plus twice the estimate of
 \eqn{\sigma^{2}}{sigma^2} times the residual degrees of freedom. It is closely
 related to AIC (and a multiple of it if the dispersion is known).
 
-ICOMP  (I for informational and COMP for complexity) penalizes the covariance
+ICOMP (I for informational and COMP for complexity) penalizes the covariance
 complexity of the model, rather than the number of parameters directly.
+
+% \deqn{\mbox{ICOMP}=-2\log\mathit{Lik}(\hat{\theta})+k(\log(n)+2)+2C(\hat{\Sigma}_{model})}
 
 %\deqn{\mbox{ICOMP}=-2\log L+k\,\log(\frac{tr(\Sigma)}{k})-\log\mid\Sigma\mid}
 %
 %where log\emph{L} is the log-likelihood, \eqn{\Sigma} is the variance-covariance
 %matrix of parameters, \emph{k} is the number of parameters, and \emph{tr} is the
 %trace of the matrix.
+
+CAICF (C for "consistent" and F denotes the use of the Fisher
+ information matrix) includes with penalty the natural logarithm of the 
+ determinant of the estimated Fisher information matrix.
+
+% deqn{\mbox{CAICF}=-2\log\mathit{Lik}(\hat{\theta})+k(\log(n)+2)+
+% \log|\mathit{I}(\hat{\theta})|}
+
 
 }
 

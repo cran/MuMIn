@@ -131,14 +131,15 @@ function(x) {
 `abbreviateTerms` <- function(x, n = 1L, capwords = FALSE) {
 	ret <- x
 	allVars <- all.vars(reformulate(x))
+	allVars <- gsub("Intercept", "Int", allVars, fixed = TRUE)
 	pat <- paste("\\b", allVars, "\\b", sep="")
 	if(capwords) {
-		abx <- abbreviate(paste(toupper(substring(allVars, 1L, 1L)), 
+		abx <- abbreviate(paste(toupper(substring(allVars, 1L, 1L)),
 			tolower(substring(allVars, 2L)), sep=""), n)
 	} else {
 		abx <- abbreviate(allVars, n)
 	}
-	
+
 	for(i in seq_along(allVars)) ret <- gsub(pat[i], abx[i], ret, perl = TRUE)
 	ret <- gsub("I\\((\\w+)\\)", "\\1", ret, perl = TRUE)
 	attr(ret, "variables") <- structure(allVars, names = abx)
@@ -149,20 +150,35 @@ function(x) {
 
 #models <- list(model1, model2)
 
-`modelNames` <- function(models = NULL, allTerms, uqTerms, ...) {
+`model.names` <- function(object, ..., labels = NULL) {
+	if (missing(object) && length(models <- list(...)) > 0L) {
+		object <- models[[1L]]
+	} else if (inherits(object, "list")) {
+		if(length(object) ==  0L) stop("at least one model must be given")
+		models <- object
+		object <- models[[1L]]
+	} else {
+		models <- list(object, ...)
+	}
+	if(length(models) == 0L) stop("at least one model must be given")
+
+	.modelNames(models = models, uqTerms = labels)
+}
+
+`.modelNames` <- function(models = NULL, allTerms, uqTerms, ...) {
 	if(missing(allTerms)) 	allTerms <- lapply(models, getAllTerms)
-	if(missing(uqTerms)) 	uqTerms <- unique(unlist(allTerms))
-	
+	if(missing(uqTerms) || is.null(uqTerms)) 	uqTerms <- unique(unlist(allTerms))
+
 	ret <- sapply(allTerms, function(x) paste(sort(match(x, uqTerms)), collapse=""))
 
 	dup <- table(ret)
 	dup <- dup[dup > 1]
-	
+
 	if(length(dup) > 0) {
 		idup <- which(ret %in% names(dup))
-
 		ret[idup] <- sapply(idup, function(i) paste(ret[i], letters[sum(ret[seq.int(i)] == ret[i])], sep=""))
 	}
+	ret[ret == ""] <- "(Null)"
 	attr(ret, "variables") <- structure(seq_along(uqTerms), names = uqTerms)
 	ret
 }
@@ -173,7 +189,7 @@ function(x) {
 	withRandomTerms = TRUE, withFamily = TRUE, withArguments = TRUE,
 	fmt = "Model %s %s"
 	) {
-	
+
 	# sapply(tt, function(x) paste(sort(match(allt, x)), collapse=""))
 
 	if(withRandomTerms) {
