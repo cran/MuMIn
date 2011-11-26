@@ -1,12 +1,12 @@
 # test for marginality constraints
 `formulaAllowed` <-
-function(frm, except=NULL) {
+function(frm, except = NULL) {
 	if(isTRUE(except)) return(TRUE)
 	factors <- attr(terms(frm), "factors")
-	if(length(factors) == 0) return(TRUE)
+	if(length(factors) == 0L) return(TRUE)
 	if(is.character(except))
 		factors <- factors[!(rownames(factors) %in% except), ]
-	return(all(factors < 2))
+	return(all(factors < 2L))
 }
 
 
@@ -73,18 +73,17 @@ function(frm, except=NULL) {
 	IC
 }
 
-`matchCoef` <- function(m1, m2, all.terms = getAllTerms(m2, intercept = TRUE),
-	beta = FALSE) {
-	terms1 <- getAllTerms(m1, intercept = TRUE)
+`matchCoef` <- function(m1, m2,
+	all.terms = getAllTerms(m2, intercept = TRUE),
+	beta = FALSE,
+	terms1 = getAllTerms(m1, intercept = TRUE),
+	coef1 = if (beta) beta.weights(m1)[, 3L] else coeffs(m1))
+	{
 	if(any((terms1 %in% all.terms) == FALSE)) stop("'m1' is not nested within 'm2")
-
-	row <- structure(rep(NA, length(all.terms)), names=all.terms)
-	#coef1 <- coeffs(m1)
-	coef1 <- if (beta) beta.weights(m1)[, 3L] else coeffs(m1)
+	row <- structure(rep(NA, length(all.terms)), names = all.terms)
 	names(coef1) <- fixCoefNames(names(coef1))
-
 	row[terms1] <- NaN
-	cf <- coef1[match(terms1, names(coef1), nomatch=0)]
+	cf <- coef1[match(terms1, names(coef1), nomatch = 0)]
 	row[names(cf)]  <- cf
 	row
 }
@@ -109,12 +108,10 @@ function(x) {
 	  if((length(f) == 2L) || (is.call(f[[2L]]) && f[[2L]][[1L]] == "~")) 0 else f[[2L]]
 	})
 
-
  	if(!all(vapply(responses[-1L], "==", logical(1), responses[[1L]]))) {
 		err("response differs between models")
 		res <- FALSE
 	}
-
 
 	datas <- lapply(models, function(x) .getCall(x)$data)
 	# when using only 'nobs' - seems to be evaluated first outside of MuMIn namespace
@@ -145,10 +142,6 @@ function(x) {
 	attr(ret, "variables") <- structure(allVars, names = abx)
 	ret
 }
-
-## do.call("substitute", list(f, sapply(abbreviate(all.names(f,  unique=T), 1), as.name)))
-
-#models <- list(model1, model2)
 
 `model.names` <- function(object, ..., labels = NULL) {
 	if (missing(object) && length(models <- list(...)) > 0L) {
@@ -182,8 +175,6 @@ function(x) {
 	attr(ret, "variables") <- structure(seq_along(uqTerms), names = uqTerms)
 	ret
 }
-
-
 
 `modelNames0` <- function(models, strict = FALSE, asNumeric = FALSE,
 	withRandomTerms = TRUE, withFamily = TRUE, withArguments = TRUE,
@@ -243,12 +234,10 @@ function(x) {
 			sep="'")
 		}
 	}
-	if(strict || any(duplicated(ret))) {
+	if(strict || any(duplicated(ret)))
 		ret <- sprintf(fmt, format(seq_along(models)), ret)
-	}
 
-	if(!asNumeric) {
-		attr(ret, "variables") <- variables
-	}
+
+	if(!asNumeric) attr(ret, "variables") <- variables
 	ret
 }

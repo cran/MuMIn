@@ -44,7 +44,7 @@ getAllTerms.unmarkedFitDS  <- function (x, intercept = FALSE, ...)  {
 	ret
 }
 
-`tTable.unmarkedFit` <- function (model, ...) {
+`coefTable.unmarkedFit` <- function (model, ...) {
   do.call("rbind", lapply(model@estimates@estimates, function(y) {
     ret <- cbind(Estimate=y@estimates, SE = sqrt(diag(y@covMat)))
     rn <- rownames(ret)

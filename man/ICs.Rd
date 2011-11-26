@@ -50,8 +50,8 @@ complexity of the model, rather than the number of parameters directly.
 %matrix of parameters, \emph{k} is the number of parameters, and \emph{tr} is the
 %trace of the matrix.
 
-CAICF (C for "consistent" and F denotes the use of the Fisher
- information matrix) includes with penalty the natural logarithm of the 
+CAICF (C is for \sQuote{consistent} and F denotes the use of the Fisher
+ information matrix) includes with penalty the natural logarithm of the
  determinant of the estimated Fisher information matrix.
 
 % deqn{\mbox{CAICF}=-2\log\mathit{Lik}(\hat{\theta})+k(\log(n)+2)+
@@ -67,7 +67,8 @@ CAICF (C for "consistent" and F denotes the use of the Fisher
 % Information Complexity. \emph{J. Math. Psych.} 44: 62-91
 
 \references{
-Mallows, C. L. (1973) Some Comments on CP. \emph{Technometrics} 15: 661–675.
+Mallows, C. L. (1973) Some comments on \emph{Cp}. \emph{Technometrics} 15:
+661–675.
 
 Bozdogan, H. and Haughton, D.M.A. (1998) Information complexity criteria for
 regression models. \emph{Comp. Stat. & Data Analysis} 28: 51-76.

@@ -12,29 +12,24 @@ fm1Dial.gls <- gls(rate ~(pressure + I(pressure^2) + I(pressure^3) + I(pressure^
 
 varying <- list(
 	correlation = alist(
-		AR1_0.771=corAR1(0.771, form = ~ 1 | Subject),
-		AR1=corAR1(),
-		NULL
-		),
+		AR1_0.771=corAR1(0.771, form = ~ 1 | Subject), 	AR1=corAR1(), NULL),
 	weights = alist(vp.press=varPower(form = ~ pressure), NULL)
 	)
 
-dd <- dredge(fm1Dial.gls, m.max=1, m.min=1, fixed=~pressure, varying=varying, extra="R^2")
+dd <- dredge(fm1Dial.gls, m.max = 1, m.min = 1, fixed=~pressure, varying =
+	varying, extra = "R^2")
 models <- get.models(dd, 1:4)
 ma <- model.avg(models, revised=T)
 
 summary(ma)
 predict(ma)
-predict(ma, data.frame(QB=300, pressure=seq(0.24, 3, length=10)))
+predict(ma, data.frame(QB = 300, pressure = seq(0.24, 3, length = 10)))
 
 # example(corGaus)
 fm1BW.lme <- lme(weight ~ Time * Diet, data = BodyWeight, random = ~ Time, method="ML")
 
 varying <- list(
-	correlation = alist(
-		corExp(form = ~ Time),
-		corGaus(form = ~ Time)
-		),
+	correlation = alist(corExp(form = ~ Time), corGaus(form = ~ Time)),
 	weights = alist(NULL, varPower())
 )
 
@@ -67,11 +62,9 @@ dd <- dredge(fm2)
 summary(model.avg(dd, subset= delta <= 10))
 
 dredge(fm2, rank=QAIC, chat=deviance(fm2) / df.residual(fm2))
-MuMIn::dredge(fm2, rank=QAIC, chat=deviance(fm2) / df.residual(fm2))
-
 
 subset(dd, delta <= 10)
-mod.sel(get.models(dd, subset=delta <= 10))
+mod.sel(get.models(dd, subset = delta <= 10))
 
 
 rm(list=ls())
@@ -79,8 +72,9 @@ rm(list=ls())
 # TEST glmmML --------------------------------------------------------------------
 
 if(.checkPkg("glmmML")) {
-
+#require(MuMIn)
 library(glmmML)
+set.seed(100)
 dat <- data.frame(y = rbinom(100, prob = rep(runif(20), rep(5, 20)), size = 1),
 	x = rnorm(100), x2 = rnorm(100), id = factor(rep(1:20, rep(5, 20))))
 
@@ -114,7 +108,6 @@ gm <- get.models(dd, 1:4)
 ##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #maML <- model.avg(gm, rank="AICc", rank.args = list(REML=FALSE))
 #maREML <- model.avg(gm, rank="AICc", rank.args = list(REML=TRUE))
-
 #summary(maML)
 #summary(maREML)
 
@@ -131,10 +124,12 @@ detach(package:nlme); rm(list=ls())
 # TEST lmer -------------------------------------------------------------------------------
 if(.checkPkg("lme4")) {
 
+set.seed(1)
 library(lme4)
 data(Orthodont, package = "nlme")
 
-fm2 <- lmer(log(distance) ~ Sex*age + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
+Orthodont$rand <- runif(nrow(Orthodont))
+fm2 <- lmer(log(distance) ~ rand*Sex*age + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
 
 #fm0 <- lmer(distance ~ 1 + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
 #fm00 <- lm(distance ~ 1 , data = Orthodont)
@@ -143,17 +138,11 @@ dd <- dredge(fm2, trace=T)
 gm <- get.models(dd, 1:4)
 (ma <- model.avg(gm))
 
-
-#predict(ma)
-#predict(ma, data.frame(Sex="Male", Subject="M01", age=8:12))
-
-# TEST dredge with update'd model
-dd <- dredge(update(fm2, REML=FALSE), trace=T)
-
 # update.mer does not expand dots, so here we have a call:
 # lmer(formula = distance ~ Sex + (1 | Subject), data = Orthodont,
 #    REML = ..2, model = ..3)
 dd <- dredge(update(fm2, REML=F, model=F), trace=T)
+
 
 detach(package:lme4); rm(list=ls())
 }
@@ -163,7 +152,14 @@ if(.checkPkg("nlme")) {
 data(Orthodont, package = "nlme")
 
 fm1 <- lm(distance ~ Sex*age + age*Sex, data = Orthodont)
-dd <- dredge(fm1, trace=T)
+
+dispersion <- function(object) {
+	wts <- weights(object); if(is.null(wts)) wts <- 1
+	sum((wts * resid(object, type="working")^2)[wts > 0]) / df.residual(object)
+}
+
+
+dd <- dredge(fm1, extra = alist(dispersion))
 gm <- get.models(dd, 1:4)
 ma <- model.avg(gm, revised=F)
 
@@ -181,8 +177,6 @@ rm(list=ls())
 # TEST glm --------------------------------------------------------------------------------
 data(Cement, package = "MuMIn")
 
-#invisible(lapply(dir("e:/Dokumenty/R-Forge/mumin/pkg/R", pattern="\\.R$", full.names = T), source, keep.source =F, echo=F))
-
 nseq <- function(x, len=length(x)) seq(min(x, na.rm=TRUE), max(x, na.rm=TRUE),
 	length=len)
 
@@ -190,6 +184,7 @@ fm1 <- glm(y ~ (X1+X2+X3+X4)^2, data = Cement)
 dd <- dredge(fm1, trace=T)
 
 gm <- get.models(dd, 1:10)
+
 ma <- model.avg(gm)
 vcov(ma)
 
@@ -259,9 +254,6 @@ ops <- options(warn = -1)
 gam1 <- gam(y ~ s(x0) + s(x1) + s(x2) +  s(x3) + (x1+x2+x3)^2,
 	data = dat, method = "ML")
 
- gam(y ~ s(x0, k=1) + s(x1) + s(x2) +  s(x3) + (x1+x2+x3)^2,
-	data = dat, method = "ML")
-
 dd <- dredge(gam1, subset=!`s(x0)` & (!`s(x1)` | !x1) & (!`s(x2)` | !x2) & (!`s(x3)` | !x3), fixed="x1", trace=T)
 
 gm <- get.models(dd, cumsum(weight) <= .95)
@@ -288,7 +280,7 @@ dd <- dredge(esar1f, m.max=1,  fixed=~PEXPOSURE,
 	varying = list(
 		family = list("CAR", "SAR"),
 		method=list("Matrix_J", "full")
-	), trace=TRUE)
+	), trace=FALSE)
 options(warn=0)
 
 
@@ -320,8 +312,6 @@ predict(ma)[1:10]
 rm(list=ls()); detach(package:spdep)
 
 } # library(spdep)
-
-
 
 # TEST glm.nb ---------------------------------------------------------------------------
 if (.checkPkg("MASS")) {

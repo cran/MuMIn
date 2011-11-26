@@ -1,21 +1,21 @@
-\name{Miscellaneous}
-\alias{Miscellaneous}
-\alias{miscellaneous}
+\name{Model utilities}
+\alias{MuMIn-model-utils}
 \alias{coeffs}
 \alias{model.names}
 \alias{beta.weights}
 \alias{tTable}
+\alias{coefTable}
 \alias{getAllTerms}
 \alias{getAllTerms.terms}
 
-
-\alias{cbindDataFrameList}
-\alias{rbindDataFrameList}
-
 \encoding{utf-8}
+\newcommand{\href}{#2}
 
-\title{Helper functions}
+\title{Model utility functions}
 \description{
+These functions extract or calculate various values from provided fitted model
+	objects(s). They are mainly meant for internal use, but may be also useful
+	for end-users.
 
 \code{beta.weights} computes standardized coefficients (beta weights) for
 	a model;
@@ -24,8 +24,8 @@
 
 \code{getAllTerms} extracts independent variable names from a model object;
 
-\code{tTable} extracts a table of coefficients, standard errors, and p-values
-from a model object;
+\code{coefTable} extracts a table of coefficients, standard errors and, when
+	possible, associated p-values from a model object;
 
 \code{model.names} generates shorthand numeric names for one or several fitted
 models.
@@ -34,21 +34,24 @@ models.
 
 \usage{
 beta.weights(model)
+
 coeffs(model)
+
 getAllTerms(x, ...)
 \method{getAllTerms}{terms}(x, offset = TRUE, intercept = FALSE, ...)
-tTable(model, ...)
+
+coefTable(model, dispersion = NULL, ...)
+tTable(model, ...) # deprecated
+
 model.names(object, ..., labels = NULL)
-
-cbindDataFrameList(x)
-rbindDataFrameList(x)
 }
-
 \arguments{
   \item{model}{a fitted model object. }
+  \item{dispersion}{ the dispersion parameter. Applies to
+	\code{glm} only. See \code{\link{summary.glm}}.
+	}
   \item{object}{a fitted model object or a list of such objects. }
-  \item{x}{a fitted model object or a \code{\link{formula}}.
-	for \code{*bindDataFrameList}, a list of \code{data.frames}. }
+  \item{x}{a fitted model object or a \code{formula}. }
   \item{offset}{should \sQuote{offset} terms be included? }
   \item{intercept}{should terms names include the intercept?}
   \item{labels}{optionally, a character vector with names of all the terms,
@@ -62,10 +65,9 @@ rbindDataFrameList(x)
   }
 }
 
-
 \details{
-	The functions \code{coeffs}, \code{getAllTerms} and \code{tTable} provide
-	interface between the fitted model object and \code{model.avg} (and
+	The functions \code{coeffs}, \code{getAllTerms} and \code{coefTable} provide
+	interface between the model object and \code{model.avg} (and
 	\code{dredge}). Custom methods can be written to provide support for
 	additional classes of models. The vignette
 	\sQuote{\ifelse{html}{\href{/library/MuMIn/doc/gamm.pdf}{Extending
@@ -79,8 +81,7 @@ rbindDataFrameList(x)
 \code{\link{coef}}, the only difference being it returns fixed
 effects' coefficients for mixed models.
 
-Whimsically, the functions \code{*bindDataFrameList} are not exported from the
-name space, \cr use \code{MuMIn:::cbindDataFrameList} to access them.
+Use of \code{tTable} is deprecated in favour of \code{coefTable}.
 
 }
 
