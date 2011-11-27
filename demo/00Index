@@ -1,0 +1,3 @@
+dredge.distsamp	Model selection with 'distsamp' models from 'unmarked' package
+pdredge.pcount	Model selection with 'pcount' models from 'unmarked' package 
+				and using parallel execution

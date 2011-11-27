@@ -1,7 +1,8 @@
 export(
-	AICc, beta.weights, dredge, get.models, model.avg, par.avg, QAIC, QAICc,
-	getAllTerms, coeffs, tTable, Weights, model.sel, mod.sel, importance,
-	gamm, Cp, ICOMP, r.squaredLR, null.fit, model.names, CAICF
+	AICc, beta.weights, dredge, pdredge, get.models, pget.models, model.avg,
+	par.avg, QAIC, QAICc,
+	getAllTerms, coeffs, coefTable, tTable, Weights, model.sel, mod.sel,
+	importance, gamm, Cp, ICOMP, r.squaredLR, null.fit, model.names, CAICF
 )
 
 importFrom(stats, family)
@@ -62,7 +63,7 @@ S3method(Weights, default)
 
 S3method(getAllTerms, default)
 S3method(coeffs, default)
-S3method(tTable, default)
+S3method(coefTable, default)
 S3method(coefDf, default)
 
 S3method(AICc, default)
@@ -73,56 +74,56 @@ S3method(getAllTerms, formula)
 S3method(getAllTerms, terms)
 S3method(getAllTerms, lm)
 
-S3method(tTable, gam)
+S3method(coefTable, gam)
 
 S3method(nobs, sarlm)
 
-S3method(tTable, spautolm)
+S3method(coefTable, spautolm)
 S3method(nobs, spautolm)
 
 S3method(logLik, glmmML)
-S3method(tTable, glmmML)
+S3method(coefTable, glmmML)
 S3method(nobs, glmmML)
 S3method(summary, glmmML)
 
 S3method(getAllTerms, coxph)
-S3method(tTable, coxph)
+S3method(coefTable, coxph)
 S3method(logLik, coxph)
 S3method(nobs, coxph)
 
-S3method(tTable, survreg)
+S3method(coefTable, survreg)
 S3method(logLik, survreg)
 S3method(nobs, survreg)
 
 S3method(getAllTerms, lme)
 S3method(coeffs, lme)
-S3method(tTable, lme)
+S3method(coefTable, lme)
 S3method(coefDf, lme)
 
 # S3method(getAllTerms, lmer)
 # S3method(coeffs, lmer)
-# S3method(tTable, lmer)
+# S3method(coefTable, lmer)
 
 # S3method(getAllTerms, glmer)
 # S3method(coeffs, glmer)
-# S3method(tTable, glmer)
+# S3method(coefTable, glmer)
 
 S3method(getAllTerms, mer)
 S3method(coeffs, mer)
-S3method(tTable, mer)
+S3method(coefTable, mer)
 S3method(coefDf, mer)
 S3method(nobs, mer)
 
-S3method(tTable, multinom)
+S3method(coefTable, multinom)
 S3method(nobs, multinom)
 
 S3method(coeffs, gls)
-S3method(tTable, gls)
+S3method(coefTable, gls)
 S3method(coefDf, gls)
 
 S3method(formula, unmarkedFit)
 S3method(getAllTerms, unmarkedFit)
-S3method(tTable, unmarkedFit)
+S3method(coefTable, unmarkedFit)
 S3method(coefDf, unmarkedFit)
 S3method(nobs, unmarkedFit)
 S3method(getAllTerms, unmarkedFitDS)
@@ -136,7 +137,7 @@ S3method(formula, gamm)
 S3method(nobs, gamm)
 S3method(coeffs, gamm)
 S3method(getAllTerms, gamm)
-S3method(tTable, gamm)
+S3method(coefTable, gamm)
 
 S3method(makeArgs, default)
 S3method(makeArgs, gls)

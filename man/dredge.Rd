@@ -10,12 +10,13 @@ model, with optional rules for inclusion.
 }
 
 \usage{
-dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
-    fixed = NULL, m.max = NA, m.min = 0, subset, marg.ex = NULL,
-    trace = FALSE, varying, extra, ...)
+dredge(global.model, beta = FALSE, evaluate = TRUE,
+    rank = "AICc", fixed = NULL, m.max = NA, m.min = 0, subset,
+    marg.ex = NULL, trace = FALSE, varying, extra, ...)
 
 
-\method{print}{model.selection}(x, abbrev.names = TRUE, ...)
+\method{print}{model.selection}(x, abbrev.names = TRUE,
+    warnings = getOption("warn") != -1L, ...)
 
 }
 
@@ -60,20 +61,25 @@ dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	\item{extra}{ optional additional statistics to include in the result,
 	provided as functions, function names or a list of such (best if named
 	or quoted). Similarly as in \code{rank} argument, each function must accept
-	fitted object model as an argument and return (object coercible to) a
+	fitted object model as an argument and return (an object coercible to) a
 	numeric vector.
 	These can be e.g. additional information criterions or goodness-of-fit
-	statistics. The character string "R^2" is treated in a special way, and will
-	add a likelihood-ratio based \eqn{R^{^2}}{R^2} to the
-	resulting table (this is more efficient than using \code{\link{r.squaredLR}}
-	directly).
+	statistics. The character strings "R^2" and "adjR^2" are treated in a
+	special way, and will add a likelihood-ratio based \eqn{R^{^2}}{R^2} and
+	modified-\eqn{R^{^2}}{R^2} respectively to the result (this is more
+	efficient than using \code{\link{r.squaredLR}} directly).
 	}
 
   \item{x}{
     a \code{model.selection} object, returned by \code{dredge}. }
 
   \item{abbrev.names}{ should variable names be abbreviated when printing?
-  (useful with many variables). }
+	(useful with many variables). }
+
+  \item{warnings}{ if \code{TRUE}, errors and warnings issued during the model
+	fitting are printed below the table (currently, only with \code{pdredge}).
+	To permanently remove the warnings, set the object's attribute "warnings" to
+	\code{NULL}. }
 
   \item{\dots}{ optional arguments for the \code{rank} function. Any can be
     an expression (of mode \code{call}), in which case any \code{x} within it
@@ -82,7 +88,7 @@ dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 
 
 \details{
-Fitted model objects that can be used as a \code{global.model} include those
+Fitted model objects that can be used as a \code{global.model} include ones
 returned by
 \code{lm}, \code{glm} (package \pkg{stats});
 \code{gam}, \code{gamm} (\pkg{mgcv});
@@ -95,13 +101,13 @@ returned by
 \code{glmmML} (\pkg{glmmML});
 \code{coxph}, \code{survreg} (\pkg{survival});
 \code{rq} (\pkg{quantreg});
-and most models from package \pkg{unmarked}.
+and all models from package \pkg{unmarked}.
 \code{gamm} and \code{gamm4} should be evaluated \emph{via} the wrapper
 \code{MuMIn::\link[MuMIn]{gamm}}.
 
-Models are fitted one by one through repeated evaluation of modified calls to 
-the \code{global.model} (in a similar fashion as with \code{update}). This 
-method, while robust in that it can be applied to a variety of different model 
+Models are fitted one by one through repeated evaluation of modified calls to
+the \code{global.model} (in a similar fashion as with \code{update}). This
+method, while robust in that it can be applied to a variety of different model
 object types is not very efficient, and may be time-intensive.
 
 Note that the number of combinations grows exponentially with number of
@@ -155,9 +161,12 @@ The attribute \code{"calls"} is a list containing the model calls used (arranged
 in the same order as the models).
 Other attributes:
 \code{"global"} - the \code{global.model} object,
-\code{"rank"} - the \code{rank} function used,  and \code{"call"} - the matched
-call.
-
+\code{"rank"} - the \code{rank} function used, \code{"call"} - the matched
+call, and
+\code{"warnings"} - list of errors and warnings given by the modelling function
+	during the fitting, with model number appended to each. The associated model
+	call can be found with \code{attr(*, "calls")[["i"]]}, where \var{i} is the
+	model number.
 }
 
 \author{Kamil Barto\enc{ń}{n}}
@@ -166,7 +175,7 @@ call.
 Users should keep in mind the hazards that a \dQuote{thoughtless approach}
 of evaluating all possible models poses. Although this procedure is in certain
 cases useful and justified, it may result in selecting a spurious \dQuote{best}
-model, due to model selection bias.
+model, due to the model selection bias.
 
 \emph{\dQuote{Let the computer find out} is a poor strategy and usually reflects
 the fact that the researcher did not bother to think clearly about the problem
@@ -175,6 +184,10 @@ of interest and its scientific setting} (Burnham and Anderson, 2002).
 }
 
 \seealso{
+
+\code{\link{pdredge}} is a parallelized version of this function, which may be
+	faster if execution of \code{\link{dredge}} takes very long.
+
 \code{\link{get.models}}, \code{\link{model.avg}}.
 
 There are \code{\link[=subset.model.selection]{subset}} and \code{plot} methods.
@@ -229,13 +242,15 @@ dredge(fm1, m.max = 2)
 
 
 # Add R^2 and F-statistics, use the 'extra' argument
-dredge(fm1, m.max = 1, extra = c("R^2", F = function(x) summary(x)$fstatistic[[1]]))
+dredge(fm1, m.max = 1, extra = c("R^2", F = function(x)
+    summary(x)$fstatistic[[1]]))
 
 # with summary statistics:
 dredge(fm1, m.max = 1, extra = list(
     "R^2", "*" = function(x) {
         s <- summary(x)
-        c(Rsq = s$r.squared, adjRsq = s$adj.r.squared, F = s$fstatistic[[1]])
+        c(Rsq = s$r.squared, adjRsq = s$adj.r.squared,
+            F = s$fstatistic[[1]])
     })
 )
 
@@ -244,7 +259,8 @@ dredge(fm1, m.max = 1, extra = list(
 
 # there is no BIC in R < 2.13.0, so need to add it:
 if(!exists("BIC", mode="function"))
-    BIC <- function(object, ...) AIC(object, k = log(length(resid(object))))
+    BIC <- function(object, ...)
+        AIC(object, k = log(length(resid(object))))
 
 dredge(fm1, m.max = 1, extra = alist(AIC, BIC, ICOMP, Cp))
 

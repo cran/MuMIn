@@ -75,7 +75,7 @@ data(Cement)
 fm1 <- lm(y ~ X1 + X2 + X3 + X4, data = Cement)
 
 ms1 <- dredge(fm1)
-confset.95p <- get.models(ms1, subset=cumsum(weight) <= .95)
+confset.95p <- get.models(ms1, subset = cumsum(weight) <= .95)
 avgm <- model.avg(confset.95p)
 
 nseq <- function(x, len = length(x)) seq(min(x, na.rm = TRUE),

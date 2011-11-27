@@ -79,12 +79,11 @@ fmList <- get.models(ms2, 1:4)
 
 # Because the models originate from 'dredge(..., rank=AICc, REML=FALSE)',
 # the default weights in 'model.avg' are ML based:
-model.avg(fmList)
+summary(model.avg(fmList))
 
 # same result
 #model.avg(fmList, rank = "AICc", rank.args = list(REML=FALSE))
 
 }
-
 
 \keyword{models}

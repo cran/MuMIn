@@ -51,5 +51,5 @@ function (model) coef(model$gam)
 `getAllTerms.gamm` <-
 function (x, ...) getAllTerms(x$gam, ...)
 
-`tTable.gamm` <-
-function (model, ...) tTable(model$gam, ...)
+`coefTable.gamm` <-
+function (model, ...) coefTable(model$gam, ...)

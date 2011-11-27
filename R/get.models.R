@@ -1,16 +1,63 @@
 `get.models` <-
-function(object, subset = delta <= 4, ...) {
+function(object, subset, ...) {
+	calls <- attr(object, "calls")
+	if(is.null(calls)) stop("object has no 'calls' attribute")
 
-	#subset <- if (missing(subset)) quote() else substitute(subset)
-	subset <- eval(substitute(subset), envir = object, enclos = parent.frame())
-	gmod <- attr(object, "global")
-	calls <- attr(object, "calls")[subset]
+	if(!missing(subset)) {
+	    r <- eval(substitute(subset), object, parent.frame())
+		if(is.character(r)) r <- match(r, dimnames(object)[[1L]])
+		calls <- calls[r]
+	}
+	glo <- attr(object, "global")
 
-	arg <- list(substitute(gmod), NA, ...)
-	env <- attr(tryCatch(terms(gmod), error=function(...) terms(formula(gmod))),
+	newargs <- match.call()
+	newargs[[1L]] <- NULL
+	newargs[c('object', 'subset')] <- NULL
+
+	naNames <- names(newargs)
+	if(length(newargs))  for(i in seq_along(calls)) calls[[i]][naNames] <- newargs
+
+	env <- attr(tryCatch(terms(glo), error = function(...) terms(formula(glo))),
 		".Environment")
 
-	models <- lapply(calls, eval, envir=env)
+	models <- lapply(calls, eval, envir = env)
+
+	attr(models, "rank.call") <- attr(object, "rank.call")
+	attr(models, "rank") <- attr(object, "rank")
+
+	return(models)
+}
+
+`pget.models` <-
+function(object, cluster = NA, subset, ...) {
+	calls <- attr(object, "calls")
+	if(is.null(calls)) stop("object has no 'calls' attribute")
+
+	if(!missing(subset)) {
+	    r <- eval(substitute(subset), object, parent.frame())
+		if(is.character(r)) r <- match(r, dimnames(object)[[1L]])
+		calls <- calls[r]
+	}
+	newargs <- match.call()
+	newargs[[1L]] <- NULL
+	newargs[c('object', 'subset', 'cluster')] <- NULL
+
+	naNames <- names(newargs)
+	if(length(newargs)) for(i in seq_along(calls)) calls[[i]][naNames] <- newargs
+
+	doParallel <- inherits(cluster, "cluster")
+	if(doParallel) {
+		.parallelPkgCheck()
+		# all this is to trick the R-check
+		clusterCall <- get("clusterCall")
+		clusterApply <- get("clusterApply")
+		models <- clusterApply(cluster, calls, "eval", envir = .GlobalEnv)
+	} else {
+		glo <- attr(object, "global")
+		env <- attr(tryCatch(terms(glo), error = function(...) terms(formula(glo))),
+			".Environment")
+		models <- lapply(calls, eval, envir = env)
+	}
 
 	attr(models, "rank.call") <- attr(object, "rank.call")
 	attr(models, "rank") <- attr(object, "rank")

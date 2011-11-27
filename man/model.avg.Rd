@@ -11,50 +11,55 @@ Model averaging based on an information criterion.
 \usage{
 
 model.avg(object, ..., beta = FALSE, rank = NULL, rank.args = NULL,
-    revised.var = TRUE)
+    revised.var = TRUE, dispersion = NULL)
 }
 
 \arguments{
-    \item{object}{A fitted model object or a list of such objects. Alternatively
-        an object of class \code{model.selection}. See \sQuote{Details}. }
+	\item{object}{ a fitted model object or a list of such objects.
+		Alternatively an object of class \code{model.selection}. See
+		\sQuote{Details}. }
 
     \item{\dots}{ more fitted model objects. }
 
-    \item{beta}{Logical, should standardized coefficients be returned? }
+    \item{beta}{ logical, should standardized coefficients be returned? }
 
-    \item{rank}{Optional, custom rank function (information criterion) to use
-        instead of \code{AICc}, e.g. \code{BIC} or \code{QAIC}, may be omitted
-        if \code{object} is a model list returned by \code{get.models}
-        or a \code{model.selection} object.
-        See \sQuote{Details}. }
+	\item{rank}{ optionally, a custom rank function (information criterion) to
+		use instead of \code{AICc}, e.g. \code{BIC} or \code{QAIC}, may be
+		omitted if \code{object} is a model list returned by \code{get.models}
+		or a \code{model.selection} object. See \sQuote{Details}. }
 
-    \item{rank.args}{Optional \code{list} of arguments for the \code{rank}
+    \item{rank.args}{ optional \code{list} of arguments for the \code{rank}
         function. If one is an expression, an \code{x} within it is substituted
         with a current model. }
 
-    \item{revised.var}{Logical, indicating whether to use revised formula for
+    \item{revised.var}{ logical, indicating whether to use revised formula for
         standard errors. See \code{\link{par.avg}}. }
+
+	\item{dispersion}{ the dispersion parameter for the family used. See
+		\code{\link{summary.glm}}. This value is used only with the model types
+		which accept it (currently only \code{glm}), and will be
+		silently ignored otherwise. }
 }
 
 \value{
 
 An object of class \code{averaging} is a list with components:
 
-\item{summary}{ a \code{data.frame} with log-likelihood, IC, Delta(IC) and 
+\item{summary}{ a \code{data.frame} with log-likelihood, IC, Delta(IC) and
 	Akaike weights for the component models. }
 \item{coefficients, se, dfs}{ matrices of component models' coefficients, their
 	standard errors, and degrees of freedom. }
 \item{coef.shrinkage}{ a vector of full model-averaged coefficients, see
 	\sQuote{Note}. }
-\item{variable.codes}{ names of the variables with numerical codes used in
-    \code{summary}. }
+\item{term.codes}{ names of the terms with numerical codes used in 
+	the \code{summary}. }
 \item{avg.model}{ the model averaged parameters. A \code{data.frame} containing
     averaged coefficients, unconditional standard error, adjusted SE (if
 	\emph{df}s are available) and z-values (coefficient and SE) and
 	significance (assuming a normal error distribution). }
-\item{importance}{ relative importance of the predictor variables,
-    calculated as a sum of the Akaike weights over all of the models in
-    which the parameter of interest appears. }
+\item{importance}{ relative importance of the predictor variables (including 
+	interactions), calculated as a sum of the \emph{Akaike weights} over all of 
+	the models in which the parameter of interest appears. }
 \item{term.names}{ character vector giving names of all terms in the model. }
 \item{x, formula}{ the model matrix and formula corresponding to the one that
 	would be used in a single model. \code{formula} contains only the averaged
@@ -63,7 +68,7 @@ An object of class \code{averaging} is a list with components:
 \item{call}{ the matched call. }
 
 In addition, the object has following attributes:
-\item{mList}{ a list of component model objects. }
+\item{modelList}{ a list of component model objects. }
 \item{beta}{ logical, were standardized coefficients used? }
 \item{revised.var}{ if \code{TRUE}, the standard errors were calculated with the
 	revised formula (See \code{\link{par.avg}}). }
@@ -71,8 +76,8 @@ In addition, the object has following attributes:
 
 \details{
 
-\code{model.avg} has been tested to work with the fitted objects from the following
-modelling functions:
+\code{model.avg} has been tested to work with the fitted objects from the 
+ following modelling functions:
 	\code{lm}, \code{glm};
 	\code{gam}, \code{gamm} (\pkg{mgcv});
 	\code{gamm4} (\pkg{gamm4});
@@ -83,11 +88,9 @@ modelling functions:
 	\code{sarlm}, \code{spautolm} (\pkg{spdep});
 	\code{glmmML} (\pkg{glmmML});
 	\code{coxph}, \code{survreg} (\pkg{survival});
-	and several models within the class \code{unmarkedFit} (\pkg{unmarked}).
-Other classes are also likely to be supported, in particular those
-    inheriting from one of the above classes. See the vignette
-	\sQuote{Extending \pkg{MuMIn}'s functionality} for a demonstration on how to
-	provide support for other types of models.
+	and models within the class \code{unmarkedFit} (\pkg{unmarked}).
+Other classes are also likely to be supported, in particular those inheriting 
+from one of the above classes.
 
 \code{model.avg} may be used with a list of models, but also directly with a
 	\code{model.selection} object returned by \code{dredge}. In the latter case,
@@ -150,6 +153,9 @@ Springer-Verlag.
 See \code{\link{par.avg}} for more details of model averaged parameter
 calculation.
 
+Vignette \sQuote{Extending \pkg{MuMIn}'s functionality} demonstrates how to 
+provide support for other types of models.
+
 \code{\link{dredge}}, \code{\link{get.models}} \cr
 \code{\link{AICc}} has examples of averaging models fitted by REML.
 
@@ -167,6 +173,8 @@ fm1 <- lm(y ~ ., data = Cement)
 
 #models with delta.aicc < 4
 summary(model.avg(get.models(ms1, subset = delta < 4))) # get averaged coefficients
+
+
 
 #or as a 95\% confidence set:
 confset.95p <- get.models(ms1, cumsum(weight) <= .95)

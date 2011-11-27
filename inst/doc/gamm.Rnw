@@ -44,7 +44,7 @@ These generic functions include the ones defined in package \code{stats}
 (\code{logLik}, \code{formula}, \code{nobs},
 and optionally \code{deviance} which may simply return \code{NULL}), as well
 as ones defined in \pkg{MuMIn} itself (\code{coeffs},
-\code{getAllTerms} and \code{tTable}). In some cases the default methods may
+\code{getAllTerms} and \code{coefTable}). In some cases the default methods may
 work as well.
 
 In the case of \code{gamm} and \code{gamm4}, the returned object has no special
@@ -144,11 +144,10 @@ Methods for generic functions defined in \pkg{MuMIn}:
 <<results=hide>>=
 coeffs.gamm <- function (model) coef(model$gam)
 getAllTerms.gamm <- function (x, ...) getAllTerms(x$gam, ...)
-tTable.gamm <- function (model, ...) tTable(model$gam, ...)
+coefTable.gamm <- function (model, ...) coefTable(model$gam, ...)
 @
-(the name \code{tTable} is somewhat misleading, as the \code{data.frame}
-returned does not need to contain \emph{t}-values, two columns are obligatory:
-\sQuote{Estimate} and \sQuote{Std. Error})
+Two columns are obligatory in the \code{data.frame} returned by
+\code{coefTable}: \sQuote{Estimate} and \sQuote{Std. Error}).
 
 \section{Model selection}
 

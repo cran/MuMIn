@@ -1,10 +1,31 @@
 MuMIn package news:
 
+Version: 1.6.4 (2011-11-26)
+coefTable: replaces 'tTable' (which still exists, but is deprecated), it 
+	accepts an argument 'dispersion'. The dispersion parameter can be also 
+	passed from 'model.avg'.
+pdredge: collects all the warnings and errors which occur during fitting, and 
+	stores them. They are printed below the table.
+	The function does more thorough checking of the cluster nodes' environment,
+	for possible missing variables and functions.
+get.models:  "subset" argument can be now a character vector giving model names.
+added demos for model selection with models from 'unmarked' package using 
+	'dredge' and 'pdredge'
+
+Version: 1.6.3 (2011-11-15)
+pget.models: new function, parallel version of 'get.models'.
+(p)get.models: important change of the default behaviour: without the 'subset' 
+	argument, ALL models are returned. Also the '...' arguments were not used to
+	update the returned models - this is corrected now.
+
+Version: 1.6.2 (2011-11-13)
+pdredge: new function, a parallel version of dredge (experimental).
+
 Version: 1.6.1 (2011-11-11)
 dredge: added generic support for all 'unmarked' models, and fixed some bugs 
 	with it.
 model.names: new function (previously was internal only)
-CAICF: adds to the collection of rarely used information criteria
+CAICF: adds to the collection of rarely used information criteria.
 
 Version: 1.6.0 (2011-11-07)
 dredge: most important change (although invisible to the user) is in the way the
@@ -17,13 +38,13 @@ dredge: most important change (although invisible to the user) is in the way the
 	and several other 'unmarkedFit' objects has been added.
 dredge: has new argument 'extra' to add additional statistics into the model 
 	selection table.
-r.squared: new function t ocalculate likelihood-ratio based pseudo-R-squared
+r.squared: new function to calculate likelihood-ratio based pseudo-R-squared
 subset method for 'model.selection' accepts a shorthand notation "has(x)" to 
 	select rows where a variable is present.
 support for 'survreg' and 'rq' models (packages 'survival' and 'quantreg')
 
 Version: 1.5.2 (2011-10-21)
-dredge: fixed as bug with wrong ordering of column names in the returned 
+dredge: fixed a bug with wrong ordering of column names in the returned 
 	data.frame (thanks to Staffan Roos for reporting this).
 
 Version: 1.5.1 (2011-10-20)
