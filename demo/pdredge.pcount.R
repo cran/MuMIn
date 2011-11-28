@@ -3,22 +3,24 @@
 # with parallel execution
 ###
 
+if(require(parallel) || require(snow)) {
 require(MuMIn)
 library(unmarked)
 require(stats4)
-require(parallel) || require(snow)
 
 # Set up the cluster
-ncores <- if(exists("detectCores", mode = "function")) 
+ncores <- if(exists("detectCores", mode = "function"))
 	detectCores() else getOption("cl.cores", 2)
-clust <- makeCluster(ncores)
+
+clust <- try(makeCluster(getOption("cl.cores", 2), type = "SOCK"))
+if(inherits(clust, "cluster")) {
 
 data(mallard)
-mallardUMF <- unmarkedFramePCount(mallard.y, siteCovs = mallard.site, 
+mallardUMF <- unmarkedFramePCount(mallard.y, siteCovs = mallard.site,
     obsCovs = mallard.obs)
-	
+
 # Fit the global model
-(ufm.mallard <- pcount(~ ivel + date + I(date^2) ~ length + elev + forest, 
+(ufm.mallard <- pcount(~ ivel + date + I(date^2) ~ length + elev + forest,
     mallardUMF, K = 30))
 
 invisible(clusterEvalQ(clust, library(unmarked, logical = TRUE)))
@@ -49,7 +51,13 @@ models <- pget.models(pdd2, clust, delta < 2 | df == min(df))
 
 modSel(fitList(fits = structure(models, names = model.names(models,
     labels = getAllTerms(ufm.mallard)))), nullmod = "(Null)")
-	
+
 stopCluster(clust)
+
+} else # if(inherits(clust, "try-error"))
+message("Could not set up the cluster")
+
+} # if(require(parallel) || require(snow))
+
 
 ########################
