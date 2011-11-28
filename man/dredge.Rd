@@ -15,8 +15,8 @@ dredge(global.model, beta = FALSE, evaluate = TRUE,
     marg.ex = NULL, trace = FALSE, varying, extra, ...)
 
 
-\method{print}{model.selection}(x, abbrev.names = TRUE,
-    warnings = getOption("warn") != -1L, ...)
+\method{print}{model.selection}(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L,
+    ...)
 
 }
 

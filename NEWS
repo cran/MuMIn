@@ -1,5 +1,8 @@
 MuMIn package news:
 
+Version: 1.6.5 (2011-11-28)
+pdredge example changed to use SOCK cluster type (portability issue)
+
 Version: 1.6.4 (2011-11-26)
 coefTable: replaces 'tTable' (which still exists, but is deprecated), it 
 	accepts an argument 'dispersion'. The dispersion parameter can be also 

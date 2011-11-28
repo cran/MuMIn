@@ -57,9 +57,8 @@ subsetting and extracting from \code{data.frame}s.
 data(Cement)
 fm1 <- lm(formula = y ~ X1 + X2 + X3 + X4, data = Cement)
 
-# generate models where each variable is included only if the previous are
-# included too, e.g. X2 only if X1 is there, and X3 only if X2 and X1 (this is
-# not supposed to make sense in this case, just to demonstrate the syntax).
+# generate models where each variable is included only if the previous
+# are included too, e.g. X2 only if X1 is there, and X3 only if X2 and X1
 dredge(fm1, subset = (!X2 | X1) & (!X3 | X2) & (!X4 | X3))
 
 # alternatively, generate "all possible" combinations
