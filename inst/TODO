@@ -1,6 +1,9 @@
 TODO list for MuMIn package:
 
-*   model.names: add textual representation of a model
-*   model.avg: checking for consistency in contrasts used over the model set
-**  handling random effects in 'dredge' in lme and lmer. Currently 'varying' may
-        be used with lme for that purpose
+*   model.names: return a textual representation of the model
+*   model.avg: checking for consistency of contrasts used in the models
+**  handling random effects in 'dredge' (in lme and lmer). Currently 'varying' 
+        may be used with lme for that purpose
+**  add a 'keep' argument for 'dredge' to return (a subset of) models (similarly
+        as in 'model.avg' attr(*, 'modelList'))
+       

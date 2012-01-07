@@ -50,7 +50,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		gmCall <- substitute(global.model)
 		if(!is.call(gmCall)) {
 			if(inherits(global.model, c("gamm", "gamm4")))
-				message("for 'gamm' models with 'dredge', use 'MuMIn::gamm' wrapper")
+				message("for 'gamm' models use 'MuMIn::gamm' wrapper")
 			stop("could not retrieve the call to 'global.model'")
 
 
@@ -94,7 +94,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	n.vars <- length(allTerms)
 
 	if(isTRUE(rankArgs$REML) || (isTRUE(.isREMLFit(global.model)) && is.null(rankArgs$REML)))
-		warning("comparing models with different fixed effects fitted by REML")
+		warning("comparing models fitted by REML")
 
 	if (beta && is.null(tryCatch(beta.weights(global.model), error=function(e) NULL,
 		warning = function(e) NULL))) {
@@ -203,7 +203,9 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	comb.sfx <- rep(TRUE, n.fixed)
 	comb.seq <- if(nov != 0L) seq_len(nov) else 0L
 	k <- 0L
-	ord <- extraResult1 <- integer(0L)
+	extraResult1 <- integer(0L)
+	ord <- integer(ret.nchunk)
+
 
 	argsOptions <- list(
 		response = attr(allTerms0, "response"),
@@ -268,7 +270,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 					}
 
 					if(trace) {
-						cat(modelId, ": "); print(clVariant);
+						cat(modelId, ": "); print(clVariant)
 						utils::flush.console()
 						}
 					if(evaluate) {
@@ -323,7 +325,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			qresultLen <- length(qrows)
 			retNrow <- nrow(ret)
 			if(k + qresultLen > retNrow) {
-				nadd <- min(ret.nchunk, (ncomb * nvariants) - retNrow)
+				nadd <- min(ret.nchunk, nmax - retNrow)
 				ret <- rbind(ret, matrix(NA, ncol = ret.ncol, nrow = nadd),
 					deparse.level = 0L)
 				calls <- c(calls, vector("list", nadd))

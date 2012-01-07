@@ -1,5 +1,9 @@
 MuMIn package news:
 
+Version: 1.6.6 (2012-01-07)
+model.avg: fixed error occurring when non-estimable coefficients existed in the 
+	component models (problem reported by Annabel Smith)
+
 Version: 1.6.5 (2011-11-28)
 pdredge example changed to use SOCK cluster type (portability issue)
 

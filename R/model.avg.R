@@ -8,8 +8,7 @@ function(object, ..., beta = FALSE,
 
 	if(inherits(object, "model.selection")) {
 		if(!("subset" %in% names(match.call(get.models))))
-			warning("'subset' argument is missing. Using the default ",
-				sQuote(deparse(formals(get.models)$subset)))
+			warning("'subset' argument is missing. Using all models by default")
 		object <- get.models(object, ...)
 	}
 
@@ -105,7 +104,7 @@ function(object, ..., beta = FALSE,
 			j <- match(rownames(coefmat), allCoefNames)
 			all.coef[i, j] <- coefmat[, 1L]
 			all.se[i, j] <- coefmat[, 2L]
-			mdf <- coefDf(m)
+			mdf <- coefDf(m)[!is.na(coeffs(m))]
 			if(!is.null(mdf) && length(mdf)) all.df[i, j] <- mdf
 		}
 	}
@@ -133,6 +132,8 @@ function(object, ..., beta = FALSE,
 			alpha = alpha,
 			revised.var = revised.var),
 		double(5L)))
+
+	avg.model[is.nan(avg.model)] <- NA
 
 
 	dimnames(avg.model) <- list(allCoefNames, c("Estimate", "Std. Err.",
@@ -217,7 +218,9 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 
 	# If all models inherit from lm:
 	if ((missing(se.fit) || !se.fit)
-		&& all(linherits(models, c(gam = FALSE, lm = TRUE)))) {
+		&& all(linherits(models, c(gam = FALSE, lm = TRUE)))
+		&& !any(is.na(object$coef.shrinkage))
+		) {
 		coeff <- coef(object, full = full)
 		frm <- formula(object)
 
@@ -347,6 +350,8 @@ function (object, parm, level = 0.95, ...) {
     ci <- t(sapply(parm, function(i)
 		par.avg(cf[,i], se[,i], wts, object$dfs[, i], alpha = a2)))[, 4L:5L]
     pct <- stats:::format.perc(c(a, 1L - a), 3L)
+	
+	ci[is.na(object$coef.shrinkage), ] <- NA_real_
     colnames(ci) <- pct
     return(ci)
 }
@@ -365,10 +370,15 @@ function (x, digits = max(3L, getOption("digits") - 3L),
 	cat("\nTerm codes:\n")
 	print.default(x$term.codes, quote = FALSE)
 
-	cat("\nModel-averaged coefficients:\n")
+
+	cat("\nModel-averaged coefficients: \n")
+	if (nnotdef <- sum(is.na(x$coefmat[, 1L])))
+		 cat("(", nnotdef, " not defined because of singularities in all ",
+			"component models) \n", sep = "")
+
 	#no.ase <- all(is.na(x$avg.model[,3]))
 
-	hasPval <- TRUE # attr(x, "method") == "NA"
+	hasPval <- TRUE
 
     printCoefmat(x$coefmat, P.values = hasPval, has.Pvalue = hasPval,
 		digits = digits, signif.stars = signif.stars)
