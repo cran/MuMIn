@@ -7,7 +7,7 @@ require(MuMIn)
 #if(.checkPkg("nlme")) {
 library(nlme)
 
-fm1Dial.gls <- gls(rate ~(pressure + I(pressure^2) + I(pressure^3) + I(pressure^4))*QB,
+fm1Dial.gls <- gls(rate ~(pressure + I(pressure^2) + I(pressure^3))*QB,
       Dialyzer, method="ML")
 
 varying <- list(
@@ -16,14 +16,19 @@ varying <- list(
 	weights = alist(vp.press=varPower(form = ~ pressure), NULL)
 	)
 
-dd <- dredge(fm1Dial.gls, m.max = 1, m.min = 1, fixed=~pressure, varying =
-	varying, extra = "R^2")
+dd <- dredge(fm1Dial.gls, m.max = 2, m.min = 1, fixed=~pressure, varying = varying, extra = "R^2")
+
 models <- get.models(dd, 1:4)
 ma <- model.avg(models, revised=T)
+ms <- model.sel(models)
+print(ms, abbr = F)
+print(ms, abbr = T)
 
 summary(ma)
-predict(ma)
-predict(ma, data.frame(QB = 300, pressure = seq(0.24, 3, length = 10)))
+predict(ma)[1:10]
+
+#predict(ma, data.frame(QB = 300, pressure = seq(0.24, 3, length = 10)))
+predict(ma, Dialyzer[1:5, ])
 
 # example(corGaus)
 fm1BW.lme <- lme(weight ~ Time * Diet, data = BodyWeight, random = ~ Time, method="ML")
@@ -37,10 +42,20 @@ dd <- dredge(fm1BW.lme, m.max=1, fixed=~Time, varying=varying)
 #dd <- dredge(fm1, trace=T)
 models <- get.models(dd, 1:4)
 ma <- model.avg(models, revised=T)
+
+
+summary(ma <- model.avg(models[1:4]))
+summary(model.avg(dd[1:4]))
+
+model.avg(dd[1:4])
+
+logLik(dd)
+
 mod.sel(models)
 summary(ma)
 confint(ma)
-#ma <- model.avg(gm, revised=F)
+predict(ma)[1:10]
+
 
 detach(package:nlme); rm(list=ls())
 #}
@@ -53,19 +68,18 @@ detach(package:nlme); rm(list=ls())
 d.AD <- data.frame(counts =c(18,17,15,20,10,20,25,13,12), outcome = gl(3,1,9),
 treatment = gl(3,3))
 #fm2 <- glm(counts ~ outcome + treatment, family=quasipoisson(), data=d.AD)
-fm2 <- glm(counts ~ outcome + treatment, family=poisson(), data=d.AD)
+fm2 <- glm(counts ~ outcome * treatment, family = poisson(), data=d.AD)
 
 #dd <- dredge(fm2)
 #summary(model.avg(dd, subset= delta <= 10))
-dd <- dredge(fm2, rank=QAIC, chat=deviance(fm2) / df.residual(fm2))
-dd <- dredge(fm2)
-summary(model.avg(dd, subset= delta <= 10))
+dd <- dredge(fm2, rank = QAIC, chat = deviance(fm2) / df.residual(fm2))
+# dd <- dredge(fm2)
+# summary(model.avg(dd, subset= delta <= 10))
 
-dredge(fm2, rank=QAIC, chat=deviance(fm2) / df.residual(fm2))
+dredge(fm2, rank = QAIC, chat = deviance(fm2) / df.residual(fm2))
 
 subset(dd, delta <= 10)
 mod.sel(get.models(dd, subset = delta <= 10))
-
 
 rm(list=ls())
 
@@ -98,7 +112,6 @@ fm2 <- lme(distance ~ Sex*age + age*Sex, data = Orthodont,
 # Model selection: ranking by AICc which uses ML
 dd <- dredge(fm2, trace=T, rank="AICc", REML=FALSE)
 
-#attr(dd, "rank.call")
 
 # Get models (which are fitted by REML, like the global model)
 gm <- get.models(dd, 1:4)
@@ -124,6 +137,8 @@ detach(package:nlme); rm(list=ls())
 # TEST lmer -------------------------------------------------------------------------------
 if(.checkPkg("lme4")) {
 
+## TODO: Clean it up!
+
 set.seed(1)
 library(lme4)
 data(Orthodont, package = "nlme")
@@ -131,12 +146,53 @@ data(Orthodont, package = "nlme")
 Orthodont$rand <- runif(nrow(Orthodont))
 fm2 <- lmer(log(distance) ~ rand*Sex*age + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
 
+
+#fm2 <- lmer(log(distance) ~ Sex*age + (1|Subject) + (Sex|Subject),
+	#data = Orthodont, REML = F)
+#
+#MuMIn:::abbreviateTerms(at1)
+#abbreviateTerms(at1)
+#reformulate(at1)
+
 #fm0 <- lmer(distance ~ 1 + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
 #fm00 <- lm(distance ~ 1 , data = Orthodont)
 
 dd <- dredge(fm2, trace=T)
-gm <- get.models(dd, 1:4)
+gm <- get.models(dd, 1:6)
 (ma <- model.avg(gm))
+
+fm1 <- lmer(log(distance) ~ rand*Sex*age + (1|Sex), data = Orthodont, REML=FALSE)
+fm2 <- lmer(log(distance) ~ rand*age + (1|Subject), data = Orthodont, REML=FALSE)
+fm4 <- lmer(log(distance) ~ age + (1|Sex) + (1|Subject), data = Orthodont, REML=FALSE)
+fm2a <- lmer(log(distance) ~ age + (1|Subject), data = Orthodont, REML=FALSE)
+fm2b <- lmer(log(distance) ~ Sex + (1|Subject), data = Orthodont, REML=FALSE)
+fm3 <- lm(log(distance) ~ age, data = Orthodont)
+
+models <- list(fm4, fm1, fm3, fm2, fm2a, fm2b)
+dd2 <- model.sel(models)
+
+
+coefTable(models[[2]], dispersion = NULL)
+
+
+# Comparing model.avg on model list and applied directly:
+#ma0 <- model.avg(models)
+ma0 <- model.avg(get.models(dd2))
+ma1 <- model.avg(dd2)
+
+summary(ma1)
+stopifnot(isTRUE(all.equal(coefTable(ma1), coefTable(ma0))))
+
+# Comparing re-ranked model.sel on model list and applied directly:
+msBIC <- model.sel(models, rank = "BIC")
+msAIC <- model.sel(models, rank = "AIC")
+msBIC2 <- model.sel(get.models(msAIC), rank = "BIC")
+msBIC3 <- model.sel(msAIC, rank = "BIC")
+msAIC2 <- model.sel(msBIC3, rank = "AIC")
+msAIC3 <- model.sel(get.models(msAIC2), rank = "AIC")
+all.equal(msAIC2, msAIC)
+# !all.equal(msAIC3, msAIC)
+# !all.equal(msBIC2, msBIC)
 
 # update.mer does not expand dots, so here we have a call:
 # lmer(formula = distance ~ Sex + (1 | Subject), data = Orthodont,
@@ -180,15 +236,24 @@ data(Cement, package = "MuMIn")
 nseq <- function(x, len=length(x)) seq(min(x, na.rm=TRUE), max(x, na.rm=TRUE),
 	length=len)
 
-fm1 <- glm(y ~ (X1+X2+X3+X4)^2, data = Cement)
-dd <- dredge(fm1, trace=T)
+fm1 <- glm(y ~ (X1+X2+X3)^2, data = Cement)
 
+dd <- dredge(fm1)
 gm <- get.models(dd, 1:10)
 
-ma <- model.avg(gm)
+summary(ma <- model.avg(gm))
+#summary(ma1<-model.avg(dd, 1:10))
+#summary(ma2<-model.avg(dd[1:10]))
+
+
+#vcov(fm1)
 vcov(ma)
 
-summary(ma)
+summary(ma1  <- model.avg(dd[1:10]))
+summary(ma2 <- model.avg(model.sel(dd[1:10], rank = "AICc")))
+
+all.equal(ma$avg.model, ma1$avg.mode)
+
 predict(ma) == predict(ma, Cement)
 predict(ma, se.fit=T)
 predict(ma, lapply(Cement, nseq))
@@ -210,6 +275,7 @@ gm <- get.models(dd, 1:10)
 ma <- model.avg(gm)
 stopifnot(all(predict(ma) == predict(ma, Cement)))
 predict(ma, lapply(Cement, nseq, len=30), se.fit=TRUE)
+vcov(ma)
 
 rm(list=ls()); detach(package:MASS)
 
@@ -230,10 +296,13 @@ bwt <- with(birthwt, data.frame(
 options(contrasts = c("contr.treatment", "contr.poly"))
 bwt.mu <- multinom(low ~ ., data = bwt)
 dd <- dredge(bwt.mu, trace=T)
-gm <- get.models(dd, seq(nrow(dd)))
+
+summary(model.avg(dd[1:5]))
+gm <- get.models(dd, 1:5)
 ma <- model.avg(gm)
+
 summary(ma)
-#predict(bwt.mu)
+
 # predict(ma) // Cannot average factors!
 
 rm(list=ls()); detach(package:nnet)
@@ -254,7 +323,8 @@ ops <- options(warn = -1)
 gam1 <- gam(y ~ s(x0) + s(x1) + s(x2) +  s(x3) + (x1+x2+x3)^2,
 	data = dat, method = "ML")
 
-dd <- dredge(gam1, subset=!`s(x0)` & (!`s(x1)` | !x1) & (!`s(x2)` | !x2) & (!`s(x3)` | !x3), fixed="x1", trace=T)
+dd <- dredge(gam1, subset=!`s(x0)` & (!`s(x1)` | !x1) & (!`s(x2)` |
+	!x2) & (!`s(x3)` | !x3), fixed="x1")
 
 gm <- get.models(dd, cumsum(weight) <= .95)
 ma <- model.avg(gm)
@@ -268,15 +338,17 @@ rm(list=ls()); detach(package:mgcv)
 # TEST spautolm ---------------------------------------------------------------------------
 
 if (.checkPkg("spdep"))
-if(!is.null(tryCatch(suppressPackageStartupMessages(library(spdep)), error=function(e) NULL))) {
+if(!is.null(tryCatch(suppressPackageStartupMessages(library(spdep)), error = function(e) NULL))) {
+
 
 suppressMessages(example(NY_data, echo = FALSE))
 
-esar1f <- spautolm(Z ~ PEXPOSURE * PCTAGE65P + PCTOWNHOME,
- data=nydata, listw=listw_NY, family="SAR", method="full", verbose=FALSE)
+
+fm1.spautolm <- spautolm(Z ~ PEXPOSURE * PCTAGE65P + PCTOWNHOME,
+ data = nydata, listw = listw_NY, family = "SAR", method = "full", verbose = FALSE)
 
 options(warn=1)
-dd <- dredge(esar1f, m.max=1,  fixed=~PEXPOSURE,
+dd <- dredge(fm1.spautolm, m.max=1, fixed = ~PEXPOSURE,
 	varying = list(
 		family = list("CAR", "SAR"),
 		method=list("Matrix_J", "full")
@@ -284,7 +356,7 @@ dd <- dredge(esar1f, m.max=1,  fixed=~PEXPOSURE,
 options(warn=0)
 
 
-#dd <- dredge(esar1f, m.max=3, fixed=~PEXPOSURE)
+#dd <- dredge(fm1.spautolm, m.max=3, fixed=~PEXPOSURE)
 gm <- get.models(dd, cumsum(weight) <= .99)
 ma <- model.avg(gm)
 summary(ma)
@@ -296,17 +368,16 @@ rm(list=ls())
 #suppressPackageStartupMessages(library(spdep))
 data(oldcol)
 
-COL.errW.eig <- errorsarlm(CRIME ~ INC * HOVAL * OPEN, data=COL.OLD,
- nb2listw(COL.nb, style="W"), method="eigen", quiet=TRUE)
+fm1.sarlm <- errorsarlm(CRIME ~ INC * HOVAL * OPEN, data = COL.OLD,
+ nb2listw(COL.nb, style = "W"), method = "eigen", quiet = TRUE)
 
-dd <- dredge(COL.errW.eig)
+dd <- dredge(fm1.sarlm)
 gm <- get.models(dd, cumsum(weight) <= .98)
 ma <- model.avg(gm)
 
-# XXX: Error in t(vapply(models, function(m) {: error in evaluating the argument
-# 'x' in selecting a method for function 't': Error in m.tTable[, 2L] :
-# incorrect number of dimensions
-summary(ma)
+stopifnot(isTRUE(all.equal(coefTable(ma), coefTable(model.avg(dd, cumsum(weight) <= .98)))))
+
+
 predict(ma)[1:10]
 
 rm(list=ls()); detach(package:spdep)
@@ -320,15 +391,19 @@ require(MASS)
 quine.nb1 <- glm.nb(Days ~ 0 + Sex/(Age + Eth*Lrn), data = quine)
 #quine.nb1 <- glm.nb(Days ~ Sex/(Age + Eth*Lrn), data = quine)
 
+
 ms <- dredge(quine.nb1, marg.ex = "Sex")
-models <- get.models(ms, 1:5)
+
+models <- get.models(ms )
 summary(model.avg(models))
 
 dredge(quine.nb1) # Wrong
-dredge(quine.nb1, marg.ex="Sex") # Right
-ma <- model.avg(dredge(quine.nb1, marg.ex="Sex"), subset=cumsum(weight)<=.9999)
+dredge(quine.nb1, marg.ex = "Sex") # Right
+ma <- model.avg(dredge(quine.nb1, marg.ex = "Sex"), subset = cumsum(weight)<=.9999)
 
-pred <- predict(ma, se=TRUE)
+# Cannot predict with this 'averaging'
+#pred <- predict(ma, se=TRUE)
+
 #pred <- cbind(pred$fit, pred$fit - (2 * pred$se.fit), pred$fit + (2 * pred$se.fit))
 #matplot(pred, type="l")
 #matplot(family(quine.nb1)$linkinv(pred), type="l")
@@ -390,14 +465,15 @@ r.squared.coxph <- function(object, ...) {
 	c(rsq = 1 - exp(-logtest/object$n), maxrsq = 1 - exp(2 * object$loglik[1L]/object$n))
 }
 
-ms <- dredge(fmcph, fixed=c("cluster(id)", "strata(enum)"), extra = "r.squared.coxph")
+ms <- dredge(fmcph, fixed=c("cluster(id)", "strata(enum)"), extra = list(R2="r.squared.coxph"))
+
 fits <- get.models(ms, delta < 5)
 summary(model.avg(fits))
 
+
 fmsrvrg <- survreg(Surv(futime, fustat) ~ ecog.ps + rx, ovarian, dist='weibull',
-    scale=1)
+    scale = 1)
 summary(model.avg(dredge(fmsrvrg), delta  < 4))
-# nobs(fmsrvrg)
 
 rm(list=ls())
 detach(package:survival)

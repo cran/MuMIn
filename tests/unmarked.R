@@ -1,4 +1,5 @@
 library(MuMIn)
+library(stats4)
 library(unmarked)
 
 # Simulate occupancy data
@@ -25,13 +26,24 @@ fm2oc <- occu(~veght+habitat ~veght*habitat, umfOccu)
 fm3oc <- occu(~habitat ~veght+habitat, umfOccu)
 fm4oc <- occu(~veght ~veght+habitat, umfOccu)
 
+MuMIn:::fixCoefNames(names(coef(fm2oc)))
+
 # dredge(fm2oc, eval=F, fixed=~psi(habitat))
 
-(dd <- dredge(fm2oc, fixed=~psi(habitat)))
+(dd <- dredge(fm2oc, fixed = ~psi(habitat)))
 
-#attr(dd, "terms")
-#coef(fm4oc)
+model.sel(dd, rank = "AIC")
+models <- get.models(dd[1:3])
 
+summary(ma1 <- model.avg(models))
+summary(ma2 <- model.avg(dd[1:3]))
+summary(ma3 <- model.avg(model.sel(model.sel(dd, rank = "AIC"), rank = "AICc")[1:3]))
+
+stopifnot(!any(is.na(coefTable(ma1))))
+stopifnot(!any(is.na(coefTable(ma2))))
+stopifnot(!any(is.na(coefTable(ma3))))
+stopifnot(isTRUE(all.equal(coefTable(ma1), coefTable(ma2))))
+stopifnot(isTRUE(all.equal(coefTable(ma2), coefTable(ma3))))
 stopifnot(!any(is.na(dd[, "psi(habitat)"])))
 
 summary(model.avg(dd, delta <= 4))

@@ -12,7 +12,9 @@ require(stats4)
 ncores <- if(exists("detectCores", mode = "function"))
 	detectCores() else getOption("cl.cores", 2)
 
-clust <- try(makeCluster(getOption("cl.cores", 2), type = "SOCK"))
+clusterType <- if(length(.find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
+clust <- try(makeCluster(getOption("cl.cores", 2), type = clusterType))
+
 if(inherits(clust, "cluster")) {
 
 data(mallard)

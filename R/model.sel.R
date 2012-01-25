@@ -2,24 +2,36 @@
 
 `model.sel` <-
 `mod.sel` <-
-function (object, ...) UseMethod("mod.sel")
+function (object, ...) UseMethod("model.sel")
 
-
-`mod.sel.model.selection` <-
+`model.sel.model.selection` <-
 function (object, rank = NULL, rank.args = NULL, ...) {
 	#if(!is.null(rank)) .NotYetUsed("rank")
 	if(!is.null(rank)) {
-		models <- get.models(object, seq.int(nrow(object)))
-		ret <- mod.sel.default(models, rank = .getRank(rank,
-			rank.args = rank.args, object = models[[1L]]))
+		rank <- .getRank(rank, rank.args = rank.args)
+		ic <- tryCatch(sapply(logLik(object), rank), error = function(e) e)
+		if(!inherits(ic, "error") && is.numeric(ic)) {
+			oldRankCol <- as.character(attr(attr(object, "rank"), "call")[[1L]])
+			rankCol <- as.character(attr(rank, "call")[[1L]])
+			colnames(object)[colnames(object) == oldRankCol] <- rankCol
+			object[, rankCol] <- ic
+			object$delta <- ic - min(ic)
+			object$weight <- Weights(ic)
+			ret <- object[order(ic), ]
+			#attr(ret, "order") <- o
+			attr(ret, "rank") <- rank
+			attr(ret, "rank.call") <- attr(rank, "call")
+		} else {
+			message("'rank' cannot be applied to 'logLik' object. Recreating model fits.")
+			models <- get.models(object, seq.int(nrow(object)))
+			ret <- model.sel.default(models, rank = rank)
+		}
 		return(ret)
-	} else {
-		return(object)
-	}
+	} else return(object)
 }
 
 
-`mod.sel.default` <-
+`model.sel.default` <-
 function(object, ..., rank = NULL, rank.args = NULL) {
 
 	if (missing(object) && length(models <- list(...)) > 0L) {
@@ -42,36 +54,69 @@ function(object, ..., rank = NULL, rank.args = NULL) {
 
 	rank <- .getRank(rank, rank.args = rank.args, object = object)
 	ICname <- deparse(attr(rank, "call")[[1L]])
-	all.terms <- unique(unlist(lapply(models, getAllTerms, intercept = TRUE)))
-	all.coef <- fixCoefNames(unique(unlist(lapply(lapply(models, coeffs), names))))
+	allTermsList <- lapply(models, getAllTerms, intercept = TRUE)
+	random.terms <- lapply(allTermsList, attr, "random.terms")
+	all.terms <- unique(unlist(allTermsList, use.names = FALSE))
+	all.coef <- fixCoefNames(unique(unlist(lapply(lapply(models, coeffs), names),
+		use.names = FALSE)))
 
 	logLik <- .getLogLik()
 
 	j <- !(all.terms %in% all.coef)
-	d <- as.data.frame(t(sapply(models, matchCoef, all.terms=all.terms)))
-	d[,j] <- lapply(d[,j, drop=FALSE], function(x) factor(is.nan(x),
-		levels=c(F, T), labels=c("", "+")))
+	#d <- as.data.frame(t(sapply(models, matchCoef, all.terms = all.terms)))
 
-	ret <- as.data.frame(t(vapply(models, function(x) {
+	mcoeflist <- lapply(models, matchCoef, all.terms = all.terms, allCoef = TRUE)
+	d <- as.data.frame(do.call("rbind", mcoeflist))
+
+	retCoefTable <-	lapply(mcoeflist, attr, "coefTable")
+
+	d[,j] <- lapply(d[,j, drop = FALSE], function(x) factor(is.nan(x),
+		levels = TRUE, labels = "+"))
+
+	ret <- vapply(models, function(x) {
 		ll <- logLik(x)
-		c(attr(ll, "df"), ll, rank(x))
-		}, structure(double(3L), names=c("df", "logLik", ICname)))))
+		ic <- tryCatch(rank(x), error = function(e) e)
+		if(inherits(ic, "error")) {
+			ic$call <- sys.call(sys.nframe() - 4L)
+			ic$message <- gettextf("evaluating 'rank' for an object failed with message: %s", ic$message)
+			stop(ic)
+		}
+		c(attr(ll, "df"), ll, ic)
+		}, structure(double(3L), names=c("df", "logLik", ICname)))
+	ret <- as.data.frame(t(ret))
 
 	ret <- cbind(d, ret)
 	ret[, "delta"] <- ret[, ICname] - min(ret[, ICname])
 	ret[, "weight"] <- Weights(ret[,ICname])
 	o <- order(ret[, "delta"], decreasing = FALSE)
 
+	descrf <- modelDescr(models)
+	descrf$model <- NULL
+	if(nlevels(descrf$family) == 1L) descrf$family <- NULL
+	if(ncol(descrf)) {
+		i <- seq_len(length(all.terms))
+		ret <- cbind(ret[, i], descrf, ret[, -i])
+	}
+
 	rownames(ret) <- names(models)
-	ret <- ret[o, ]
 
-	attr(ret, "terms") <- all.terms
-	attr(ret, "calls") <- lapply(models, .getCall)[o]
-	attr(ret, "order") <- o
-	attr(ret, "rank") <- rank
-	attr(ret, "rank.call") <- attr(rank, "call")
-	attr(ret, "call") <- match.call(expand.dots = TRUE)
+	ret <- structure(
+		ret[o, ],
+		terms = structure(all.terms, interceptLabel =
+			unique(unlist(lapply(allTermsList, attr, "interceptLabel")))),
+		calls = lapply(models, .getCall)[o],
+		order = o,
+		rank = rank,
+		rank.call = attr(rank, "call"),
+		call = match.call(expand.dots = TRUE),
+		nobs = nobs(models[[1L]]),
+		coefTables = retCoefTable[o],
+		vCols = colnames(descrf),
+		class = c("model.selection", "data.frame")
+	)
 
-	class(ret) <- c("model.selection", "data.frame")
+	if (!all(sapply(random.terms, is.null)))
+		attr(ret, "random.terms") <- random.terms[o]
+
 	ret
 }

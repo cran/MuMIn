@@ -28,7 +28,6 @@ QAICc(object, ..., chat, k = 2)
 }
 
 \note{
-
 \eqn{\hat{c}}{c-hat} is the dispersion parameter estimated from the global
 model, and can be calculated by dividing model's deviance by the number of
 residual degrees of freedom.
@@ -66,7 +65,7 @@ dredge(budworm.lg, rank = "QAIC", chat = chat)
 dredge(budworm.lg, rank = "AIC")
 
 \dontrun{
-# Ugly hacked constructor for quasibinomial family object, that allows for
+# A 'hacked' constructor for quasibinomial family object, that allows for
 # ML estimation
 x.quasibinomial <- function(...) {
     res <- quasibinomial(...)

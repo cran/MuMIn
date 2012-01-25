@@ -8,7 +8,6 @@ function(object, subset, ...) {
 		if(is.character(r)) r <- match(r, dimnames(object)[[1L]])
 		calls <- calls[r]
 	}
-	glo <- attr(object, "global")
 
 	newargs <- match.call()
 	newargs[[1L]] <- NULL
@@ -17,10 +16,16 @@ function(object, subset, ...) {
 	naNames <- names(newargs)
 	if(length(newargs))  for(i in seq_along(calls)) calls[[i]][naNames] <- newargs
 
-	env <- attr(tryCatch(terms(glo), error = function(...) terms(formula(glo))),
-		".Environment")
-
-	models <- lapply(calls, eval, envir = env)
+	glo <- attr(object, "global")
+	if(is.null(glo)) {
+		models <- lapply(attr(object, "calls"), function(cl) {
+			eval(cl, envir = environment(formula(cl)))
+		})
+	} else {
+		env <- attr(tryCatch(terms(glo), error = function(...) terms(formula(glo))),
+			".Environment")
+		models <- lapply(calls, eval, envir = env)
+	}
 
 	attr(models, "rank.call") <- attr(object, "rank.call")
 	attr(models, "rank") <- attr(object, "rank")
@@ -54,9 +59,15 @@ function(object, cluster = NA, subset, ...) {
 		models <- clusterApply(cluster, calls, "eval", envir = .GlobalEnv)
 	} else {
 		glo <- attr(object, "global")
-		env <- attr(tryCatch(terms(glo), error = function(...) terms(formula(glo))),
-			".Environment")
-		models <- lapply(calls, eval, envir = env)
+		if(is.null(glo)) {
+			models <- lapply(attr(object, "calls"), function(cl) {
+				eval(cl, envir = environment(formula(cl)))
+			})
+		} else {
+			env <- attr(tryCatch(terms(glo), error = function(...) terms(formula(glo))),
+				".Environment")
+			models <- lapply(calls, eval, envir = env)
+		}
 	}
 
 	attr(models, "rank.call") <- attr(object, "rank.call")

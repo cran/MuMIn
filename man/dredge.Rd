@@ -5,7 +5,7 @@
 \encoding{utf-8}
 \title{Automated model selection}
 \description{
-Generate a set of models with combinations of the terms in the global
+Generate a set of models with combinations (subsets) of the terms in the global
 model, with optional rules for inclusion.
 }
 
@@ -100,8 +100,9 @@ returned by
 \code{sarlm}, \code{spautolm} (\pkg{spdep});
 \code{glmmML} (\pkg{glmmML});
 \code{coxph}, \code{survreg} (\pkg{survival});
+\code{coxme}, \code{lmekin} (\pkg{coxme});
 \code{rq} (\pkg{quantreg});
-and all models from package \pkg{unmarked}.
+and model classes from package \pkg{unmarked}.
 \code{gamm} and \code{gamm4} should be evaluated \emph{via} the wrapper
 \code{MuMIn::\link[MuMIn]{gamm}}.
 
@@ -111,7 +112,7 @@ method, while robust in that it can be applied to a variety of different model
 object types is not very efficient, and may be time-intensive.
 
 Note that the number of combinations grows exponentially with number of
-predictor variables (\ifelse{latex}{\eqn{2^{N}}}{2^N}). Because there can be
+predictor variables (\ifelse{latex}{\eqn{2^{N}}}{2^N}). As there can be
 potentially a large number of models to evaluate, to avoid memory overflow the
 fitted model objects are not stored in the result. To get (a subset of) the
 models, use \code{\link{get.models}} on the object returned by \code{dredge}.
@@ -119,9 +120,9 @@ models, use \code{\link{get.models}} on the object returned by \code{dredge}.
 Handling interactions, \code{dredge} respects marginality constraints, so
 \dQuote{all possible combinations} do not include models containing interactions
 without their respective main effects. This behaviour can be altered by
-\code{marg.ex} argument. It can be used to allow for simple nested designs. For
-example, with global model of form \code{a / (x + z)}, use \code{marg.ex = "a"}
-and \code{fixed = "a"}.
+\code{marg.ex} argument, which can be used to allow for simple nested designs. 
+For example, with global model of form \code{a / (x + z)}, use 
+\code{marg.ex = "a"} and \code{fixed = "a"}.
 
 \code{rank} is found by a call to \code{match.fun} and may be specified as a
 function or a symbol (e.g. a back-quoted name) or a character string specifying
@@ -141,7 +142,7 @@ Compound model terms (such as \sQuote{as-is} expressions within \code{I()} or
 the smooths in \code{gam}) should be treated as non-syntactic names and
 enclosed in back-ticks (see \link[base]{Quotes}). Mind the spacing, names
 must match exactly the term names in model's formula. To simply keep certain
-variables in all models, use of \code{fixed} is preferred.
+terms in all models, use of \code{fixed} is preferred.
 
 Use of \code{na.action = na.omit} (\R's default) in \code{global.model} should
 be avoided, as it results with sub-models fitted to different data sets, if
@@ -215,15 +216,13 @@ plot(dd)
 
 
 # Model average models with delta AICc < 4
-model.avg(get.models(dd, subset = delta < 4))
+model.avg(dd, subset = delta < 4)
 
 #or as a 95\% confidence set:
-confset.95p <- get.models(dd, cumsum(weight) <= .95)
-
-model.avg(confset.95p) # get averaged coefficients
+model.avg(dd, subset = cumsum(weight) <= .95) # get averaged coefficients
 
 #'Best' model
-summary(confset.95p[[1]])
+summary(get.models(dd, 1))[[1]]
 
 \dontrun{
 # Examples of using 'subset':
@@ -258,7 +257,7 @@ dredge(fm1, m.max = 1, extra = list(
 # with other information criterions:
 
 # there is no BIC in R < 2.13.0, so need to add it:
-if(!exists("BIC", mode="function"))
+if(!exists("BIC", mode = "function"))
     BIC <- function(object, ...)
         AIC(object, k = log(length(resid(object))))
 

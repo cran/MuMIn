@@ -56,7 +56,7 @@ msubset <- expression(xor(dose, `log(dose)`) & (dose | !`I(dose^2)`)
 # Table 4.6
 
 # Use 'varying' argument to fit models with different link functions
-# Note the use of 'alist' rather than 'list' in order to keep the 
+# Note the use of 'alist' rather than 'list' in order to keep the
 # 'family' objects unevaluated
 varying.link <- list(family = alist(
     logit = binomial("logit"),
@@ -64,13 +64,13 @@ varying.link <- list(family = alist(
     cloglog = binomial("cloglog")
     ))
 
-(ms12 <- dredge(globmod, subset = msubset, varying = varying.link, 
+(ms12 <- dredge(globmod, subset = msubset, varying = varying.link,
     rank = AIC))
 
 # Table 4.7 "models justifiable a priori"
 (ms3 <- subset(ms12, has(dose, !`I(dose^2)`)))
 # The same result, but would fit the models again:
-# ms3 <- update(ms12, update(globmod, . ~ dose), subset =, 
+# ms3 <- update(ms12, update(globmod, . ~ dose), subset =,
 #    fixed = ~dose)
 
 mod3 <- get.models(ms3, 1:3)
@@ -93,10 +93,10 @@ tab <- rbind(pred, par.avg(pred[, "fit"], pred[, "se.fit"], Weights(ms3),
 tab <- cbind(
     c(Weights(ms3), NA),
     tab,
-    matrix(logit.ci(tab[,"fit"], tab[,"se.fit"], 
+    matrix(logit.ci(tab[,"fit"], tab[,"se.fit"],
         quantile = c(rep(1.96, 3), 2)), ncol = 2)
     )
-colnames(tab) <- c("Akaike weight", "Predicted(40)", "SE", "Lower CI", 
+colnames(tab) <- c("Akaike weight", "Predicted(40)", "SE", "Lower CI",
     "Upper CI")
 rownames(tab) <- c(as.character(ms3$family), "model averaged")
 
@@ -104,7 +104,7 @@ print(tab, digits = 3, na.print = "")
 
 
 # Figure 4.3
-newdata <- list(dose = seq(min(Beetle$dose), max(Beetle$dose), 
+newdata <- list(dose = seq(min(Beetle$dose), max(Beetle$dose),
     length.out = 25))
 matplot(newdata$dose, sapply(mod3, predict, newdata, type="response"),
     type = "l", xlab = quote(list("Dose of" ~ CS[2],(mg/L))),
@@ -117,9 +117,9 @@ pred.y <- sapply(pred, "[[", "fit")
 pred.se <- sapply(pred, "[[", "se.fit")
 avpred <- sapply(1:25, function(i) par.avg(pred.y[i, ], pred.se[i, ],
     weight = Weights(ms3), revised.var = FALSE)[1:2])
-avci <- matrix(logit.ci(avpred[1, ], avpred[2, ], quantile = 2), 
+avci <- matrix(logit.ci(avpred[1, ], avpred[2, ], quantile = 2),
     ncol = 2)
-matplot(newdata$dose, cbind(avpred[1, ], avci), type = "l", add = TRUE, 
+matplot(newdata$dose, cbind(avpred[1, ], avci), type = "l", add = TRUE,
     lwd = 1, lty = c(1, 2, 2), col = 1)
 legend("topleft", NULL, c(as.character(ms3$family), expression(`averaged`
     \%+-\% CI)), lty = c(3, 3, 3, 1), col = c(2:4, 1))

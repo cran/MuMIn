@@ -45,14 +45,14 @@ getAllTerms.unmarkedFitDS  <- function (x, intercept = FALSE, ...)  {
 }
 
 `coefTable.unmarkedFit` <- function (model, ...) {
-  do.call("rbind", lapply(model@estimates@estimates, function(y) {
-    ret <- cbind(Estimate=y@estimates, SE = sqrt(diag(y@covMat)))
-    rn <- rownames(ret)
-    rn[rn == "(Intercept)"] <- "Int"
-    rownames(ret) <- paste(y@short.name, "(", rn, ")", sep="")
-    ret
-  }))
+	ct <- do.call("rbind", lapply(model@estimates@estimates, function(y) {
+		  ret <- cbind(y@estimates, sqrt(diag(y@covMat)), deparse.level = 0L)
+		  rn <- rownames(ret)
+		  rn[rn == "(Intercept)"] <- "Int"
+		  rownames(ret) <- paste(y@short.name, "(", rn, ")", sep="")
+		  ret
+	}))
+	.makeCoefTable(ct[, 1L], ct[, 2L])
 }
 
-`coefDf.unmarkedFit` <- function(x) rep(NA, length(coef(x)))
 `nobs.unmarkedFit` <- function(object, ...) unmarked::sampleSize(object)

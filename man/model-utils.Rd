@@ -5,6 +5,8 @@
 \alias{beta.weights}
 \alias{tTable}
 \alias{coefTable}
+\alias{coefTable.default}
+\alias{coefTable.lme}
 \alias{getAllTerms}
 \alias{getAllTerms.terms}
 
@@ -24,8 +26,8 @@ These functions extract or calculate various values from provided fitted model
 
 \code{getAllTerms} extracts independent variable names from a model object;
 
-\code{coefTable} extracts a table of coefficients, standard errors and, when
-	possible, associated p-values from a model object;
+\code{coefTable} extracts a table of coefficients, standard errors and 
+	associated degrees of freedom when possible;
 
 \code{model.names} generates shorthand numeric names for one or several fitted
 models.
@@ -40,16 +42,14 @@ coeffs(model)
 getAllTerms(x, ...)
 \method{getAllTerms}{terms}(x, offset = TRUE, intercept = FALSE, ...)
 
-coefTable(model, dispersion = NULL, ...)
-tTable(model, ...) # deprecated
+coefTable(model, ...)
+\method{coefTable}{lme}(model, adjustSigma, ...)
 
 model.names(object, ..., labels = NULL)
 }
 \arguments{
   \item{model}{a fitted model object. }
-  \item{dispersion}{ the dispersion parameter. Applies to
-	\code{glm} only. See \code{\link{summary.glm}}.
-	}
+
   \item{object}{a fitted model object or a list of such objects. }
   \item{x}{a fitted model object or a \code{formula}. }
   \item{offset}{should \sQuote{offset} terms be included? }
@@ -61,8 +61,11 @@ model.names(object, ..., labels = NULL)
 	be used to prevent this happening.
  }
   \item{\dots}{ For \code{model.names}, more fitted model objects.
+	For \code{coefTable} arguments that are passed to appropriate \code{summary}
+	method (e.g. \code{dispersion} parameter for \code{glm} may be used here).
 	In other functions often not used.
   }
+  \item{adjustSigma}{ See \code{\link[nlme]{summary.lme}}. }
 }
 
 \details{
