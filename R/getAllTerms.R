@@ -11,27 +11,28 @@ function(x, ...)
 `getAllTerms.terms` <-
 function(x, offset = TRUE, intercept = FALSE, ...) {
 
-	variables <- attr(x, "variables")[-1]
+	interceptLabel <- "(Intercept)"
+	variables <- attr(x, "variables")[-1L]
 
 	if (!is.null(attr(x, "offset"))){
 		offs <- sapply(variables[attr(x, "offset")], deparse)
-	} else {
-		offs <- NULL
-	}
+	} else offs <- NULL
+
 	ret <- attr(x, "term.labels")
 
 	# Get term names, with higher order term components arranged alphabetically
 	if (length(ret) > 0) {
 		factors <- attr(x, "factors")
-		factors1 <- rownames(factors)
-		ret <- apply(factors > 0, 2, function(i) paste(sort(factors1[i]), collapse=":"))
+		factors <- factors[order(rownames(factors)), , drop = FALSE]
+		v <- rownames(factors)
+		ret <- apply(factors != 0L, 2L, function(x) paste(v[x], collapse = ":"))
 	}
 
 	# Leave out random terms (lmer type)
 	#ran <- attr(x, "variables")[-1][-c(attr(x, "offset"), attr(x, "response"))]
 	ran <- variables
 	ran <- as.character(ran[sapply(ran,
-		function(x) length(x) == 3 && x[[1]] == as.name("|"))])
+		function(x) length(x) == 3L && x[[1L]] == "|")])
 	ifx <- !(ret %in% ran)
 
 	ret <- ret[ifx] # ifx - indexes of fixed terms
@@ -43,20 +44,21 @@ function(x, offset = TRUE, intercept = FALSE, ...) {
 	ret <- unname(ret[ord])
 
 	if(intercept && attr(x, "intercept")) {
-		ret <- c("(Intercept)", ret)
-		ord <- c(1, ord + 1)
+		ret <- c(interceptLabel, ret)
+		ord <- c(1, ord + 1L)
 	}
 
-	if (!is.null(offs[1])) {
+	if (!is.null(offs[1L])) {
 		if (offset) {
 			ret <- c(ret, offs)
-			ord <- c(ord, length(ord) + 1)
+			ord <- c(ord, length(ord) + 1L)
 		}
 		attr(ret, "offset") <- offs
 	}
 	attr(ret, "intercept") <- attr(x, "intercept")
+	attr(ret, "interceptLabel") <- interceptLabel
 
-	if (length(ran) > 0) {
+	if (length(ran) > 0L) {
 		attr(ret, "random.terms") <- ran
 		attr(ret, "random") <- reformulate(c(".", paste("(", ran, ")",
 			sep = "")), response = ".")
@@ -82,15 +84,15 @@ function(x, ...) {
 	reStruct <- x$modelStruct$reStruct
 	nobj <- length(reStruct)
 	if (is.null(namx <- names(reStruct)))
-		names(reStruct) <- nobj:1
+		names(reStruct) <- nobj:1L
 	aux <- t(array(rep(names(reStruct), nobj), c(nobj, nobj)))
 	aux[lower.tri(aux)] <- ""
 	reStruct[] <- rev(reStruct)
 	aux <- t(array(rep(names(reStruct), nobj), c(nobj, nobj)))
 	aux[lower.tri(aux)] <- ""
 	attr(ret, "random.terms") <- paste(lapply(lapply(reStruct, attr, "formula"),
-		"[[", 2), "|",
-		rev(apply(aux, 1, function(z) paste(z[z != ""], collapse = " %in% "))))
+		"[[", 2L), "|",
+		rev(apply(aux, 1L, function(z) paste(z[z != ""], collapse = " %in% "))))
 
 	return(ret)
 }
@@ -104,7 +106,8 @@ function(x, ...) getAllTerms(lme4::formula(x), ...)
 # attr(,"intercept") == 1.
 `getAllTerms.coxph` <- function (x, ...) {
 	ret <- getAllTerms.default(x, ...)
-	attr(ret, "intercept") <- 0
+	attr(ret, "intercept") <- 0L
+	attr(ret, "interceptLabel") <- NULL
 	return(ret)
 }
 

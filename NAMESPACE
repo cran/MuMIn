@@ -46,9 +46,13 @@ S3method(subset, model.selection)
 S3method("[", model.selection)
 S3method(update, model.selection)
 S3method(coef, model.selection)
+S3method(logLik, model.selection)
 
-S3method(mod.sel, model.selection)
-S3method(mod.sel, default)
+S3method(model.sel, model.selection)
+S3method(model.sel, default)
+
+S3method(model.avg, model.selection)
+S3method(model.avg, default)
 
 S3method(plot, model.selection)
 
@@ -64,7 +68,8 @@ S3method(Weights, default)
 S3method(getAllTerms, default)
 S3method(coeffs, default)
 S3method(coefTable, default)
-S3method(coefDf, default)
+
+S3method(coefTable, averaging)
 
 S3method(AICc, default)
 
@@ -72,11 +77,12 @@ S3method(AICc, logLik)
 
 S3method(getAllTerms, formula)
 S3method(getAllTerms, terms)
-S3method(getAllTerms, lm)
 
-S3method(coefTable, gam)
+S3method(getAllTerms, lm)
+S3method(coefTable, lm)
 
 S3method(nobs, sarlm)
+S3method(coefTable, sarlm)
 
 S3method(coefTable, spautolm)
 S3method(nobs, spautolm)
@@ -98,20 +104,10 @@ S3method(nobs, survreg)
 S3method(getAllTerms, lme)
 S3method(coeffs, lme)
 S3method(coefTable, lme)
-S3method(coefDf, lme)
-
-# S3method(getAllTerms, lmer)
-# S3method(coeffs, lmer)
-# S3method(coefTable, lmer)
-
-# S3method(getAllTerms, glmer)
-# S3method(coeffs, glmer)
-# S3method(coefTable, glmer)
 
 S3method(getAllTerms, mer)
 S3method(coeffs, mer)
 S3method(coefTable, mer)
-S3method(coefDf, mer)
 S3method(nobs, mer)
 
 S3method(coefTable, multinom)
@@ -119,12 +115,10 @@ S3method(nobs, multinom)
 
 S3method(coeffs, gls)
 S3method(coefTable, gls)
-S3method(coefDf, gls)
 
 S3method(formula, unmarkedFit)
 S3method(getAllTerms, unmarkedFit)
 S3method(coefTable, unmarkedFit)
-S3method(coefDf, unmarkedFit)
 S3method(nobs, unmarkedFit)
 S3method(getAllTerms, unmarkedFitDS)
 # this is done by setting S4 method with an .onLoad hook:
@@ -144,12 +138,26 @@ S3method(makeArgs, gls)
 S3method(makeArgs, lme)
 S3method(makeArgs, mer)
 S3method(makeArgs, unmarkedFit)
-# S3method(makeArgs, unmarkedFitOccu)
-# S3method(makeArgs, unmarkedFitColExt)
 S3method(makeArgs, unmarkedFitDS)
+S3method(makeArgs, coxph)
 
 S3method(family, default)
 S3method(family, gls)
 S3method(family, lme)
 
 S3method(nobs, rq)
+
+S3method(coefTable, coxme)
+S3method(makeArgs, coxme)
+S3method(formula, coxme)
+S3method(getAllTerms, coxme)
+S3method(nobs, coxme)
+S3method(logLik, coxme)
+S3method(coeffs, coxme)
+
+S3method(coeffs, lmekin)
+S3method(makeArgs, lmekin)
+S3method(coefTable, lmekin)
+S3method(formula, lmekin)
+S3method(nobs, lmekin)
+S3method(logLik, lmekin)

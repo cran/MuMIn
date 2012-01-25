@@ -35,7 +35,9 @@ set.seed(0)
 This document describes how to implement the interface between the routines
 performing model selection and averaging in \pkg{MuMIn} and a class of models
 not supported by default, using \code{gamm} from package \pkg{mgcv} as
-an example.
+an example (Note that \code{gamm} is currently handled out-of-box by \pkg{MuMIn}, 
+but this text still may be useful if someone wanted to write methods for some 
+ more exotic model class).
 
 The two principal functions in \pkg{MuMIn}, \code{model.avg} and \code{dredge}
 rely on the availability of methods for several generic functions for the class
@@ -146,8 +148,9 @@ coeffs.gamm <- function (model) coef(model$gam)
 getAllTerms.gamm <- function (x, ...) getAllTerms(x$gam, ...)
 coefTable.gamm <- function (model, ...) coefTable(model$gam, ...)
 @
-Two columns are obligatory in the \code{data.frame} returned by
-\code{coefTable}: \sQuote{Estimate} and \sQuote{Std. Error}).
+Three columns are obligatory in the \code{matrix} returned by
+\code{coefTable}: \sQuote{Estimate}, \sQuote{Std. Error} and \sQuote{df} which 
+	can be just \code{NA}).
 
 \section{Model selection}
 

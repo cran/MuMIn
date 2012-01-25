@@ -15,7 +15,7 @@
 # cbind list of data.frames omitting duplicated column (names)
 `cbindDataFrameList` <-
 function(x) {
-	dfnames <- unlist(lapply(x, colnames))
+	dfnames <- unlist(lapply(x, colnames), use.names = FALSE)
 	uq <- !duplicated(dfnames)
 	res <- do.call("cbind", x)[,uq]
 	colnames(res) <- dfnames[uq]
@@ -25,7 +25,7 @@ function(x) {
 # same for rbind, check colnames and add NA's when any are missing
 `rbindDataFrameList` <-
 function(x) {
-	all.colnames <- unique(unlist(lapply(x, colnames)))
+	all.colnames <- unique(unlist(lapply(x, colnames), use.names = FALSE))
 	x <- lapply(x, function(y) {
 		y[all.colnames[!(all.colnames %in% colnames(y))]] <- NA
 		return(y[all.colnames])
@@ -48,7 +48,7 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 	n <- length(e)
 	if(n == 1L) return(e)
 	if(e[[1L]] != "has") {
-		for(i in 1:n) e[[i]] <- .substHas(e[[i]])
+		for(i in 1L:n) e[[i]] <- .substHas(e[[i]])
 		return(e)
 	}
 	res <- NULL
@@ -162,4 +162,28 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 		} else if (!isTRUE(all.equal(x, update(x))))
 			stop(gettextf("updated '%s' differs from the original one",	xname))
 	}
+}
+
+`tryCatchWE` <- function (expr) {
+	Warnings <- NULL
+	list(value = withCallingHandlers(tryCatch(expr, error = function(e) e),
+		warning = function(w) {
+			Warnings <<- c(Warnings, list(w))
+			invokeRestart("muffleWarning")
+		}), warnings = Warnings)
+}
+
+`abbreviate2` <- function(names.arg, minlength = 4) {
+	names.arg <- gsub("\\W+", "", names.arg)
+	for(n in minlength) {
+		ret <- substr(names.arg, 1, n)
+		if(nodup <- (!any(dup <- duplicated(ret)))) break
+	}
+	if(nodup) return(ret)
+	i <- match(ret, unique(ret[dup]), nomatch = NA)
+	j <- !is.na(i)
+	ret[j] <- abbreviate(ret[j], minlength - 1)
+	v <- unsplit(lapply(split(ret, i), function(s) paste(s, seq_along(s), sep ="")), i)
+	ret[j] <- v[j]
+	ret
 }

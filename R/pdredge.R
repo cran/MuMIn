@@ -13,15 +13,19 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		clusterApply <- get("clusterApply")
 		clusterCall(cluster, "require", "MuMIn", character.only = TRUE)
 
-		#if(.packageName == "MuMIn") { ### DEBUG
-		clusterCall(cluster, "eval", expression(assign("parGetMsRow",
-				MuMIn:::parGetMsRow, envir = .GlobalEnv), NULL))
-		#} else {
-		#	#DEBUG
-		#	clusterVExport(cluster, parGetMsRow)
-		#}
+		clusterCall(cluster, assign, "assignFromNs", function(name, asName = name,
+			ns = "MuMIn") {
+			assign(asName, get(name, loadNamespace(ns)), envir = .GlobalEnv)
+			invisible(NULL)
+		}, envir = .GlobalEnv)
+
+		clusterCall(cluster, "assignFromNs", ".getLogLik")
+		clusterCall(cluster, "assignFromNs", "tryCatchWE")
+		clusterCall(cluster, "assignFromNs", "matchCoef")
+		clusterCall(cluster, "assignFromNs", "parGetMsRow")
 
 		.getRow <- function(X) clusterApply(cluster, X, fun = "parGetMsRow")
+
 	} else {
 		.getRow <- function(X) lapply(X, parGetMsRow, parCommonProps)
 		clusterCall <- function(...) NULL
@@ -52,8 +56,6 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			if(inherits(global.model, c("gamm", "gamm4")))
 				message("for 'gamm' models use 'MuMIn::gamm' wrapper")
 			stop("could not retrieve the call to 'global.model'")
-
-
 		}
 		#"For objects without a 'call' component the call to the fitting function \n",
 		#" must be used directly as an argument to 'dredge'.")
@@ -79,8 +81,6 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	# parallel: check whether the models would be identical:
 	if(doParallel) testUpdatedObj(cluster, global.model, gmCall, do.eval = check)
 
-	gmCoefNames0 <- names(coeffs(global.model))
-
 	# Check for na.omit
 	if (!is.null(gmCall$na.action) &&
 		as.character(gmCall$na.action) %in% c("na.omit", "na.exclude")) {
@@ -90,7 +90,8 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	if(names(gmCall)[2L] == "") names(gmCall)[2L] <-
 		names(formals(deparse(gmCall[[1L]]))[1L])
 
-	gmCoefNames <- fixCoefNames(gmCoefNames0)
+	gmCoefNames <- fixCoefNames(names(coeffs(global.model)))
+
 	n.vars <- length(allTerms)
 
 	if(isTRUE(rankArgs$REML) || (isTRUE(.isREMLFit(global.model)) && is.null(rankArgs$REML)))
@@ -108,7 +109,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	# fixed variables:
 	if (!is.null(fixed)) {
 		if (inherits(fixed, "formula")) {
-			if (fixed[[1]] != "~" || length(fixed) != 2L)
+			if (fixed[[1L]] != "~" || length(fixed) != 2L)
 				warning("'fixed' should be a one-sided formula")
 			fixed <- c(getAllTerms(fixed))
 		} else if (!is.character(fixed)) {
@@ -123,26 +124,27 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	fixed <- c(fixed, allTerms[allTerms %in% interceptLabel])
 	n.fixed <- length(fixed)
 	termsOrder <- order(allTerms %in% fixed)
-	ordAllTerms <- allTerms[termsOrder]
-	allTerms <- ordAllTerms
-	isMER <- any(inherits(global.model, c("mer", "lmer", "glmer")))
-	gmFormula <- as.formula(formula(global.model))
-	gmFormulaEnv <- attr(gmFormula, ".Environment")
+	allTerms <- allTerms[termsOrder]
+	gmFormulaEnv <- environment(as.formula(formula(global.model), env = gmEnv))
+	# TODO: gmEnv <- gmFormulaEnv ???
 
 	### BEGIN:
 	## varying BEGIN
 	if(!missing(varying) && !is.null(varying)) {
-		variantsIdx <- expand.grid(lapply(varying, seq_along))
-		seq.variants <- seq.int(nrow(variantsIdx))
 		nvarying <- length(varying)
 		varying.names <- names(varying)
+		fvarying <- unlist(varying, recursive = FALSE)
+		vlen <- vapply(varying, length, 1L)
+		nvariants <- prod(vlen)
+		variants <- as.matrix(expand.grid(split(seq_len(sum(vlen)),
+			rep(seq_along(varying), vlen))))
 	} else {
-		variantsIdx <- NULL
-		seq.variants <- 1L
+		variants <- NULL
+		nvariants <- 1L
 		nvarying <- 0L
 		varying.names <- character(0L)
 	}
-	nvariants <- length(seq.variants)
+
 	## varying END
 
 	## extra BEGIN
@@ -156,7 +158,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		if(any(c("adjR^2", "R^2") %in% extra)) {
 			null.fit <- null.fit(global.model, TRUE, gmFormulaEnv)
 			extra[extra == "R^2"][[1L]] <- function(x) r.squaredLR(x, null.fit)
-			extra[extra == "adjR^2"][[1L]] <- 
+			extra[extra == "adjR^2"][[1L]] <-
 				function(x) attr(r.squaredLR(x, null.fit), "adj.r.squared")
 		}
 		extra <- sapply(extra, match.fun, simplify = FALSE)
@@ -174,14 +176,15 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	## extra END
 
 	nov <- as.integer(n.vars - n.fixed)
-	ncomb <- 2L ^ nov
+	ncomb <- (2L ^ nov) * nvariants
 	if(nov > 31L) stop(gettextf("maximum number of predictors is 31, but %d is given", nov))
-	if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f possible combinations", nov, ncomb))
+	# if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f possible combinations", nov, ncomb))
 	nmax <- ncomb * nvariants
 	if(evaluate) {
 		ret.nchunk <- 25L
 		ret.ncol <- n.vars + nvarying + 3L + nextra
 		ret <- matrix(NA_real_, ncol = ret.ncol, nrow = ret.nchunk)
+		retCoefTable <- vector(ret.nchunk, mode = "list")
 	} else {
 		ret.nchunk <- nmax
 	}
@@ -192,7 +195,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		if(!tryCatch(is.language(subset), error = function(e) FALSE))
 			subset <- substitute(subset)
 		if(inherits(subset, "formula")) {
-			if (subset[[1]] != "~" || length(subset) != 2L)
+			if (subset[[1L]] != "~" || length(subset) != 2L)
 				stop("'subset' should be a one-sided formula")
 			subset <- subset[[2L]]
 		}
@@ -205,7 +208,6 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	k <- 0L
 	extraResult1 <- integer(0L)
 	ord <- integer(ret.nchunk)
-
 
 	argsOptions <- list(
 		response = attr(allTerms0, "response"),
@@ -232,7 +234,8 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		parCommonProps$applyExtras <- applyExtras
 		parCommonProps$extraResult <- extraResult
 	}
-	if(doParallel) clusterVExport(cluster, clustDredgeProps = parCommonProps)
+	if(doParallel) clusterVExport(cluster, clustDredgeProps = parCommonProps,
+		tryCatchWE)
 	# END parallel
 
 	retColIdx <- if(nvarying) -n.vars - seq_len(nvarying) else TRUE
@@ -240,51 +243,52 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	warningList <- list()
 	# qlen <- 4 ## DEBUG: !!!!
 
+	prevJComb <- 0L
 	for(iComb in seq.int(ncomb)) {
-		comb <- c(as.logical(intToBits(iComb - 1L)[comb.seq]), comb.sfx)
+		jComb <- ceiling(iComb / nvariants)
+		if(jComb != prevJComb) {
+			prevJComb <- jComb
+			isok <- TRUE
+			comb <- c(as.logical(intToBits(jComb - 1L)[comb.seq]), comb.sfx)
+			nvar <- sum(comb) - nInts
+			if(!(nvar > m.max || nvar < m.min) && (!hasSubset || eval(subset,
+				structure(as.list(comb), names = allTerms)))) {
+				newArgs <- makeArgs(global.model, allTerms[comb], comb, argsOptions)
+				formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs else
+					attr(newArgs, "formulaList")
+				if(all(vapply(formulaList, formulaAllowed, logical(1L), marg.ex))) {
+					if(!is.null(attr(newArgs, "problems"))) {
+						print.warnings(structure(vector(mode = "list",
+							length = length(attr(newArgs, "problems"))),
+								names = attr(newArgs, "problems")))
+					} # end if <problems>
+					cl <- gmCall
+					cl[names(newArgs)] <- newArgs
+				} else isok <- FALSE # end if <formulaAllowed>
+			} else isok <- FALSE # end if <subset, m.max >= nvar >= m.min>
+		} #  end if(jComb != prevJComb)
 
-		nvar <- sum(comb) - nInts
-		if(!(nvar > m.max || nvar < m.min) && (!hasSubset || eval(subset,
-			structure(as.list(comb), names = allTerms)))) {
+		if(isok) {
+			## --- Variants ---------------------------
+			clVariant <- cl
+			if(nvarying) clVariant[varying.names] <-
+				fvarying[variants[(iComb - 1L) %% nvariants + 1L, ]]
 
-			newArgs <- makeArgs(global.model, allTerms[comb], comb, argsOptions)
-			formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs else
-				attr(newArgs, "formulaList")
-			if(all(vapply(formulaList, formulaAllowed, logical(1L), marg.ex))) {
-				if(!is.null(attr(newArgs, "problems"))) {
-					print.warnings(structure(vector(mode = "list",
-						length = length(attr(newArgs, "problems"))),
-							names = attr(newArgs, "problems")))
-				} # end if <problems>
+			if(trace) {
+				cat(iComb, ": "); print(clVariant)
+				utils::flush.console()
+			}
+			if(evaluate) {
+				qi <- qi + 1L
+				queued[[(qi)]] <- list(call = clVariant, id = iComb)
+			} else { # if !evaluate
+				k <- k + 1L # all OK, add model to table
+				calls[[k]] <- clVariant
+			}
+		} # if isok
 
-				cl <- gmCall
-				cl[names(newArgs)] <- newArgs
-
-				for (v in seq.variants) { ## --- Variants ---------------------------
-					modelId <- ((iComb - 1L) * nvariants) + v
-					clVariant <- cl
-					if(nvarying) {
-						newVaryingArgs <- sapply(varying.names, function(x)
-							varying[[x]][[variantsIdx[v, x]]], simplify = FALSE)
-						clVariant[varying.names] <- newVaryingArgs
-					}
-
-					if(trace) {
-						cat(modelId, ": "); print(clVariant)
-						utils::flush.console()
-						}
-					if(evaluate) {
-						qi <- qi + 1L
-						queued[[(qi)]] <- list(call = clVariant, id = modelId)
-					} else { # if !evaluate
-						k <- k + 1L # all OK, add model to table
-						calls[[k]] <- clVariant
-					}
-				}
-			} # end if <formulaAllowed>
-		} # end if <subset, m.max >= nvar >= m.min>
-
-		if(evaluate && qi && (qi + nvariants > qlen || iComb == ncomb)) {
+		#if(evaluate && qi && (qi + nvariants > qlen || iComb == ncomb)) {
+		if(evaluate && qi && (qi > qlen || iComb == ncomb)) {
 			#DebugPrint(paste(qi, nvariants, qlen, iComb, ncomb))
 			qseq <- seq_len(qi)
 			qresult <- .getRow(queued[qseq])
@@ -295,17 +299,17 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 					"This should not happen and may indicate problems with ",
 					"the cluster node", domain = "R-MuMIn")
 			haveProblems <- logical(qi)
-			
+
 			nadd <- sum(sapply(qresult, function(x) inherits(x$value, "condition")
 				+ length(x$warnings)))
 			wi <- length(warningList)
 			if(nadd) warningList <- c(warningList, vector(nadd, mode = "list"))
-			
+
 			# DEBUG: print(sprintf("Added %d warnings, now is %d", nadd, length(warningList)))
 
 			for (i in qseq)
-				for(cond in c(qresult[[i]]$warnings, 
-					if(inherits(qresult[[i]]$value, "condition")) 
+				for(cond in c(qresult[[i]]$warnings,
+					if(inherits(qresult[[i]]$value, "condition"))
 						list(qresult[[i]]$value))) {
 						wi <- wi + 1L
 						warningList[[wi]] <- if(is.null(conditionCall(cond)))
@@ -313,19 +317,20 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 						if(inherits(cond, "error")) {
 							haveProblems[i] <- TRUE
 							msgsfx <- "(model %d skipped)"
-						} else 
+						} else
 							msgsfx <- "(in model %d)"
 						names(warningList)[wi] <- paste(conditionMessage(cond),
 							 gettextf(msgsfx, queued[[i]]$id))
 						attr(warningList[[wi]], "id") <- queued[[i]]$id
 				}
-			
+
 			withoutProblems <- which(!haveProblems)
 			qrows <- lapply(qresult[withoutProblems], "[[", "value")
 			qresultLen <- length(qrows)
 			retNrow <- nrow(ret)
 			if(k + qresultLen > retNrow) {
 				nadd <- min(ret.nchunk, nmax - retNrow)
+				retCoefTable <- c(retCoefTable, vector(nadd, mode = "list"))
 				ret <- rbind(ret, matrix(NA, ncol = ret.ncol, nrow = nadd),
 					deparse.level = 0L)
 				calls <- c(calls, vector("list", nadd))
@@ -335,6 +340,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			for(m in qseqOK) ret[k + m, retColIdx] <- qrows[[m]]
 			ord[k + qseqOK] <- vapply(queued[withoutProblems], "[[", 1L, "id")
 			calls[k + qseqOK] <- lapply(queued[withoutProblems], "[[", "call")
+			retCoefTable[k + qseqOK] <- lapply(qresult[withoutProblems], "[[", "coefTable")
 			k <- k + qresultLen
 			qi <- 0L
 		}
@@ -353,11 +359,12 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		ret <- ret[i, , drop = FALSE]
 		ord <- ord[i]
 		calls <- calls[i]
+		retCoefTable <- retCoefTable[i]
 	}
 
 	if(nvarying) {
 		varlev <- ord %% nvariants; varlev[varlev == 0L] <- nvariants
-		ret[, n.vars + seq_len(nvarying) ] <- as.matrix(variantsIdx)[varlev, ]
+		ret[, n.vars + seq_len(nvarying)] <- variants[varlev, ]
 	}
 
 	ret <- as.data.frame(ret)
@@ -377,12 +384,13 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		variant.names <- lapply(varying, function(x)
 			make.unique(if(is.null(names(x))) as.character(x) else names(x)))
 		for (i in varying.names) ret[, i] <-
-			factor(ret[, i], levels = seq_along(variant.names[[i]]),
-				labels = variant.names[[i]])
+			factor(ret[, i], labels = variant.names[[i]])
 	}
 
 	o <- order(ret[, ICName], decreasing = FALSE)
 	ret <- ret[o, ]
+	retCoefTable <- retCoefTable[o]
+
 	ret$delta <- ret[, ICName] - min(ret[, ICName])
 	ret$weight <- exp(-ret$delta / 2) / sum(exp(-ret$delta / 2))
 
@@ -391,10 +399,14 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		calls = calls[o],
 		global = global.model,
 		global.call = gmCall,
-		terms = allTerms,
+		terms = structure(allTerms, interceptLabel = interceptLabel),
 		rank = IC,
-		rank.call = attr(IC,"call"),
-		call = match.call(expand.dots = TRUE)
+		rank.call = attr(IC, "call"),
+		beta = beta,
+		call = match.call(expand.dots = TRUE),
+		coefTables = retCoefTable,
+		nobs = nobs(global.model),
+		vCols = varying.names
 	)
 
 	if(length(warningList)) {
@@ -406,38 +418,33 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		attr(ret, "random.terms") <- attr(allTerms0, "random.terms")
 
 	if(doParallel) clusterCall(cluster, "rm",
-		list = c("parGetMsRow", "clustDredgeProps"), envir = .GlobalEnv)
+		list = c("parGetMsRow", "clustDredgeProps", ".getLogLik", "tryCatchWE",
+			"matchCoef", "parGetMsRow"), envir = .GlobalEnv)
 	return(ret)
 } ######
 
-`parGetMsRow` <- function(modv, comv = get("clustDredgeProps", .GlobalEnv)) {
-	### modv <- list(call = clVariant, id = modelId)
-	tryCatchWE <- function (expr) {
-		Warnings <- NULL
-		list(value = withCallingHandlers(tryCatch(expr, error = function(e) e),
-			warning = function(w) {
-				Warnings <<- c(Warnings, list(w))
-				invokeRestart("muffleWarning")
-			}), warnings = Warnings)
-	}
 
-	result <- tryCatchWE(eval(modv$call, comv$gmEnv))
+`parGetMsRow` <- function(modv, Z = get("clustDredgeProps", .GlobalEnv)) {
+	### modv <- list(call = clVariant, id = modelId)
+	result <- tryCatchWE(eval(modv$call, Z$gmEnv))
 	if (inherits(result$value, "condition")) return(result)
 
 	fit1 <- result$value
-	if(comv$nextra != 0L) {
-		extraResult1 <- comv$applyExtras(fit1)
-		if(length(extraResult1) < comv$nextra) {
-			tmp <- rep(NA_real_, comv$nextra)
-			tmp[match(names(extraResult1), names(comv$extraResult))] <-
+	if(Z$nextra != 0L) {
+		extraResult1 <- Z$applyExtras(fit1)
+		if(length(extraResult1) < Z$nextra) {
+			tmp <- rep(NA_real_, Z$nextra)
+			tmp[match(names(extraResult1), names(Z$extraResult))] <-
 				extraResult1
 			extraResult1 <- tmp
 		}
 	} else extraResult1 <- NULL
-	ll <- MuMIn:::.getLogLik()(fit1)
-	list(value = c(MuMIn:::matchCoef(fit1, all.terms = comv$allTerms,
-		beta = comv$beta), extraResult1, df = attr(ll, "df"), ll = ll,
-		ic = comv$IC(fit1)),
+	ll <- .getLogLik()(fit1)
+	mcoef <- matchCoef(fit1, all.terms = Z$allTerms, beta = Z$beta, allCoef = TRUE)
+
+	list(value = c(mcoef, extraResult1, df = attr(ll, "df"), ll = ll,
+		ic = Z$IC(fit1)),
+		coefTable = attr(mcoef, "coefTable"),
 		warnings = result$warnings)
 }
 
@@ -445,6 +452,6 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	cl <- attr(dd, "call")
 	cl$cluster <- cl$check <- NULL
 	cl[[1]] <- as.name("dredge")
-	if(!identical(c(dd), c(eval(cl)))) stop("buuu...")
+	if(!identical(c(dd), c(eval(cl)))) stop("Whoops...")
 	dd
 }

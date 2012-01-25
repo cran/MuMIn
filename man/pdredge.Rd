@@ -90,17 +90,19 @@ varying.link <- list(family = alist(logit = binomial("logit"),
     probit = binomial("probit"), cloglog = binomial("cloglog") ))
 
 # Set up the cluster
-clust <- try(makeCluster(getOption("cl.cores", 2), type = "SOCK"))
-if(inherits(clust, "cluster")) {
-
+clusterType <- if(length(.find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
+clust <- try(makeCluster(getOption("cl.cores", 2), type = clusterType))
+\dontshow{if(inherits(clust, "cluster")) \{ }
 clusterExport(clust, "Beetle100")
 
 # noticeable gain only when data has about 3000 rows (Windows 2-core machine)
 print(system.time(dredge(fm1, subset = msubset, varying = varying.link)))
 print(system.time(pdredge(fm1, cluster = FALSE, subset = msubset,
     varying = varying.link)))
-print(system.time(pdredge(fm1, cluster = clust, subset = msubset,
+print(system.time(pdd <- pdredge(fm1, cluster = clust, subset = msubset,
     varying = varying.link)))
+	
+print(pdd)
 
 \dontrun{
 # A time consuming example with 'unmarked' model, based on example(pcount).
@@ -138,12 +140,11 @@ modSel(fitList(fits = structure(models, names = model.names(models,
 }
 
 stopCluster(clust)
-
-} else # if(! inherits(clust, "cluster"))
+\dontshow{ 
+\} else # if(! inherits(clust, "cluster"))
 message("Could not set up the cluster")
-
-
-\dontshow{ \} }
+\} 
+}
 
 }
 

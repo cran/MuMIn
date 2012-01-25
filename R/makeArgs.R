@@ -17,14 +17,16 @@ makeArgs.default <- function(obj, termNames, comb, opt, ...) {
 	environment(f) <- opt$gmFormulaEnv
 	ret <- list(formula = f)
 	if(!is.null(opt$gmCall$start)) {
-		coefNames <- fixCoefNames(.getCoefNames(f, opt$gmDataHead, opt$gmCall$contrasts, envir = opt$gmEnv))
+		coefNames <- fixCoefNames(.getCoefNames(f, opt$gmDataHead,
+			opt$gmCall$contrasts, envir = opt$gmEnv))
 
 		idx <- match(coefNames, opt$gmCoefNames)
 
 		if(any(is.na(idx))) {
 			reportProblems <- append(reportProblems, "cannot subset 'start' argument. Coefficients in generated model do not exist in the global model")
 		} else {
-			ret$start <- substitute(start[idx], list(start = opt$gmCall$start, idx = idx))
+			ret$start <- substitute(start[idx], list(start = opt$gmCall$start,
+			idx = idx))
 		}
 	}
 	attr(ret, "formulaList") <- list(f)
@@ -42,8 +44,10 @@ makeArgs.lme <- function(obj, termNames, comb, opt, ...) {
 	names(ret)[1] <- "fixed"
 	ret
 }
+
 makeArgs.mer <- function(obj, termNames, comb, opt, ...) {
 	ret <- makeArgs.default(obj, termNames, comb, opt)
+	#if(isTRUE(opt$use.ranef))
 	ret$formula <- update.formula(ret$formula, opt$random)
 	ret
 }
@@ -99,6 +103,12 @@ function(obj, termNames, comb, opt, ...)  {
 	termNames[termNames == "p((Intercept))"] <- "p(1)"
 	makeArgs.unmarkedFit(obj, termNames, comb, opt, c("lam", "p"),
 		"formula")
+}
+
+`makeArgs.coxph` <- function(obj, termNames, comb, opt, ...) {
+	ret <- makeArgs.default(obj, termNames, comb, opt)
+	ret$formula <- update.formula(ret$formula, . ~ . + 1)
+	ret
 }
 
 

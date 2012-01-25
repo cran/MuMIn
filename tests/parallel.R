@@ -1,5 +1,6 @@
 if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) {
-	clust <- try(makeCluster(getOption("cl.cores", 2), type = "SOCK"))
+	clusterType <- if(length(.find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
+	clust <- try(makeCluster(getOption("cl.cores", 2), type = clusterType))
 	if(inherits(clust, "cluster")) {
 		library(MuMIn)
 		library(lme4)
@@ -12,14 +13,26 @@ if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) {
 			data = Orthodont, REML = FALSE)
 
 
-
 		clusterExport(clust, "Orthodont")
 		#clusterEvalQ(clust, library(lme4))
 		clusterCall(clust, "library", "lme4", character.only = TRUE)
 
 		print(system.time(pddc <- pdredge(fm2, cluster = clust)))
-		print(system.time(pdd1 <- pdredge(fm2, cluster = F)))
+		print(system.time(pdd1 <- pdredge(fm2, cluster = FALSE)))
 		print(system.time(dd1 <- dredge(fm2)))
+		
+		print(pddc)
+		print(pdd1)
+		print(dd1)
+		
+		#print(all.equal(pddc, dd1))
+
+
+		ma1 <- model.avg(pdd1, beta = FALSE)
+		ma0 <- model.avg(pddc)
+
+		stopifnot(isTRUE(all.equal(ma1$avg.model, ma0$avg.model)))
+		stopifnot(isTRUE(all.equal(ma1$summary, ma0$summary)))
 
 		stopCluster(clust)
 

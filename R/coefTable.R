@@ -1,68 +1,94 @@
 `tTable` <-
 function (model, ...) 	{
 	.Deprecated("coefTable")
-	UseMethod("coefTable")
+	coefTable(model, ...)
 }
 
 `coefTable` <-
-function (model, dispersion = NULL, ...) 	UseMethod("coefTable")
+function (model, ...) UseMethod("coefTable")
+
+.makeCoefTable <- function(x, se, df = NA_real_, coefNames = names(x)) {
+	n <- length(x)
+	if(n) {
+		xdefined <- !is.na(x)
+		ndef <- sum(xdefined)
+		if(ndef < n) {
+			if(length(se) == ndef) {
+				y <- rep(NA_real_, n); y[xdefined] <- se; se <- y
+			}
+			if(length(df) == ndef) {
+				y <- rep(NA_real_, n); y[xdefined] <- df; df <- y
+			}
+		}
+	}
+	if(n != length(se)) stop("length(x) is not equal to length(se)")
+	ret <- matrix(NA_real_, ncol = 3L, nrow = length(x),
+		dimnames = list(coefNames, c("Estimate", "Std. Error", "df")))
+	if(n) ret[, ] <- cbind(x, se, rep(if(is.null(df)) NA_real_ else df,
+		length.out = n), deparse.level = 0L)
+	ret
+}
 
 `coefTable.default` <-
-function(model, dispersion = NULL, ...)
-return(summary(model, dispersion = dispersion)$coefficients)
-
-`coefTable.gam` <-
-function(model, dispersion = NULL, ...) {
-	cf <- model$coefficients
-	se <- summary(model, dispersion = dispersion)$se
-    return(cbind(`Estimate` = cf, `Std. Error` = se))
+function(model, ...) {
+	dfs <- tryCatch(df.residual(model), error = function(e) NA_real_)
+	cf <- summary(model, ...)$coefficients
+	.makeCoefTable(cf[, 1L], cf[, 2L], dfs)
 }
 
-`coefTable.glmmML` <- function(model, ...) {
-    coef <- model$coefficients
-    se <- model$coef.sd
-    ret <- cbind(coef, se, coef / se, signif(1 - pchisq((coef/se)^2,
-        1)))
-    dimnames(ret) <- list(names(coef), c("Estimate", "Std. Error",
-        "z", "Pr(>|z|)"))
-  return(ret)
-}
+`coefTable.coxph` <-
+`coefTable.survreg` <-
+`coefTable.lm` <-
+function(model, ...)
+	.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))), model$df.residual)
+
+`coefTable.glmmML` <- function(model, ...)
+	.makeCoefTable(model$coefficients, model$coef.sd)
+
 
 `coefTable.gls` <-
-function (model, ...) return(summary(model)$tTable)
+function (model, ...)
+	.makeCoefTable(coef(model), sqrt(diag(as.matrix(model$varBeta))),
+		model$dims$N - model$dims$p)
+
 
 `coefTable.lme` <-
-function(model, ...) return(summary(model)$tTable)
+function(model, adjustSigma = TRUE, ...) {
+	se <- sqrt(diag(as.matrix(model$varFix)))
+	if (adjustSigma && model$method == "ML")
+		se <- se * sqrt(model$dims$N / (model$dims$N - length(se)))
+	.makeCoefTable(fixef(model), se, model$fixDF[["X"]])
+}
 
 `coefTable.mer` <-
-function(model, ...) {
-	#sm <- eval(expression(summary), as.environment("package:lme4"))
-	sm <- eval(expression(summary), asNamespace("lme4"))
-	return (sm(model)@coefs)
-	#return((summary(model))@coefs)
-}
+function(model, ...)
+	#sm <- eval(expression(summary), asNamespace("lme4"))
+	.makeCoefTable(fixef(model), vcov(model, ...)@factors$correlation@sd)
 
 `coefTable.multinom` <-
 function(model, ...) {
-	ret <- do.call("cbind", summary(model)[c("coefficients", "standard.errors")])
-	colnames(ret) <- c("Estimate", "Std. Error")
-	return(ret)
+	s <- summary(model, ...)
+	.makeCoefTable(s$coefficients, s$standard.errors)
 }
 
 `coefTable.sarlm` <-
 `coefTable.spautolm` <-
 function(model, ...) {
-	cf <- coef(model)
-	se <- sqrt(diag(summary(model)$resvar))[names(cf)]
-	return(cbind(`Estimate`=cf, `Std. Error` = se))
+	x <- coef(model)
+	.makeCoefTable(x, sqrt(diag(summary(model, ...)$resvar))[names(x)])
 }
 
-`coefTable.survreg` <- function (model, ...) {
-	return(cbind(
-		`Estimate` = model$coefficients,
-		`Std. Error` = sqrt(diag(model$var)))
-	)
+`coefTable.coxme` <-
+`coefTable.lmekin` <-
+function(model, ...)  {
+	# code from coxme:::print.coxme
+	beta <- model$coefficients # for class coxme:
+	if(is.list(beta) && !is.null(beta$fixed))
+		beta <- beta$fixed # for class lmekin and older coxme
+	nvar <- length(beta)
+	if(nvar) {
+		nfrail <- nrow(model$var) - nvar
+		se <- sqrt(get("diag", getNamespace("Matrix"))(model$var)[nfrail + 1L:nvar])
+	} else se <- NULL
+	.makeCoefTable(beta, se)
 }
-
-`coefTable.coxph` <- function (model, ...)
-	return(summary(model)$coefficients[,-c(2L, 3L), drop = FALSE])

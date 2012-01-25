@@ -52,4 +52,4 @@ function (model) coef(model$gam)
 function (x, ...) getAllTerms(x$gam, ...)
 
 `coefTable.gamm` <-
-function (model, ...) coefTable(model$gam, ...)
+function (model, ...) coefTable.lm(model$gam, ...)
