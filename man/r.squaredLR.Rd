@@ -9,7 +9,7 @@ Calculate a coefficient of determination based on the likelihood-ratio test
 }
 
 \usage{
-r.squaredLR(x, null = null.fit(x, TRUE))
+r.squaredLR(x, null = null.fit(x, TRUE, parent.frame()))
 
 null.fit(x, evaluate = FALSE,
     envir = environment(as.formula(formula(x))))
@@ -17,8 +17,9 @@ null.fit(x, evaluate = FALSE,
 
 \arguments{
   \item{x}{a fitted model object. }
-  \item{null}{a fitted \emph{null} model, if not provided, a \code{glm} with
-  only intercept and appropriate family will be used. }
+  \item{null}{a fitted \emph{null} model. If not provided, \code{null.fit} will
+	be used to construct it. Its capabilities are limited to only a few model 
+	classes, for others the \emph{null} model has to be specified manually. }
   \item{evaluate}{If \code{TRUE} evaluate the fitted model object else return
 	the call. }
   \item{envir}{the environment in which the \emph{null} model is to be
@@ -38,8 +39,8 @@ null.fit(x, evaluate = FALSE,
 \details{
 
 This statistic is is one of the several proposed pseudo-R-squared's for
-nonlinear regression models. It is based on an improvement
-from \emph{null} (intercept only) model to the fitted model, and calculated as
+nonlinear regression models. It is based on an improvement from \emph{null} 
+(intercept only) model to the fitted model, and calculated as
 \deqn{
 R_{LR}^{2}=1-\exp(-\frac{2}{n}(\log\mathit{Lik}(x)-\log\mathit{Lik}(0)))
 }{R^2 = 1 - exp(-2/n * logLik(x) - logLik(0))}
@@ -61,8 +62,9 @@ where
 max(R_{LR}^{2}) = 1 - \exp(\frac{2}{n}\log\mathit{Lik}(\textrm{0}))
 }{max(R^2) = 1 - exp(2 / n * logLik(0))}.
 
-\code{null.fit} tries to guess the \emph{null} model call (as a \code{glm}),
-given the provided fitted model object.
+\code{null.fit} tries to guess the \emph{null} model call,
+given the provided fitted model object. This would be usually a \code{glm}. The 
+function will give an error for an unrecognized class.
 
 }
 

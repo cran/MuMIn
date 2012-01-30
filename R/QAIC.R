@@ -8,7 +8,6 @@ function(object, ..., chat, k = 2) {
 	# chat <- deviance(object) / df.residual(object)
 	logLik <- .getLogLik()
 
-
 	if(chat < 1) {
 		warning("'chat' given is < 1, increased to 1")
 		chat <- 1
@@ -30,10 +29,10 @@ function(object, ..., chat, k = 2) {
 
 	if(length(list(...))) {
 		object <- list(object, ...)
-		val <- data.frame(QAIC=sapply(object, qaic, chat = chat, k = k))
+		val <- data.frame(QAIC = sapply(object, qaic, chat = chat, k = k))
 		Call <- match.call()
 		Call$chat <- NULL
-		row.names(val) <- as.character(Call[-1])
+		row.names(val) <- as.character(Call[-1L])
 		return(val)
 	} else {
 		return(qaic(object, chat, k))
@@ -64,10 +63,10 @@ function(object, ..., chat, k = 2) {
 
 	if(length(list(...))) {
 		object <- list(object, ...)
-		val <- data.frame(QAIC=sapply(object, qaicc, chat = chat, k = k))
+		val <- data.frame(QAIC = sapply(object, qaicc, chat = chat, k = k))
 		   Call <- match.call()
 		   Call$chat <- NULL
-		row.names(val) <- as.character(Call[-1])
+		row.names(val) <- as.character(Call[-1L])
 		return(val)
 	} else {
 		return(qaicc(object, chat, k))

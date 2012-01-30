@@ -25,10 +25,10 @@ mallardUMF <- unmarkedFramePCount(mallard.y, siteCovs = mallard.site,
 (ufm.mallard <- pcount(~ ivel + date + I(date^2) ~ length + elev + forest,
     mallardUMF, K = 30))
 
-invisible(clusterEvalQ(clust, library(unmarked, logical = TRUE)))
 # 'stats4' is needed for AIC to work with unmarkedFit objects but is not loaded
 # automatically with 'unmarked'.
 invisible(clusterEvalQ(clust, library(stats4, logical = TRUE)))
+invisible(clusterEvalQ(clust, library(unmarked, logical = TRUE)))
 
 clusterExport(clust, "mallardUMF")
 invisible(clusterCall(clust, "library", "stats4", character.only = TRUE))

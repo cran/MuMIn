@@ -30,7 +30,8 @@ dredge(global.model, beta = FALSE, evaluate = TRUE,
 	list of model \code{call}s is returned. }
 
 	\item{rank}{optional custom rank function (information criterion) to be used
-	instead \code{AICc}, e.g. \code{QAIC} or \code{BIC}. See \sQuote{Details}. }
+	instead \code{AICc}, e.g. \code{AIC}, \code{QAIC} or \code{BIC}.
+	See \sQuote{Details}. }
 
 	\item{fixed}{optional, either a single sided formula or a character vector
 	giving names of terms to be included in all models. }
@@ -88,23 +89,10 @@ dredge(global.model, beta = FALSE, evaluate = TRUE,
 
 
 \details{
-Fitted model objects that can be used as a \code{global.model} include ones
-returned by
-\code{lm}, \code{glm} (package \pkg{stats});
-\code{gam}, \code{gamm} (\pkg{mgcv});
-\code{gamm4} (\pkg{gamm4});
-\code{lme}, \code{gls} (\pkg{nlme});
-\code{lmer} (\pkg{lme4});
-\code{rlm}, \code{glm.nb}, \code{polr} (\pkg{MASS});
-\code{multinom} (\pkg{nnet});
-\code{sarlm}, \code{spautolm} (\pkg{spdep});
-\code{glmmML} (\pkg{glmmML});
-\code{coxph}, \code{survreg} (\pkg{survival});
-\code{coxme}, \code{lmekin} (\pkg{coxme});
-\code{rq} (\pkg{quantreg});
-and model classes from package \pkg{unmarked}.
-\code{gamm} and \code{gamm4} should be evaluated \emph{via} the wrapper
-\code{MuMIn::\link[MuMIn]{gamm}}.
+
+For a list of model types that can be used as a \code{global.model} see
+\link[=MuMIn-models]{list of supported models}. \code{gamm} and \code{gamm4}
+should be evaluated \emph{via} the wrapper \code{MuMIn::\link[MuMIn]{gamm}}.
 
 Models are fitted one by one through repeated evaluation of modified calls to
 the \code{global.model} (in a similar fashion as with \code{update}). This
@@ -120,8 +108,8 @@ models, use \code{\link{get.models}} on the object returned by \code{dredge}.
 Handling interactions, \code{dredge} respects marginality constraints, so
 \dQuote{all possible combinations} do not include models containing interactions
 without their respective main effects. This behaviour can be altered by
-\code{marg.ex} argument, which can be used to allow for simple nested designs. 
-For example, with global model of form \code{a / (x + z)}, use 
+\code{marg.ex} argument, which can be used to allow for simple nested designs.
+For example, with global model of form \code{a / (x + z)}, use
 \code{marg.ex = "a"} and \code{fixed = "a"}.
 
 \code{rank} is found by a call to \code{match.fun} and may be specified as a
@@ -148,6 +136,11 @@ Use of \code{na.action = na.omit} (\R's default) in \code{global.model} should
 be avoided, as it results with sub-models fitted to different data sets, if
 there are missing values. In versions >= 0.13.17 a warning is given in such a
 case.
+
+There are \code{\link[=subset.model.selection]{subset}} and \code{plot} methods,
+the latter produces a graphical representation of model weights and variable
+relative importance.
+Coefficients can be extracted with \code{coef} or \code{\link{coefTable}}.
 }
 
 
@@ -190,8 +183,6 @@ of interest and its scientific setting} (Burnham and Anderson, 2002).
 	faster if execution of \code{\link{dredge}} takes very long.
 
 \code{\link{get.models}}, \code{\link{model.avg}}.
-
-There are \code{\link[=subset.model.selection]{subset}} and \code{plot} methods.
 
 Possible alternatives: \code{\link[glmulti]{glmulti}} in package \pkg{glmulti}
 and \code{\link[bestglm]{bestglm}} (\pkg{bestglm}),

@@ -1,12 +1,13 @@
 `getAllTerms.default` <-
-function(x, ...) getAllTerms.formula(as.formula(formula(x)), ...)
+#function(x, ...) getAllTerms.formula(as.formula(formula(x)), ...)
+function(x, ...) getAllTerms.terms(terms(as.formula(formula(x))), ...)
 
 
 `getAllTerms.lm` <-
-function(x, ...)
+function(x, intercept = FALSE, ...)
 	if(inherits(x, "gam"))
-		getAllTerms.terms(terms(formula(x)), ...) else
-		getAllTerms.terms(terms(x), ...)
+		getAllTerms.terms(terms(formula(x), ...), intercept = intercept) else
+		getAllTerms.terms(terms(x, ...), intercept = intercept)
 
 `getAllTerms.terms` <-
 function(x, offset = TRUE, intercept = FALSE, ...) {
@@ -73,7 +74,7 @@ function(x, offset = TRUE, intercept = FALSE, ...) {
 }
 
 `getAllTerms.formula` <-
-function(x, ...) getAllTerms.terms(terms(x), ...)
+function(x, ...) getAllTerms.terms(terms.formula(x), ...)
 
 `getAllTerms.lme` <-
 function(x, ...) {

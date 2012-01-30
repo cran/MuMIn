@@ -28,9 +28,14 @@ fm4oc <- occu(~veght ~veght+habitat, umfOccu)
 
 MuMIn:::fixCoefNames(names(coef(fm2oc)))
 
+
 # dredge(fm2oc, eval=F, fixed=~psi(habitat))
 
+#(dd <- dredge(fm2oc, fixed = ~psi(habitat), trace = T))
 (dd <- dredge(fm2oc, fixed = ~psi(habitat)))
+
+#m1 <- occu(formula = ~1 ~ 1 + habitat, data = umfOccu)
+
 
 model.sel(dd, rank = "AIC")
 models <- get.models(dd[1:3])
@@ -50,4 +55,9 @@ summary(model.avg(dd, delta <= 4))
 
 # Model selection
 print(mod.sel(fm1oc, fm2oc, fm3oc))
+
+#model.avg(fm1oc, fm2oc, fm3oc)
+#model.avg(fm1oc, fm2oc)
+#getAllTerms(fm1oc)
+
 print(summary(model.avg(fm1oc, fm2oc, fm3oc)))

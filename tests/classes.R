@@ -4,7 +4,6 @@ require(MuMIn)
 .checkPkg <- function(package) length(.find.package(package, quiet=TRUE)) != 0
 
 # TEST gls --------------------------------------------------------------------------------
-#if(.checkPkg("nlme")) {
 library(nlme)
 
 fm1Dial.gls <- gls(rate ~(pressure + I(pressure^2) + I(pressure^3))*QB,
@@ -23,185 +22,28 @@ ma <- model.avg(models, revised=T)
 ms <- model.sel(models)
 print(ms, abbr = F)
 print(ms, abbr = T)
-
 summary(ma)
 predict(ma)[1:10]
 
-#predict(ma, data.frame(QB = 300, pressure = seq(0.24, 3, length = 10)))
 predict(ma, Dialyzer[1:5, ])
 
-# example(corGaus)
-fm1BW.lme <- lme(weight ~ Time * Diet, data = BodyWeight, random = ~ Time, method="ML")
-
-varying <- list(
-	correlation = alist(corExp(form = ~ Time), corGaus(form = ~ Time)),
-	weights = alist(NULL, varPower())
-)
-
-dd <- dredge(fm1BW.lme, m.max=1, fixed=~Time, varying=varying)
-#dd <- dredge(fm1, trace=T)
-models <- get.models(dd, 1:4)
-ma <- model.avg(models, revised=T)
-
-
-summary(ma <- model.avg(models[1:4]))
-summary(model.avg(dd[1:4]))
-
-model.avg(dd[1:4])
-
-logLik(dd)
-
-mod.sel(models)
-summary(ma)
-confint(ma)
-predict(ma)[1:10]
-
-
 detach(package:nlme); rm(list=ls())
-#}
-
-#dredge(fm1, rank=BIC)
-#dredge(fm1, rank=AIC)
-
-# TEST (quasi)poisson --------------------------------------------------------------------
-
-d.AD <- data.frame(counts =c(18,17,15,20,10,20,25,13,12), outcome = gl(3,1,9),
-treatment = gl(3,3))
-#fm2 <- glm(counts ~ outcome + treatment, family=quasipoisson(), data=d.AD)
-fm2 <- glm(counts ~ outcome * treatment, family = poisson(), data=d.AD)
-
-#dd <- dredge(fm2)
-#summary(model.avg(dd, subset= delta <= 10))
-dd <- dredge(fm2, rank = QAIC, chat = deviance(fm2) / df.residual(fm2))
-# dd <- dredge(fm2)
-# summary(model.avg(dd, subset= delta <= 10))
-
-dredge(fm2, rank = QAIC, chat = deviance(fm2) / df.residual(fm2))
-
-subset(dd, delta <= 10)
-mod.sel(get.models(dd, subset = delta <= 10))
-
-rm(list=ls())
 
 # TEST glmmML --------------------------------------------------------------------
-
-if(.checkPkg("glmmML")) {
-#require(MuMIn)
 library(glmmML)
+
 set.seed(100)
 dat <- data.frame(y = rbinom(100, prob = rep(runif(20), rep(5, 20)), size = 1),
 	x = rnorm(100), x2 = rnorm(100), id = factor(rep(1:20, rep(5, 20))))
 
 fm1 <- glmmML(y ~ x*x2, data = dat, cluster = id)
-summary(model.avg(dredge(fm1), subset = delta <= 4))
+dd <- dredge(fm1)
+# mod <- get.models(dd, subset = delta <= 4)
+summary(ma <- model.avg(dd, subset = delta <= 4))
+# vcov(ma)
+coefTable(ma)
 
 detach(package:glmmML); rm(list=ls())
-
-}
-
-# TEST nlme --------------------------------------------------------------------
-if(.checkPkg("nlme")) {
-library(nlme)
-data(Orthodont, package = "nlme")
-
-#:: Model-averaging mixed models :::::::::::::::::::::::::::::::::::::::::::::::
-# Fitting by REML
-fm2 <- lme(distance ~ Sex*age + age*Sex, data = Orthodont,
-		   random = ~ 1|Subject / Sex, method = "REML")
-
-# Model selection: ranking by AICc which uses ML
-dd <- dredge(fm2, trace=T, rank="AICc", REML=FALSE)
-
-
-# Get models (which are fitted by REML, like the global model)
-gm <- get.models(dd, 1:4)
-
-#mod.sel(gm)
-
-##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#maML <- model.avg(gm, rank="AICc", rank.args = list(REML=FALSE))
-#maREML <- model.avg(gm, rank="AICc", rank.args = list(REML=TRUE))
-#summary(maML)
-#summary(maREML)
-
-#ma <- model.avg(gm, revised = F)
-summary(ma <- model.avg(gm, revised = T))
-confint(ma)
-
-#dredge(fm2, rank=BIC)
-predict(ma, data.frame(Sex="Male", Subject="M01", age=8:12))
-
-detach(package:nlme); rm(list=ls())
-}
-
-# TEST lmer -------------------------------------------------------------------------------
-if(.checkPkg("lme4")) {
-
-## TODO: Clean it up!
-
-set.seed(1)
-library(lme4)
-data(Orthodont, package = "nlme")
-
-Orthodont$rand <- runif(nrow(Orthodont))
-fm2 <- lmer(log(distance) ~ rand*Sex*age + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
-
-
-#fm2 <- lmer(log(distance) ~ Sex*age + (1|Subject) + (Sex|Subject),
-	#data = Orthodont, REML = F)
-#
-#MuMIn:::abbreviateTerms(at1)
-#abbreviateTerms(at1)
-#reformulate(at1)
-
-#fm0 <- lmer(distance ~ 1 + (1|Subject) + (1|Sex), data = Orthodont, REML=FALSE)
-#fm00 <- lm(distance ~ 1 , data = Orthodont)
-
-dd <- dredge(fm2, trace=T)
-gm <- get.models(dd, 1:6)
-(ma <- model.avg(gm))
-
-fm1 <- lmer(log(distance) ~ rand*Sex*age + (1|Sex), data = Orthodont, REML=FALSE)
-fm2 <- lmer(log(distance) ~ rand*age + (1|Subject), data = Orthodont, REML=FALSE)
-fm4 <- lmer(log(distance) ~ age + (1|Sex) + (1|Subject), data = Orthodont, REML=FALSE)
-fm2a <- lmer(log(distance) ~ age + (1|Subject), data = Orthodont, REML=FALSE)
-fm2b <- lmer(log(distance) ~ Sex + (1|Subject), data = Orthodont, REML=FALSE)
-fm3 <- lm(log(distance) ~ age, data = Orthodont)
-
-models <- list(fm4, fm1, fm3, fm2, fm2a, fm2b)
-dd2 <- model.sel(models)
-
-
-coefTable(models[[2]], dispersion = NULL)
-
-
-# Comparing model.avg on model list and applied directly:
-#ma0 <- model.avg(models)
-ma0 <- model.avg(get.models(dd2))
-ma1 <- model.avg(dd2)
-
-summary(ma1)
-stopifnot(isTRUE(all.equal(coefTable(ma1), coefTable(ma0))))
-
-# Comparing re-ranked model.sel on model list and applied directly:
-msBIC <- model.sel(models, rank = "BIC")
-msAIC <- model.sel(models, rank = "AIC")
-msBIC2 <- model.sel(get.models(msAIC), rank = "BIC")
-msBIC3 <- model.sel(msAIC, rank = "BIC")
-msAIC2 <- model.sel(msBIC3, rank = "AIC")
-msAIC3 <- model.sel(get.models(msAIC2), rank = "AIC")
-all.equal(msAIC2, msAIC)
-# !all.equal(msAIC3, msAIC)
-# !all.equal(msBIC2, msBIC)
-
-# update.mer does not expand dots, so here we have a call:
-# lmer(formula = distance ~ Sex + (1 | Subject), data = Orthodont,
-#    REML = ..2, model = ..3)
-dd <- dredge(update(fm2, REML=F, model=F), trace=T)
-
-
-detach(package:lme4); rm(list=ls())
-}
 
 # TEST lm ---------------------------------------------------------------------------------
 if(.checkPkg("nlme")) {
@@ -211,9 +53,8 @@ fm1 <- lm(distance ~ Sex*age + age*Sex, data = Orthodont)
 
 dispersion <- function(object) {
 	wts <- weights(object); if(is.null(wts)) wts <- 1
-	sum((wts * resid(object, type="working")^2)[wts > 0]) / df.residual(object)
+	sum((wts * resid(object, type = "working")^2)[wts > 0]) / df.residual(object)
 }
-
 
 dd <- dredge(fm1, extra = alist(dispersion))
 gm <- get.models(dd, 1:4)

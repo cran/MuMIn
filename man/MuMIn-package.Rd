@@ -5,7 +5,7 @@
 \encoding{utf-8}
 \title{Multi-model inference}
 \description{
-The package \pkg{MuMIn} contains functions to streamline information-theoretic 
+The package \pkg{MuMIn} contains functions to streamline information-theoretic
 model selection and carry out model averaging based on the information criteria.
 }
 
@@ -17,8 +17,8 @@ The collection of functions includes:
 		choices of other model properties (such as different link functions).
 		The set of models may be generated either with \sQuote{all possible}
 		combinations, or tailored according to the conditions specified.
-		
-		\code{\link{pdredge}} does the same, but can parallelize model fitting 
+
+		\code{\link{pdredge}} does the same, but can parallelize model fitting
 		process using a cluster.
 		}
 	\item{\code{\link{model.sel}}}{creates a model selection table from
@@ -30,17 +30,17 @@ The collection of functions includes:
 }
 
 
-For a complete list of functions, use \code{library(help = "MuMIn")}. 
+For a complete list of functions, use \code{library(help = "MuMIn")}.
 
-By default, AIC\eqn{_{c}}{c} is used to rank the models and to obtain model 
-selection probabilities, though any other information criteria can be 
-utilised. At least the following ones are currently implemented in \R: 
+By default, AIC\eqn{_{c}}{c} is used to rank the models and to obtain model
+selection probabilities, though any other information criteria can be
+utilised. At least the following ones are currently implemented in \R:
 \code{\link{AIC}} and \code{\link{BIC}} in package \pkg{stats}, and
-\code{\link{QAIC}}, \code{\link{QAICc}}, \code{\link{ICOMP}}, 
+\code{\link{QAIC}}, \code{\link{QAICc}}, \code{\link{ICOMP}},
 \code{\link{CAICF}}, and \link{Mallows' Cp} in \pkg{MuMIn}.
 
-Most of \R's common modelling functions are supported, for a full list refer to 
-the help pages for \code{dredge} and \code{model.avg}.
+Most of \R's common modelling functions are supported, for a full inventory
+see \link[=MuMIn-models]{list of supported models}.
 }
 
 \author{ Kamil Barto\enc{ń}{n} }
@@ -62,10 +62,10 @@ model selection by AIC.
 data(Cement)
 
 fm1 <- lm(y ~ ., data = Cement)
-
 ms1 <- dredge(fm1)
-confset.d4 <- get.models(ms1, subset = delta < 4)
-model.avg(confset.d4)
+plot(ms1)
+
+model.avg(ms1, subset = delta < 4)
 
 confset.95p <- get.models(ms1, cumsum(weight) <= .95)
 avgmod.95p <- model.avg(confset.95p)

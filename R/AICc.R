@@ -2,6 +2,7 @@
 UseMethod("AICc")
 
 `AICc.logLik` <- function (object, ..., k = 2) {
+	if (length(list(...)) > 0L) warning("additional arguments ignored")
 	df <- attr(object, "df")
 	no <- attr(object, "nobs")
 	if (is.null(no)) stop("'logLik' object must have a \"nobs\" attribute")

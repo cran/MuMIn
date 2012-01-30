@@ -44,7 +44,7 @@ model.avg(object, ..., revised.var = TRUE)
         standard errors. See \code{\link{par.avg}}. }
 
 	\item{dispersion}{ the dispersion parameter for the family used. See
-		\code{\link{summary.glm}}. This is used currently only with \code{glm}, 
+		\code{\link{summary.glm}}. This is used currently only with \code{glm},
 		is silently ignored otherwise. }
 
 	\item{subset}{ see \code{\link[=subset.model.selection]{subset}} method for
@@ -91,23 +91,6 @@ In addition, the object has following attributes:
 
 \details{
 
-\code{model.avg} is knowns to work with the fitted objects produced by the
- following modelling functions:
-	\code{lm}, \code{glm};
-	\code{gam}, \code{gamm} (\pkg{mgcv});
-	\code{gamm4} (\pkg{gamm4});
-	\code{lme}, \code{gls} (\pkg{nlme});
-	\code{lmer} (\pkg{lme4});
-	\code{rlm}, \code{glm.nb}, \code{polr} (\pkg{MASS});
-	\code{multinom} (\pkg{nnet});
-	\code{sarlm}, \code{spautolm} (\pkg{spdep});
-	\code{glmmML} (\pkg{glmmML});
-	\code{coxph}, \code{survreg} (\pkg{survival});
-	\code{coxme}, \code{lmekin} (\pkg{coxme});
-	and models within the class \code{unmarkedFit} (\pkg{unmarked}).
-Other classes are also likely to be supported, in particular those inheriting
-from one of the above classes.
-
 \code{model.avg} may be used either with a list of models, or directly with a
 	\code{model.selection} object (e.g. returned by \code{dredge}). In the
 	latter case, the models from the model selection table are not evaluated
@@ -119,6 +102,10 @@ from one of the above classes.
 	be available with the returned object.
 	Otherwise, \code{get.models} is called prior to averaging, and \dots are
 	passed to it.
+
+For a list of model types that are accepted see \link[=MuMIn-models]{list of
+supported models}.
+
 
 \code{rank} is found by a call to \code{\link[base]{match.fun}} and typically is
     specified as a function or a symbol (e.g. a back-quoted name) or a character
@@ -174,8 +161,8 @@ Springer-Verlag.
 See \code{\link{par.avg}} for more details of model averaged parameter
 calculation.
 
-Vignette \sQuote{Extending \pkg{MuMIn}'s functionality} demonstrates how to
-provide support for other types of models.
+%Vignette \sQuote{Extending \pkg{MuMIn}'s functionality} demonstrates how to
+%provide support for other types of models.
 
 \code{\link{dredge}}, \code{\link{get.models}} \cr
 \code{\link{AICc}} has examples of averaging models fitted by REML.
