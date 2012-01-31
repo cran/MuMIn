@@ -172,18 +172,3 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 			invokeRestart("muffleWarning")
 		}), warnings = Warnings)
 }
-
-`abbreviate2` <- function(names.arg, minlength = 4) {
-	names.arg <- gsub("\\W+", "", names.arg)
-	for(n in minlength) {
-		ret <- substr(names.arg, 1, n)
-		if(nodup <- (!any(dup <- duplicated(ret)))) break
-	}
-	if(nodup) return(ret)
-	i <- match(ret, unique(ret[dup]), nomatch = NA)
-	j <- !is.na(i)
-	ret[j] <- abbreviate(ret[j], minlength - 1)
-	v <- unsplit(lapply(split(ret, i), function(s) paste(s, seq_along(s), sep ="")), i)
-	ret[j] <- v[j]
-	ret
-}

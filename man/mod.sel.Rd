@@ -14,7 +14,7 @@ Build a model selection table.
 \usage{
 
 model.sel(object, ...)
-mod.sel(object, ...)
+%mod.sel(object, ...)
 
 \method{model.sel}{model.selection}(object, rank = NULL, rank.args = NULL, ...)
 \method{model.sel}{default}(object, ..., rank = NULL, rank.args = NULL)
@@ -49,7 +49,7 @@ additional columns showing them (except for formulas and some other arguments).
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{dredge}}
+\code{\link{dredge}}, \link[=MuMIn-models]{list of supported models}.
 }
 
 \examples{

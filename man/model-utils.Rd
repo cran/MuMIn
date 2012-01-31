@@ -26,7 +26,7 @@ These functions extract or calculate various values from provided fitted model
 
 \code{getAllTerms} extracts independent variable names from a model object;
 
-\code{coefTable} extracts a table of coefficients, standard errors and 
+\code{coefTable} extracts a table of coefficients, standard errors and
 	associated degrees of freedom when possible;
 
 \code{model.names} generates shorthand numeric names for one or several fitted
@@ -72,10 +72,7 @@ model.names(object, ..., labels = NULL)
 	The functions \code{coeffs}, \code{getAllTerms} and \code{coefTable} provide
 	interface between the model object and \code{model.avg} (and
 	\code{dredge}). Custom methods can be written to provide support for
-	additional classes of models. The vignette
-	\sQuote{\ifelse{html}{\href{/library/MuMIn/doc/gamm.pdf}{Extending
-	\pkg{MuMIn}'s functionality}}{Extending \pkg{MuMIn}'s functionality}}
-	describes it in more detail.
+	additional classes of models.
 }
 
 \note{

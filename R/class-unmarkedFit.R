@@ -20,11 +20,12 @@
 	}
 	ret <- lapply(ret, `environment<-`, NULL)
 	names(ret) <- sapply(x@estimates@estimates, slot, "short.name")
-
 	#ret <- lapply(ret, function(z) getAllTerms(call("~", z), intercept=FALSE))
-	ret <- lapply(ret, getAllTerms, intercept = FALSE)
+	ret <- lapply(ret, getAllTerms.formula, intercept = FALSE)
 	attrInt <- sapply(ret, attr, "intercept")
-	ret <- unlist(lapply(names(ret), function(i) sprintf("%s(%s)", i, ret[[i]])))
+	#ret <- unlist(lapply(names(ret), function(i) sprintf("%s(%s)", i, ret[[i]])))
+	ret <- unlist(lapply(names(ret), function(i) if(length(ret[[i]])) paste(i, "(", ret[[i]], ")",
+		sep = "") else character(0L)))
 	Ints <- paste(names(attrInt[attrInt != 0L]), "(Int)", sep = "")
 	if(intercept) ret <- c(Ints, ret)
 	attr(ret, "intercept") <- attrInt
@@ -44,15 +45,18 @@ getAllTerms.unmarkedFitDS  <- function (x, intercept = FALSE, ...)  {
 	ret
 }
 
-`coefTable.unmarkedFit` <- function (model, ...) {
-	ct <- do.call("rbind", lapply(model@estimates@estimates, function(y) {
-		  ret <- cbind(y@estimates, sqrt(diag(y@covMat)), deparse.level = 0L)
-		  rn <- rownames(ret)
-		  rn[rn == "(Intercept)"] <- "Int"
-		  rownames(ret) <- paste(y@short.name, "(", rn, ")", sep="")
-		  ret
-	}))
-	.makeCoefTable(ct[, 1L], ct[, 2L])
-}
+`coefTable.unmarkedFit` <- function (model, ...)
+	.makeCoefTable(coef(model), sqrt(diag(vcov(model))))
 
 `nobs.unmarkedFit` <- function(object, ...) unmarked::sampleSize(object)
+
+coeffs.unmarkedFit <- function(model) {
+	ret <- lapply(model@estimates@estimates, coef, altNames = FALSE)
+	pfx <- rep(vapply(model@estimates@estimates, slot, "", "short.name"),
+		vapply(ret, length, 1L))
+	ret <- unlist(unname(ret))
+	Ints <- which(names(ret) == "Int")
+	names(ret) <- paste(pfx, "(", names(ret), ")", sep = "")
+	attr(ret, "Intercept") <- Ints
+	ret
+}

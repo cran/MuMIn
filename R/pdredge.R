@@ -150,7 +150,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	## extra BEGIN
 	if(!missing(extra) && length(extra) != 0L) {
 		extraNames <- sapply(extra, function(x) switch(mode(x),
-			call = deparse(x[[1]]), name = deparse(x), character = , x))
+			call = deparse(x[[1L]]), name = deparse(x), character = , x))
 		if(!is.null(names(extra)))
 			extraNames <- ifelse(names(extra) != "", names(extra), extraNames)
 
@@ -184,7 +184,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		ret.nchunk <- 25L
 		ret.ncol <- n.vars + nvarying + 3L + nextra
 		ret <- matrix(NA_real_, ncol = ret.ncol, nrow = ret.nchunk)
-		retCoefTable <- vector(ret.nchunk, mode = "list")
+		coefTables <- vector(ret.nchunk, mode = "list")
 	} else {
 		ret.nchunk <- nmax
 	}
@@ -295,8 +295,8 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			#cat(sprintf("queue done: %d\n", qi)) # DEBUG
 
 			if(any(vapply(qresult, is.null, TRUE)))
-				stop("some results returned from cluster node are NULL. \n",
-					"This should not happen and may indicate problems with ",
+				stop("some results returned from cluster node(s) are NULL. \n",
+					"This should not happen and indicates problems with ",
 					"the cluster node", domain = "R-MuMIn")
 			haveProblems <- logical(qi)
 
@@ -330,7 +330,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			retNrow <- nrow(ret)
 			if(k + qresultLen > retNrow) {
 				nadd <- min(ret.nchunk, nmax - retNrow)
-				retCoefTable <- c(retCoefTable, vector(nadd, mode = "list"))
+				coefTables <- c(coefTables, vector(nadd, mode = "list"))
 				ret <- rbind(ret, matrix(NA, ncol = ret.ncol, nrow = nadd),
 					deparse.level = 0L)
 				calls <- c(calls, vector("list", nadd))
@@ -340,7 +340,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			for(m in qseqOK) ret[k + m, retColIdx] <- qrows[[m]]
 			ord[k + qseqOK] <- vapply(queued[withoutProblems], "[[", 1L, "id")
 			calls[k + qseqOK] <- lapply(queued[withoutProblems], "[[", "call")
-			retCoefTable[k + qseqOK] <- lapply(qresult[withoutProblems], "[[", "coefTable")
+			coefTables[k + qseqOK] <- lapply(qresult[withoutProblems], "[[", "coefTable")
 			k <- k + qresultLen
 			qi <- 0L
 		}
@@ -359,7 +359,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		ret <- ret[i, , drop = FALSE]
 		ord <- ord[i]
 		calls <- calls[i]
-		retCoefTable <- retCoefTable[i]
+		coefTables <- coefTables[i]
 	}
 
 	if(nvarying) {
@@ -389,7 +389,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 
 	o <- order(ret[, ICName], decreasing = FALSE)
 	ret <- ret[o, ]
-	retCoefTable <- retCoefTable[o]
+	coefTables <- coefTables[o]
 
 	ret$delta <- ret[, ICName] - min(ret[, ICName])
 	ret$weight <- exp(-ret$delta / 2) / sum(exp(-ret$delta / 2))
@@ -404,7 +404,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		rank.call = attr(IC, "call"),
 		beta = beta,
 		call = match.call(expand.dots = TRUE),
-		coefTables = retCoefTable,
+		coefTables = coefTables,
 		nobs = nobs(global.model),
 		vCols = varying.names
 	)
@@ -425,7 +425,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 
 
 `parGetMsRow` <- function(modv, Z = get("clustDredgeProps", .GlobalEnv)) {
-	### modv <- list(call = clVariant, id = modelId)
+	### modv == list(call = clVariant, id = modelId)
 	result <- tryCatchWE(eval(modv$call, Z$gmEnv))
 	if (inherits(result$value, "condition")) return(result)
 
@@ -444,6 +444,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 
 	list(value = c(mcoef, extraResult1, df = attr(ll, "df"), ll = ll,
 		ic = Z$IC(fit1)),
+		nobs = nobs(fit1),
 		coefTable = attr(mcoef, "coefTable"),
 		warnings = result$warnings)
 }

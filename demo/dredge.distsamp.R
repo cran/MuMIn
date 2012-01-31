@@ -3,10 +3,11 @@
 ###
 
 require(MuMIn)
-require(unmarked)
 # 'stats4' is needed for AIC to work with unmarked-models but is not loaded
 # automatically
 library(stats4)
+require(unmarked)
+
 opt <- options(width = 110)
 
 # from example(distsamp)
@@ -21,7 +22,7 @@ with(linetran, {
 	})
 })
 
-# global model - possibly nonsensical:
+# global model - probably nonsensical:
 fmUnmDS <- distsamp( ~ Length + area ~ area + habitat, ltUMF)
 
 # The default null model used for calculating R^2 has a formula ~ 1 ~ 1

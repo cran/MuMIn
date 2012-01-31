@@ -8,8 +8,7 @@ function (model, ...) 	{
 function (model, ...) UseMethod("coefTable")
 
 .makeCoefTable <- function(x, se, df = NA_real_, coefNames = names(x)) {
-	n <- length(x)
-	if(n) {
+	if(n <- length(x)) {
 		xdefined <- !is.na(x)
 		ndef <- sum(xdefined)
 		if(ndef < n) {
@@ -21,7 +20,7 @@ function (model, ...) UseMethod("coefTable")
 			}
 		}
 	}
-	if(n != length(se)) stop("length(x) is not equal to length(se)")
+	if(n && n != length(se)) stop("length(x) is not equal to length(se)")
 	ret <- matrix(NA_real_, ncol = 3L, nrow = length(x),
 		dimnames = list(coefNames, c("Estimate", "Std. Error", "df")))
 	if(n) ret[, ] <- cbind(x, se, rep(if(is.null(df)) NA_real_ else df,
