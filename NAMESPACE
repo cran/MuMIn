@@ -2,7 +2,7 @@ export(
 	AICc, beta.weights, dredge, pdredge, get.models, pget.models, model.avg,
 	par.avg, QAIC, QAICc,
 	getAllTerms, coeffs, coefTable, tTable, Weights, model.sel, mod.sel,
-	importance, gamm, Cp, ICOMP, r.squaredLR, null.fit, model.names, CAICF
+	importance, gamm, Cp, ICOMP, r.squaredLR, null.fit, model.names, CAICF, DIC
 )
 
 importFrom(stats, family)
@@ -30,6 +30,9 @@ S3method(nobs, glm)
 #importMethodsFrom(stats, logLik, terms)
 #importFrom(methods, slot, slotNames)
 #importFrom(lme4, lmer, logLik, terms)
+
+
+S3method("$<-", model.selection)
 
 S3method(print, averaging)
 S3method(print, summary.averaging)
@@ -175,3 +178,19 @@ S3method(getAllTerms, zeroinfl)
 S3method(nobs, hurdle)
 S3method(nobs, zeroinfl)
 S3method(makeArgs, zeroinfl)
+S3method(family, zeroinfl)
+
+S3method(nobs, glimML)
+S3method(formula, glimML)
+S3method(coefTable, glimML)
+S3method(family, glimML)
+S3method(getAllTerms, glimML)
+S3method(terms, glimML)
+
+S3method(formula, MCMCglmm)
+S3method(nobs, MCMCglmm)
+S3method(family, MCMCglmm)
+S3method(logLik, MCMCglmm)
+S3method(coeffs, MCMCglmm)
+S3method(coefTable, MCMCglmm)
+S3method(makeArgs, MCMCglmm)

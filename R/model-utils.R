@@ -21,8 +21,8 @@ function(frm, except = NULL) {
 
 `.getCall` <- function(x) {
 	if(isS4(x)) {
-		if ("call" %in% slotNames(x)) slot(x, "call") else
-			NULL
+		if(any(i <- (sln <- c("call", "CALL")) %in% slotNames(x)))
+			slot(x, sln[i][1L]) else NULL
 	} else {
 		if(!is.null(x$call)) {
 			x$call
@@ -181,10 +181,16 @@ function(frm, except = NULL) {
 
 #system.time(for(i in 1:1000) abbreviateTerms(x))
 
-`abbreviateTerms` <- function(x, n = 1L, capwords = FALSE, deflate = FALSE) {
+`abbreviateTerms` <- function(x, minlength = 4, minwordlen = 1,
+	capwords = FALSE, deflate = FALSE) {
+	if(!length(x)) return(x)
 	if(deflate) dx <-
-		gsub("([\\(,]) *\\w+ *= *(~ *(1 *[\\+\\|]?)?)? *", "\\1", x, perl = TRUE)
+		#gsub("([\\(,]) *\\w+ *= *(~ *(1 *[\\+\\|]?)?)? *", "\\1", x, perl = TRUE)
+		gsub("([,\\(\\[]|^)( *~ *)(1 *([\\|\\+] *)?)?", "\\1",
+			gsub("([\\(,]) *\\w+ *= *", "\\1", x, perl = TRUE), perl = TRUE)
 		else dx <- x
+
+	#DebugPrint(x)
 	s <- strsplit(dx, "(?=[\\W_])", perl = TRUE)
 	# remove I(...):
 	s <- lapply(s, function(z) {
@@ -192,16 +198,26 @@ function(frm, except = NULL) {
 			z[3L:(n - 1L)] else z
 		z[z != " "]
 	})
-	v <- unique(unlist(s))
+	v <- unique(unlist(s, use.names = FALSE))
 	i <- grep("[[:alpha:]]", v, perl = FALSE)
 	av <- v
-	if(deflate) {
-		repl1 <- c("TRUE" = "T", "FALSE" = "F", "NULL" = "")
-		for(j in seq_along(repl1)) av[av == names(repl1)[j]] <- repl1[j]
+	if(length(i)) {
+		tb <- rbindDataFrameList(lapply(s, function(x)
+			as.data.frame(rbind(c(table(x))))))
+		tb[is.na(tb)] <- 0L
+
+		if(length(v) > length(i)) minlength <-
+			minlength - max(c(0L, apply(tb[, v[-i], drop = FALSE], 1L,
+			"*", nchar(colnames(tb[, v[-i], drop = FALSE])))))
+		n <- min(minlength / rowSums(tb[, v[i], drop = FALSE]))
+		if(deflate) {
+			repl1 <- c("TRUE" = "T", "FALSE" = "F", "NULL" = "")
+			for(j in seq_along(repl1)) av[av == names(repl1)[j]] <- repl1[j]
+		}
+		av[i] <- abbreviate(av[i], max(n, minwordlen))
+		if(capwords) av[i] <- paste(toupper(substring(av[i], 1L, 1L)),
+				tolower(substring(av[i], 2L)), sep = "")
 	}
-	av[i] <- abbreviate(av[i], n)
-	if(capwords) av[i] <- paste(toupper(substring(av[i], 1L, 1L)),
-			tolower(substring(av[i], 2L)), sep = "")
 	for(j in seq_along(s)) s[[j]] <- paste(av[match(s[[j]], v)], collapse = "")
 	names(av) <- v
 	structure(unlist(s), names = x, variables = av[i])
@@ -220,7 +236,7 @@ function(frm, except = NULL) {
 }
 
 `.modelNames` <- function(models = NULL, allTerms, uqTerms, ...) {
-	if(missing(allTerms)) 	allTerms <- lapply(models, getAllTerms)
+	if(missing(allTerms)) allTerms <- lapply(models, getAllTerms)
 	if(missing(uqTerms) || is.null(uqTerms))
 		uqTerms <- unique(unlist(allTerms, use.names = FALSE))
 
@@ -260,21 +276,31 @@ function(frm, except = NULL) {
 
 
 	if(withFamily) {
-		fam <- sapply(models, function(x) {
-					tryCatch(unlist(family(x)[c("family", "link")]),
-						error = function(e) c("", ""))
-				})
-		# remove default links
-		fam[2L, fam[2L, ] == sapply(unique(fam[1L, ]), function(x)
-			formals(get(x))$link)[fam[1L, ]]] <- NA
+		fam <- sapply(models, function(x) tryCatch(unlist(family(x)[c("family",
+			"link")]), error = function(e) character(2L)) )
+
+		f <- fam[1L, ]
+		f[is.na(f)] <- ""
+		f <- vapply(strsplit(f, "(", fixed = TRUE), "[", "", 1L)
+		f[f == "Negative Binomial"] <- "negative.binomial"
+
+		fam[2L, fam[2L, ] == vapply(unique(f), function(x) if(is.na(x))
+									NA_character_ else formals(get(x))$link,
+			FUN.VALUE = "")[f]] <- NA_character_
+
 		j <- !is.na(fam[2L,])
-		v <- fam[1L, ]
-		v[j] <- paste(fam[1L, j], "(", fam[2L, j], ")", sep="")
-		fam <- v
+		fnm <- fam[1L, j]
+		fnm <- ifelse(substring(fnm, nchar(fnm)) != ")",
+			paste(fnm, "(", sep = ""), paste(substring(fnm, 1, nchar(fnm) - 1),
+				", ", sep = ""))
+		fam[1L, j] <- paste(fnm, fam[2L, j], ")", sep = "")
 	}
+
 	if(withArguments) {
 		cl <- lapply(models, .getCall)
-		arg <- lapply(cl, function(x) sapply(x[-1L], function(argval)
+		haveNoCall <-  vapply(cl, is.null, FALSE)
+		cl[haveNoCall] <- lapply(cl[haveNoCall], function(x) call("none", formula = NA))
+ 		arg <- lapply(cl, function(x) sapply(x[-1L], function(argval)
 			switch(mode(argval), character = , logical = argval,
 			numeric = signif(argval, 3L), deparse(argval, nlines = 1L))))
 		arg <- rbindDataFrameList(lapply(lapply(arg, t), as.data.frame))
@@ -294,7 +320,7 @@ function(frm, except = NULL) {
 		arg <- arg[, apply(arg, 2L, function(x) length(unique(x))) != 1L, drop = FALSE]
 		if(ncol(arg)) arg <- gsub("([\"'\\s]+|\\w+ *=)","", arg, perl = TRUE)
 	}
-	ret <- as.data.frame(cbind(model = abvtt, family = fam, arg, deparse.level = 0L))
+	ret <- as.data.frame(cbind(model = abvtt, family = fam[1L, ], arg, deparse.level = 0L))
 	attr(ret, "variables") <- variables
 	ret
 }

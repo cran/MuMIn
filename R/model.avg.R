@@ -56,8 +56,8 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 	all.terms <- attr(object, "terms")
 	all.vterms <- all.terms[!(all.terms %in% attr(all.terms, "interceptLabel")
 		| apply(is.na(object[, all.terms]), 2L, all))]
-	allterms1 <- apply(!is.na(object[, all.vterms, drop = FALSE]), 1L, function(x) all.vterms[x])
-	#all.terms <- unique(unlist(allterms1))
+	#allterms1 <- apply(!is.na(object[, all.vterms, drop = FALSE]), 1L, function(x) all.vterms[x])
+	allterms1 <- applyrns(!is.na(object[, all.vterms, drop = FALSE]), function(x) all.vterms[x])
 	all.model.names <- .modelNames(allTerms = allterms1, uqTerms = all.vterms)
 
 	mstab <- object[, -(seq_len(ncol(object) - 5L))]
@@ -252,16 +252,19 @@ function(object, ..., beta = FALSE,
 function(object, full = FALSE, ...) if(full) object$coef.shrinkage else
 	object$avg.model[, 1L]
 
-# TODO: predict type="response" + average on response scale
+
+
+ #TODO: predict p -="response" + average on response scale
 `predict.averaging` <-
 function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
-	type = c("link", "response"), full = TRUE, ...) {
+	type = NA, backtransform = FALSE,
+	full = TRUE, ...) {
 
-	type <- match.arg(type)
+	#if(is.null(type)) type <- "link"
 	if (!missing(interval)) .NotYetUsed("interval", error = FALSE)
 
 	models <- attr(object, "modelList")
-	if(is.null(models)) stop("cannot predict without model list")
+	if(is.null(models)) stop("cannot predict without a model list")
 
 	# Benchmark: vapply is ~4x faster
 	#system.time(for(i in 1:1000) sapply(models, inherits, what="gam")) /
@@ -269,6 +272,7 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 
 	# If all models inherit from lm:
 	if ((missing(se.fit) || !se.fit)
+		&& (is.na(type) || type == "link")
 		&& all(linherits(models, c(gam = FALSE, lm = TRUE)))
 		&& !any(is.na(object$coef.shrinkage))
 		) {
@@ -300,20 +304,20 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 
 		if(full == FALSE) warning("argument 'full' ignored")
 
-		#pred <- if(!missing(newdata))
-		#	lapply(models, predict, newdata = newdata, se.fit = se.fit,...) else
-		#	lapply(models, predict, se.fit = se.fit, ...)
-
 		cl <- as.list(match.call())
+		cl$backtransform <- cl$full <- NULL
 		cl[[1L]] <- as.name("predict")
-		if("type" %in% names(cl)) cl$type <- "link"
+		#if("type" %in% names(cl)) cl$type <- "link"
 		if(!missing(newdata)) cl$newdata <- as.name("newdata")
-		#pred <- do.call("lapply", c(as.name("models"), cl[-2]))
-
 		cl <- as.call(cl)
+
 		pred <- lapply(models, function(x) {
 			cl[[2L]] <- x
-			tryCatch(eval(cl), error = function(e) e)
+			y <- tryCatch({
+				y <- eval(cl)
+				if(is.numeric(y)) y else structure(as.list(y[c(1L, 2L)]),
+					names = c("fit", "se.fit"))
+				}, error = function(e) e)
 		})
 
 		err <- sapply(pred, inherits, "condition")
@@ -321,48 +325,55 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 			lapply(pred[err], warning)
 			stop(sprintf(ngettext(sum(err), "'predict' for model %s caused error",
 				"'predict' for models %s caused errors"),
-				paste(sQuote(names(models[err])), collapse = ", ")))
+					paste(sQuote(names(models[err])), collapse = ", ")))
 		}
 
+		.untransform <- function(fit, se.fit = NULL, models) {
+			fam <- tryCatch(vapply(models, function(z)
+				unlist(family(z)[c("family", "link")]), character(2L)),
+							error = function(e) NULL)
+			if (!is.null(fam)) {
+				if(any(fam[, 1L] != fam[, -1L]))
+				stop("Cannot calculate prediction on a response scale ",
+					 "with models using different families or link functions")
+				fam1 <- family(models[[1L]])
+				if(is.null(se.fit))
+					return(fam1$linkinv(fit))
+				else return(list(fit = fam1$linkinv(fit),
+					se.fit = se.fit * abs(fam1$mu.eta(fit))
+					))
+			}
+			return(NULL)
+		}
 
-		if(all(sapply(pred, function(x) c("fit", "se.fit") %in% names(x)))) {
+		if (all(sapply(pred, is.list))) {
+		#if(all(sapply(pred, function(x) c("fit", "se.fit") %in% names(x)))) {
 			fit <- do.call("cbind", lapply(pred, "[[", "fit"))
 			se.fit <- do.call("cbind", lapply(pred, "[[", "se.fit"))
-
-			#npar <- sapply(models, function(x) as.vector(attr(logLik(x), "df")))
-
 			revised.var <- attr(object, "revised.var")
 
-			apred <- sapply(seq(nrow(fit)), function(i)
+			apred <- unname(vapply(seq(nrow(fit)), function(i)
 				par.avg(fit[i, ], se.fit[i, ], weight = object$summary$Weight,
-					df = NA, revised.var = revised.var))
+					df = NA_integer_, revised.var = revised.var),
+					FUN.VALUE = double(5L)))
 
 			# TODO: ase!
 			#no.ase <- all(is.na(object$avg.model[,3]))
 			# if(no.ase) 2 else 3
-			ret <- list(fit = apred[1L, ], se.fit = apred[2L, ])
-
-			if (type == "response") {
-				fam <- tryCatch(vapply(models, function(z)
-					unlist(family(z)[c("family", "link")]), character(2L)),
-								error = function(e) NULL)
-
-				if(!is.null(fam)) {
-					if(any(fam[,1] != fam[, -1L]))
-					stop("Cannot calculate predictions on the response scale ",
-						 "with models with different families or link functions")
-					ret$se.fit <- ret$se.fit * abs(family(models[[1L]])$mu.eta(ret$fit))
-					ret$fit <- family(models[[1L]])$linkinv(ret$fit)
-				}
-			}
-
-		} else if (all(sapply(pred, is.numeric))) {
+			ret <-  if (backtransform)
+					.untransform(apred[1L, ], apred[2L, ], models = models)
+				else
+					list(fit = apred[1L, ], se.fit = apred[2L, ])
+		} else {
+			#tryCatch({
+			i <- !vapply(pred, is.numeric, FALSE)
+			if(any(i)) pred[i] <- lapply(pred[i], "[[", 1L)
 			ret <- apply(do.call("cbind", pred), 1L, weighted.mean,
 				w = object$summary$Weight)
-		} else {
-			stop("'predict' method for the component models returned",
-				 " a value in unrecognised format")
+			if (backtransform)
+				ret <- .untransform(ret, models = models)
 		}
+
 	}
 	return(ret)
 }
@@ -460,7 +471,7 @@ function(x, ...) {
 `vcov.averaging` <- function (object, ...) {
 	full <- FALSE
 	models <- attr(object, "modelList")
-	if(is.null(models)) stop("cannot calculate covariance matrix without model list")
+	if(is.null(models)) stop("cannot calculate covariance matrix without a model list")
 
 	vcovs <- lapply(lapply(models, vcov), as.matrix)
 	names.all <- object$term.names

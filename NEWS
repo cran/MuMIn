@@ -1,5 +1,23 @@
 MuMIn package news:
 
+Version: 1.7.7 (2012-04-01)
+fixed dependencies in tests
+
+Version: 1.7.6 (2012-04-01)
+dredge: with nested formula designs, 'marg.ex' is now found automatically
+predict.averaging: is now more flexible in how the predictions from generalized
+	models are calculated (new attribute "backtransform").
+
+Version: 1.7.5 (2012-03-27)
+Added methods for 'MCMCglmm' class, and function 'DIC': works with 'model.sel' 
+	and 'dredge' (but not 'model.avg').
+'unmarked' is removed from 'Suggested' packages (recently it is often 
+	unavailable on CRAN and causes errors during R CHECK). Added workarounds to 
+	pass (=cheat) the R CHECK.
+
+Version: 1.7.3 (2012-02-01)
+Added methods for 'glimML' class from package 'aod'
+
 Version: 1.7.2 (2012-01-30)
 (fixed) 'nobs.coxme' returned the number of events was returned rather than 
 	the number of observations.

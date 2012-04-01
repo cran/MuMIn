@@ -4,21 +4,25 @@
 \alias{Cp}
 \alias{ICOMP}
 \alias{CAICF}
+\alias{DIC}
 \encoding{utf-8}
 \title{Various information criteria}
 \description{
 Calculate Mallows' \emph{Cp} and Bozdogan's ICOMP and CAIFC information criteria.
+Extract Deviance Information Criterion from \code{MCMCglmm} object.
 }
 
 \usage{
 Cp(object, dispersion = NULL)
 ICOMP(object, ..., REML = NULL)
 CAICF(object, ..., REML = NULL)
+DIC(object, ...)
 }
 
 \arguments{
   \item{object}{a fitted model object (in case of ICOMP and CAICF, \code{logLik}
-	and \code{vcov} methods must exist for the object). }
+	and \code{vcov} methods must exist for the object). For \code{DIC}, an 
+	object of class \code{MCMCglmm} }
   \item{\dots}{optionally more fitted model objects. }
   \item{dispersion}{the dispersion parameter. If \code{NULL}, it is inferred
 	from object. }

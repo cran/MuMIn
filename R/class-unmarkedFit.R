@@ -3,7 +3,8 @@
 `logLik.unmarkedFit` <- function(object, ...) {
 	ret <- -object@negLogLike
 	attr(ret, "df") <- length(object@opt$par)
-	attr(ret, "nobs") <- unmarked::sampleSize(object)
+	attr(ret, "nobs") <- #get("sampleSize", asNamespace("unmarked"))(object)
+			unmarked::sampleSize(object)
 	class(ret) <- "logLik"
 	return(ret)
 }
@@ -48,7 +49,9 @@ getAllTerms.unmarkedFitDS  <- function (x, intercept = FALSE, ...)  {
 `coefTable.unmarkedFit` <- function (model, ...)
 	.makeCoefTable(coef(model), sqrt(diag(vcov(model))))
 
-`nobs.unmarkedFit` <- function(object, ...) unmarked::sampleSize(object)
+`nobs.unmarkedFit` <- function(object, ...) 
+	#get("sampleSize", asNamespace("unmarked"))(object)
+	unmarked::sampleSize(object)
 
 coeffs.unmarkedFit <- function(model) {
 	ret <- lapply(model@estimates@estimates, coef, altNames = FALSE)

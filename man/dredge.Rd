@@ -46,7 +46,8 @@ dredge(global.model, beta = FALSE, evaluate = TRUE,
 	\item{marg.ex}{a character vector specifying names of variables for which
 	NOT to check for marginality restrictions when generating model formulas. If
 	this argument is set to \code{TRUE}, all combinations of terms are used
-	(i.e. no checking). }
+	(i.e. no checking). If \code{NA} or missing, the exceptions will be found
+	based on the terms of \code{global.model}. See \sQuote{Details}.  }
 
 	\item{trace}{if \code{TRUE}, all calls to the fitting function (i.e. updated
 	\code{global.model} calls) are printed before actual fitting takes place. }
@@ -109,8 +110,10 @@ Handling interactions, \code{dredge} respects marginality constraints, so
 \dQuote{all possible combinations} do not include models containing interactions
 without their respective main effects. This behaviour can be altered by
 \code{marg.ex} argument, which can be used to allow for simple nested designs.
-For example, with global model of form \code{a / (x + z)}, use
-\code{marg.ex = "a"} and \code{fixed = "a"}.
+For example, with global model of form \code{a / (x + z)}, one would use
+\code{marg.ex = "a"} and \code{fixed = "a"}. If \code{global.model} has such a
+formula, and \code{marg.ex} is missing or \code{NA}, it will be adjusted
+automatically.
 
 \code{rank} is found by a call to \code{match.fun} and may be specified as a
 function or a symbol (e.g. a back-quoted name) or a character string specifying
@@ -127,10 +130,10 @@ any of the \code{global.model} terms (use \code{getAllTerms(global.model)} to
 list them). It can have a form of an unevaluated \code{call}, \code{expression}
 object, or a one sided \code{formula}. See \sQuote{Examples}.
 Compound model terms (such as \sQuote{as-is} expressions within \code{I()} or
-the smooths in \code{gam}) should be treated as non-syntactic names and
+ smooths in \code{gam}) should be treated as non-syntactic names and
 enclosed in back-ticks (see \link[base]{Quotes}). Mind the spacing, names
 must match exactly the term names in model's formula. To simply keep certain
-terms in all models, use of \code{fixed} is preferred.
+terms in all models, use of argument \code{fixed} is more efficient.
 
 Use of \code{na.action = na.omit} (\R's default) in \code{global.model} should
 be avoided, as it results with sub-models fitted to different data sets, if

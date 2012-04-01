@@ -34,6 +34,7 @@ makeArgs.gls <- function(obj, termNames, comb, opt, ...) {
 	ret
 }
 
+makeArgs.MCMCglmm <-
 makeArgs.lme <- function(obj, termNames, comb, opt, ...) {
 	ret <- makeArgs.default(obj, termNames, comb, opt)
 	names(ret)[1L] <- "fixed"

@@ -65,7 +65,8 @@ function (x, i, j, recalc.weights = TRUE, ...) {
 		attrib[s] <- lapply(attrib[s], `[`, k)
 		attributes(ret) <- attrib
 		if(recalc.weights)
-			ret$weight <- ret$weight / sum(ret$weight)
+			ret[, 'weight'] <- `[.data.frame`(ret, ,"weight") / sum(`[.data.frame`(ret, ,"weight"))
+			#ret$weight <- ret$weight / sum(ret$weight)
 			#ret[, 'weight'] <- ret[, 'weight'] / sum(ret[, 'weight'])
 
 		if(!is.null(warningList <- attr(ret, "warnings")))
@@ -82,12 +83,12 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 	orig.x <- x
 	if(!is.null(x$weight)) x$weight <- round(x$weight, 3L)
 	xterms <- attr(x, "terms")
-	if(is.null(xterms)) {
+	if(is.null(xterms) || !all(xterms %in% colnames(x)[seq_along(xterms)])) {
 		print.data.frame(x, ...)
 	} else {
-		if(abbrev.names) xterms <- abbreviateTerms(xterms, 3L)
+		if(abbrev.names) xterms <- abbreviateTerms(xterms, 6L, 3L, deflate = TRUE)
 
-		colnames(x)[seq_along(xterms)] <-  xterms
+		colnames(x)[seq_along(xterms)] <- xterms
 		globcl <- attr(x, "global.call")
 		if(!is.null(globcl)) {
 			cat("Global model call: ")
@@ -107,26 +108,24 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 		x[, i] <- signif(x[, i], 4L)
 		for(i in names(dig)[j]) x[, i] <- round(x[, i], digits = dig[i])
 
-		vLegend <- character(0L)
+		vLegend <- NULL
 		if(abbrev.names) {
 			vCols <- attr(x, "vCols")
+			vCols <- vCols[(vCols %in% colnames(x)) & !(vCols %in% c("class"))]
 			vlen <- nchar(vCols)
+			vLegend <- vector(length(vCols), mode = "list")
+			names(vLegend) <- vCols
+			## i <- "family"
 			if(!is.null(vCols)) {
 				for(i in vCols) {
-					z <- x[, i]
-					lev <- levels(z)
+					lev <- levels(x[, i])
 					lev <- lev[!(lev %in% c("", "NULL"))]
-					z <- factor(z, levels = lev)
-					n <- nchar(i)
-					for(k in seq.int(n, 1L)) {
-						shlev <- abbreviateTerms(lev, k, deflate = TRUE)
-						if(all(nchar(shlev) <= n)) break;
-					}
-					x[, i] <- factor(z, labels = shlev)
-					if(any(j <- shlev != lev)) vLegend <- c(vLegend, paste(i,
-						": ", paste(shlev[j], "=", sQuote(lev[j]),
-						collapse = ", "), sep = ""))
+					shlev <- abbreviateTerms(lev, nchar(i), deflate = TRUE)
+					x[, i] <- factor(x[, i], levels = lev, labels = shlev)
+					if(any(j <- shlev != lev)) vLegend[[i]] <-
+						paste(shlev[j], "=", sQuote(lev[j]))
 				}
+				vLegend <- vLegend[!vapply(vLegend, is.null, TRUE)]
 			}
 		}
 
@@ -144,8 +143,14 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 		print.default(as.matrix(x)[, !sapply(x, function(.x) all(is.na(.x))),
 			drop = FALSE], na.print = "", quote = FALSE)
 
-		if(abbrev.names && length(vLegend))
-			cat("Abbreviations:", vLegend, sep = "\n")
+		if(abbrev.names && length(vLegend)) {
+			cat("Abbreviations:", sep = "\n")
+			for(i in names(vLegend)) {
+				cat(vLegend[[i]], sep = ", ", fill = TRUE, labels =
+					c(paste(i, ":", sep = ""), rep(paste(rep(" ", nchar(i) + 1L),
+					collapse = ""), length(vLegend[[i]]) - 1L)))
+			}
+		}
 
 		if(!is.null(random.terms)) {
 			if(addrandcol) {
@@ -194,5 +199,12 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 	for(i in 1:n) ret[[i]] <-
 		structure(object[i, "logLik"], df = object[i, "df"], nobs = nobs,
 			class = "logLik")
+	ret
+}
+
+
+`$<-.model.selection` <- function (x, name, value) {
+	ret <- base::`$<-.data.frame`(x, name, value)
+	if(name %in% attr(x, "terms")) class(ret) <- "data.frame"
 	ret
 }

@@ -30,24 +30,23 @@ pdredge(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 
 \details{
 All the dependencies for fitting the \code{global.model}, including the data,
-    and any objects the modelling function will use, must be
-    exported (\emph{via} e.g. \code{clusterExport}) into the clurter worker
-    nodes, as well as the required packages must be loaded thereinto
-    (e.g. \emph{via} \code{clusterEvalQ(..., library(package))}, before the
-    cluster is used by \code{pdredge}.
+	and any objects the modelling function will use, must be exported
+	(\emph{via} e.g. \code{clusterExport}) into the clurter worker nodes, as
+	well as the required packages must be loaded thereinto (e.g. \emph{via}
+	\code{clusterEvalQ(..., library(package))}, before the cluster is used by
+	\code{pdredge}.
 
-    \code{pdredge} tries to check whether all the variables and functions used in
-    the call to \code{global.model} are present in the cluster nodes'
-    \code{.GlobalEnv} before proceeding further, and also, if \code{check} is
-    \code{TRUE}, it will compare the \code{global.model} updated at the cluster
-    nodes with the one given as argument. This additional test will, however,
+	\code{pdredge} tries to check whether all the variables and functions used
+	in the call to \code{global.model} are present in the cluster nodes'
+	\code{.GlobalEnv} before proceeding further, and also, if \code{check} is
+	\code{TRUE}, it will compare the \code{global.model} updated at the cluster
+	nodes with the one given as argument. This additional test will, however,
     slow down the execution.
 
-This function is still largely experimental. Use of it should be considered
-    mainly with large datasets and complex models, for which the standard
-    version takes a long time to complete. Otherwise there may be no perceptible
-    improvement or even the parallel version may perform worse than a
-    single-threaded one.
+Use of \code{pdredge} should be considered mainly with large datasets and
+	complex models, for which \code{dredge} takes a long time to complete.
+	Otherwise there may be no perceptible improvement or even the parallel
+	version may perform worse than a single-threaded one.
 }
 
 
@@ -68,8 +67,7 @@ This function is still largely experimental. Use of it should be considered
 \dontshow{
 # Normally this should be simply "require(parallel) || require(snow)",
 # but here we resort to an (ugly) trick to avoid MuMIn's dependency on one of
-# these packages and still pass R-check (it is just temporary solution, while
-# 'pdredge' as well as the 'parallel' package are in experimental stage):
+# these packages and still pass R-check:
 if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) \{
 }
 
@@ -101,7 +99,7 @@ print(system.time(pdredge(fm1, cluster = FALSE, subset = msubset,
     varying = varying.link)))
 print(system.time(pdd <- pdredge(fm1, cluster = clust, subset = msubset,
     varying = varying.link)))
-	
+
 print(pdd)
 
 \dontrun{
@@ -140,10 +138,10 @@ modSel(fitList(fits = structure(models, names = model.names(models,
 }
 
 stopCluster(clust)
-\dontshow{ 
+\dontshow{
 \} else # if(! inherits(clust, "cluster"))
 message("Could not set up the cluster")
-\} 
+\}
 }
 
 }

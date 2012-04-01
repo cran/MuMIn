@@ -6,7 +6,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	gmEnv <- parent.frame()
 	gmCall <- .getCall(global.model)
 	gmNobs <- nobs(global.model)
-	
+
 	if (is.null(gmCall)) {
 		gmCall <- substitute(global.model)
 		if(!is.call(gmCall)) {
@@ -42,7 +42,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 
 	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,
 		data = eval(gmCall$data, envir = gmEnv))
-		
+
 	# Intercept(s)
 	interceptLabel <- attr(allTerms, "interceptLabel")
 	if(is.null(interceptLabel)) interceptLabel <- "(Intercept)"
@@ -90,7 +90,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		if (inherits(fixed, "formula")) {
 			if (fixed[[1L]] != "~" || length(fixed) != 2L)
 				warning("'fixed' should be a one-sided formula")
-			fixed <- c(getAllTerms(fixed))
+			fixed <- as.vector(getAllTerms(fixed))
 		} else if (!is.character(fixed)) {
 			stop ("'fixed' should be either a character vector with"
 				  + " names of variables or a one-sided formula")
@@ -127,7 +127,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	## extra BEGIN
 	if(!missing(extra) && length(extra) != 0L) {
 		extraNames <- sapply(extra, function(x) switch(mode(x),
-			call = deparse(x[[1]]), name = deparse(x), character = , x))
+			call = deparse(x[[1L]]), name = deparse(x), character = , x))
 		if(!is.null(names(extra)))
 			extraNames <- ifelse(names(extra) != "", names(extra), extraNames)
 		extra <- structure(as.list(unique(extra)), names = extraNames)
@@ -157,7 +157,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	nov <- as.integer(n.vars - n.fixed)
 	ncomb <- (2L ^ nov) * nvariants
 
-	if(nov > 31L) stop(gettextf("maximum number of predictors is 31, but %d is given", nov))
+	if(nov > 31L) stop(gettextf("number of predictors (%d) exceeds allowed maximum (31)"), nov, domain = "MuMIn")
 	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
 	nmax <- ncomb * nvariants
 	if(evaluate) {
@@ -205,13 +205,20 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		gmFormulaEnv = gmFormulaEnv
 		)
 
-# XXX XXX: adjusting 'marg.ex'
-		# newArgs <- makeArgs(global.model, allTerms, rep(TRUE, length(allTerms), argsOptions)
-		# formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs else
-			# attr(newArgs, "formulaList")
-		# marg.ex <- unlist(lapply(lapply(formulaList, formulaAllowed), "attr", "marg.ex"))
+	# TODO: allow for 'marg.ex' per formula in multi-formula models
+	if(missing(marg.ex) || (!is.null(marg.ex) && is.na(marg.ex))) {
+		newArgs <- makeArgs(global.model, allTerms, rep(TRUE, length(allTerms)),
+							argsOptions)
+		formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs
+			else attr(newArgs, "formulaList")
 
-		
+		marg.ex <- unique(unlist(lapply(sapply(formulaList, formulaAllowed,
+			simplify = FALSE), attr, "marg.ex")))
+		if(!length(marg.ex)) marg.ex <- NULL
+		#cat("Marginality exceptions:", marg.ex, "\n")
+	}
+	###
+
 	retColIdx <- if(nvarying) -n.vars - seq_len(nvarying) else TRUE
 
 	prevJComb <- 0L
@@ -286,9 +293,9 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			ll <- logLik(fit1)
 			nobs1 <- nobs(fit1)
 			if(nobs1 != gmNobs) warning(gettextf(
-				"number of observations in model #%d (%d) differs from that in the global model (%d)", 
+				"number of observations in model #%d (%d) differs from that in the global model (%d)",
 				iComb, nobs1, gmNobs))
-			
+
 			row1 <- c(mcoef1[allTerms], extraResult1,
 				df = attr(ll, "df"), ll = ll, ic = IC(fit1)
 			)
@@ -375,4 +382,3 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		vCols = varying.names
 	)
 } ######
-

@@ -172,3 +172,11 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 			invokeRestart("muffleWarning")
 		}), warnings = Warnings)
 }
+
+# like apply(, 2) but returns a list (does not do any checking)
+`applyrns` <- function (X, FUN, ...) {
+	n <- nrow(X)
+	ret <- vector(n, mode = "list")
+	for(i in seq_len(n)) if(!is.null(z <- FUN(X[i, ], ...))) ret[[i]] <- z
+	ret
+}
