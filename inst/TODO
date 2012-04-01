@@ -4,12 +4,10 @@ TODO list for the MuMIn package:
 *   model.avg: checking for consistency of contrasts used in the models
 **  handling random effects in 'dredge' (with 'lme', 'lmer', etc). Currently
         'varying' may be used with lme's "random" argument for that purpose.
-**  add a 'keep' argument for 'dredge' to return (a subset of) models (similarly
-        as in 'model.avg' attr(*, 'modelList'))
 *   consistent ordering of columns in 'model.selection' tables
 *   the same argument order in all 'model.sel' methods (add rank argument to the
         generic function)
 *   print 'model.selection' output in a shorthand form, with model formulas as
         row names and no columns for terms.
-*   checking if 'nobs' for all generated models in 'pdredge' are equal
-
+*   pdredge: checking if 'nobs' for all generated models in are equal (already 
+        done in 'dredge')

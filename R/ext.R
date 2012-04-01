@@ -8,7 +8,11 @@
 	if(is.null(cl)) return(NULL)
 	fam <- cl$family
 	if(is.null(fam)) fam <- formals(match.fun(cl[[1L]]))$family
-	if(is.null(fam)) return(gaussian())
+	if(is.null(fam)) {
+		#warning("unknown family, assuming 'gaussian'")
+		return(NA)
+		#return(gaussian())
+	}
 	switch(mode(fam), call = eval(fam), name =, character = match.fun(fam)())
 }
 
@@ -94,8 +98,8 @@ function(model) {
 `makeArgs.lmekin` <-
 function(obj, termNames, comb, opt, ...) {
 	ret <- makeArgs.default(obj, termNames, comb, opt)
-	f <- .Internal(update.formula(as.formula(ret$formula), as.formula(. ~ . + 1)))
-	ret$formula <- update.formula(f, opt$random)
+	ret$formula <- update.formula(update.formula(ret$formula, . ~ . + 1),
+		opt$random)
 	ret
 }
 
@@ -156,4 +160,40 @@ function(model, ...)
 		sep = "")
 	.makeCoefTable(ct[, 1L], ct[, 2L], coefNames = cfnames)
 	#.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))))
+}
+
+
+`family.zeroinfl` <-
+function(object, ...) binomial(link = object$link)
+
+
+#_______________________________________________________________________________
+
+#.makeCoefTable <- MuMIn:::.makeCoefTable
+
+`nobs.glimML` <- function (object, ...) attr(logLik(object), "nobs")
+`formula.glimML` <- function(x, ...) x@formula
+
+`coefTable.glimML` <-
+function(model, ...)
+	.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))))
+
+family.glimML <- function(object, ...) switch(object@method,
+	"BB" = binomial(object@link),
+	#"NB" = MASS::negative.binomial(theta = 1/object@param['phi.(Intercept)'],
+	"NB" = get("negative.binomial", asNamespace("MASS"))(
+		theta = 1 / object@param['phi.(Intercept)'], link = object@link))
+
+
+
+#_______________________________________________________________________________
+
+`terms.glimML` <- function (x, ...) terms.formula(x@formula, ...)
+
+`getAllTerms.glimML` <- function(x, intercept = FALSE, ...) {
+	ret <- getAllTerms.default(x, intercept = intercept, ...)
+	ttran <- terms.formula(x@random)
+	ran <- attr(ttran, "term.labels")
+	if(length(ran)) attr(ret, "random.terms") <- paste("1 |", ran)
+	ret
 }

@@ -1,7 +1,7 @@
 # Test mixed models
 library(MuMIn)
-
 library(nlme)
+library(lme4)
 
 # example(corGaus)
 fmlme1 <- lme(weight ~ Time * Diet, data = BodyWeight, random = ~ Time, method="ML")
@@ -49,7 +49,6 @@ detach(package:nlme); rm(list=ls())
 
 
 set.seed(1)
-library(lme4)
 data(Orthodont, package = "nlme")
 
 Orthodont$rand <- runif(nrow(Orthodont))
@@ -95,4 +94,3 @@ all.equal(msAIC2, msAIC)
 
 
 detach(package:lme4); rm(list=ls())
-

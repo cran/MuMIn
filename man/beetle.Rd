@@ -83,44 +83,51 @@ logit.ci <- function(p, se, quantile = 2) {
     p /(p + (1 - p) * c(C., 1/C.))
 }
 
+mavg3 <- model.avg(mod3, revised.var = FALSE)
+
 pred <- sapply(mod3, predict, newdata = list(dose = 40), se.fit = TRUE,
     type = "response")
-pred <- apply(pred, 1, unlist)[, 1:2] # simplify
+
+# get predictions both from component and averaged models
+pred <- lapply(c(component = mod3, list(averaged = mavg3)), predict,
+	   newdata = list(dose = 40), type = "response", se.fit = TRUE)
+# reshape predicted values
+pred <- t(sapply(pred, function(x) unlist(x)[1:2]))
+colnames(pred) <- c("fit", "se.fit")
 
 # build the table
-tab <- rbind(pred, par.avg(pred[, "fit"], pred[, "se.fit"], Weights(ms3),
-    revised.var = FALSE)[1:2])
 tab <- cbind(
     c(Weights(ms3), NA),
-    tab,
-    matrix(logit.ci(tab[,"fit"], tab[,"se.fit"],
+    pred,
+    matrix(logit.ci(pred[,"fit"], pred[,"se.fit"],
         quantile = c(rep(1.96, 3), 2)), ncol = 2)
     )
 colnames(tab) <- c("Akaike weight", "Predicted(40)", "SE", "Lower CI",
     "Upper CI")
 rownames(tab) <- c(as.character(ms3$family), "model averaged")
-
 print(tab, digits = 3, na.print = "")
 
 
 # Figure 4.3
 newdata <- list(dose = seq(min(Beetle$dose), max(Beetle$dose),
     length.out = 25))
-matplot(newdata$dose, sapply(mod3, predict, newdata, type="response"),
+
+# add model-averaged prediction with CI, using the same method as above
+#pred <- lapply(mod3, predict, newdata, type = "response", se.fit = TRUE)
+#pred.y <- sapply(pred, "[[", "fit")
+#pred.se <- sapply(pred, "[[", "se.fit")
+avpred <- predict(mavg3, newdata, se.fit = TRUE, type = "response")
+
+avci <- matrix(logit.ci(avpred$fit, avpred$se.fit, quantile = 2),
+    ncol = 2)
+
+matplot(newdata$dose, sapply(mod3, predict, newdata, type = "response"),
     type = "l", xlab = quote(list("Dose of" ~ CS[2],(mg/L))),
     ylab = "Mortality", col = 2:4, lty = 3, lwd = 1
 )
-
-# add model-averaged prediction with CI, using the same method as above
-pred <- lapply(mod3, predict, newdata, type = "response", se.fit = TRUE)
-pred.y <- sapply(pred, "[[", "fit")
-pred.se <- sapply(pred, "[[", "se.fit")
-avpred <- sapply(1:25, function(i) par.avg(pred.y[i, ], pred.se[i, ],
-    weight = Weights(ms3), revised.var = FALSE)[1:2])
-avci <- matrix(logit.ci(avpred[1, ], avpred[2, ], quantile = 2),
-    ncol = 2)
-matplot(newdata$dose, cbind(avpred[1, ], avci), type = "l", add = TRUE,
+matplot(newdata$dose, cbind(avpred$fit, avci), type = "l", add = TRUE,
     lwd = 1, lty = c(1, 2, 2), col = 1)
+
 legend("topleft", NULL, c(as.character(ms3$family), expression(`averaged`
     \%+-\% CI)), lty = c(3, 3, 3, 1), col = c(2:4, 1))
 

@@ -32,24 +32,12 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		message("Not using cluster.")
 	}
 
-	# *** Rank ***
-	rank.custom <- !missing(rank)
-	rankArgs <- list(...)
-	IC <- .getRank(rank, rankArgs)
-	ICName <- as.character(attr(IC, "call")[[1L]])
 
-	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE)
-
-	# Intercept(s)
-	interceptLabel <- attr(allTerms, "interceptLabel")
-	if(is.null(interceptLabel)) interceptLabel <- "(Intercept)"
-	nInts <- sum(attr(allTerms, "intercept"))
-
-	if(length(grep(":", all.vars(reformulate(allTerms))) > 0L))
-		stop("variable names in the formula cannot contain \":\"")
 
 	gmEnv <- parent.frame()
 	gmCall <- .getCall(global.model)
+	gmNobs <- nobs(global.model)
+
 	if (is.null(gmCall)) {
 		gmCall <- substitute(global.model)
 		if(!is.call(gmCall)) {
@@ -76,6 +64,23 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 				substitute(global.model)[names(gmCall[is.dotted])]
 		}
 	}
+
+	# *** Rank ***
+	rank.custom <- !missing(rank)
+	rankArgs <- list(...)
+	IC <- .getRank(rank, rankArgs)
+	ICName <- as.character(attr(IC, "call")[[1L]])
+
+	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,
+		data = eval(gmCall$data, envir = gmEnv))
+
+	# Intercept(s)
+	interceptLabel <- attr(allTerms, "interceptLabel")
+	if(is.null(interceptLabel)) interceptLabel <- "(Intercept)"
+	nInts <- sum(attr(allTerms, "intercept"))
+
+	if(length(grep(":", all.vars(reformulate(allTerms))) > 0L))
+		stop("variable names in the formula cannot contain \":\"")
 	logLik <- .getLogLik()
 
 	# parallel: check whether the models would be identical:
@@ -111,7 +116,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		if (inherits(fixed, "formula")) {
 			if (fixed[[1L]] != "~" || length(fixed) != 2L)
 				warning("'fixed' should be a one-sided formula")
-			fixed <- c(getAllTerms(fixed))
+			fixed <- as.vector(getAllTerms(fixed))
 		} else if (!is.character(fixed)) {
 			stop ("'fixed' should be either a character vector with"
 				  + " names of variables or a one-sided formula")
@@ -139,10 +144,9 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		variants <- as.matrix(expand.grid(split(seq_len(sum(vlen)),
 			rep(seq_along(varying), vlen))))
 	} else {
-		variants <- NULL
+		variants <- varying.names <- NULL
 		nvariants <- 1L
 		nvarying <- 0L
-		varying.names <- character(0L)
 	}
 
 	## varying END
@@ -153,8 +157,8 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			call = deparse(x[[1L]]), name = deparse(x), character = , x))
 		if(!is.null(names(extra)))
 			extraNames <- ifelse(names(extra) != "", names(extra), extraNames)
-
 		extra <- structure(as.list(unique(extra)), names = extraNames)
+
 		if(any(c("adjR^2", "R^2") %in% extra)) {
 			null.fit <- null.fit(global.model, TRUE, gmFormulaEnv)
 			extra[extra == "R^2"][[1L]] <- function(x) r.squaredLR(x, null.fit)
@@ -177,8 +181,9 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 
 	nov <- as.integer(n.vars - n.fixed)
 	ncomb <- (2L ^ nov) * nvariants
-	if(nov > 31L) stop(gettextf("maximum number of predictors is 31, but %d is given", nov))
-	# if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f possible combinations", nov, ncomb))
+
+	if(nov > 31L) stop(gettextf("number of predictors (%d) exceeds allowed maximum (31)"), nov, domain = "MuMIn")
+	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
 	nmax <- ncomb * nvariants
 	if(evaluate) {
 		ret.nchunk <- 25L
@@ -225,6 +230,20 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		gmFormulaEnv = gmFormulaEnv
 		)
 
+	# TODO: allow for 'marg.ex' per formula in multi-formula models
+	if(missing(marg.ex) || (!is.null(marg.ex) && is.na(marg.ex))) {
+		newArgs <- makeArgs(global.model, allTerms, rep(TRUE, length(allTerms)),
+							argsOptions)
+		formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs
+			else attr(newArgs, "formulaList")
+
+		marg.ex <- unique(unlist(lapply(sapply(formulaList, formulaAllowed,
+			simplify = FALSE), attr, "marg.ex")))
+		if(!length(marg.ex)) marg.ex <- NULL
+		#cat("Marginality exceptions:", marg.ex, "\n")
+	}
+	###
+
 	# BEGIN parallel
 	qi <- 0L
 	queued <- vector(qlen, mode = "list")
@@ -247,8 +266,8 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	for(iComb in seq.int(ncomb)) {
 		jComb <- ceiling(iComb / nvariants)
 		if(jComb != prevJComb) {
-			prevJComb <- jComb
 			isok <- TRUE
+			prevJComb <- jComb
 			comb <- c(as.logical(intToBits(jComb - 1L)[comb.seq]), comb.sfx)
 			nvar <- sum(comb) - nInts
 			if(!(nvar > m.max || nvar < m.min) && (!hasSubset || eval(subset,
@@ -405,7 +424,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		beta = beta,
 		call = match.call(expand.dots = TRUE),
 		coefTables = coefTables,
-		nobs = nobs(global.model),
+		nobs = gmNobs,
 		vCols = varying.names
 	)
 

@@ -1,5 +1,6 @@
 \name{gamm-wrapper}
 \alias{gamm}
+\alias{logLik.gamm}
 \encoding{utf-8}
 
 \title{Updateable \code{gamm}}
@@ -34,13 +35,16 @@ purpose of it is to add a \code{call} component, that is not provided by
 makes possible using it in model selection with \code{dredge}.
 
 This is only a temporary workaround and it is likely be removed soon.
-
 }
 
 \note{
 To assure \code{gamm} is called \emph{via} this wrapper in case it is masked by
 the original \code{gamm} from \pkg{mgcv} (when \pkg{MuMIn} was loaded after
 \pkg{mgcv}), use \code{MuMIn::\link[MuMIn]{gamm}}.
+
+
+\code{logLik} method for \code{gamm} models returns log-likelihood value from the
+\code{lme} component.
 }
 
 \author{Kamil Barto\enc{ń}{n}}

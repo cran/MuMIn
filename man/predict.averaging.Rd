@@ -9,7 +9,7 @@ Model-averaged predictions with optional standard errors.
 
 \usage{
 \method{predict}{averaging}(object, newdata = NULL, se.fit = FALSE,
-    interval = NULL, type = c("link", "response"), full = TRUE, ...)
+    interval = NULL, type = NA, backtransform = FALSE, full = TRUE, ...)
 }
 
 \arguments{
@@ -20,9 +20,16 @@ Model-averaged predictions with optional standard errors.
         This has any effect only if the \code{predict} methods for each of the
         component models support it. }
     \item{interval}{Currently not used. }
-    \item{type}{Predictions on response scale are only possible if all
-        component models use the same \code{\link[stats]{family}}. See
-        \code{\link[stats]{predict.glm}}. }
+	\item{type}{The type of predictions to return (see documentation for
+		\code{predict} appropriate for the class of used component models). If
+		omitted, the default type is used. See \sQuote{Details}. }
+    \item{backtransform}{If \code{TRUE}, the averaged predictions are
+		back-transformed from link scale to response scale. This makes sense
+		provided that all component models use the same \code{family}, and the
+		prediction (as specified by \code{type}, for \code{glm}, use
+		\code{type = "link"}).
+		See \sQuote{Details}.
+		}
 	\item{full}{ If \code{TRUE}, the full model averaged coefficients are used
 		(only if \code{se.fit = FALSE} and the component objects are a result of
 		\code{lm}). }
@@ -48,15 +55,20 @@ See \sQuote{Note} in \code{\link{model.avg}}. Predictions from component models
 with standard errors are passed to \code{par.avg} and averaged in the same way
 as the coefficients.
 
-Predictions on the response scale from generalized models are calculated by
+Predictions on the response scale from generalized models can be calculated by
 averaging predictions of each model on the link scale, followed by inverse
-transformation.
-
+transformation (this is achieved with \code{type = "link"} and
+\code{backtransform = TRUE}). This is only possible if all component models use
+the same family and link function. Alternatively, predictions from each model on
+response scale may be averaged (with \code{type = "response"} and
+\code{backtransform = FALSE}). Note that this leads to different results.
+See also \code{\link[stats]{predict.glm}}.
 }
 
 \note{
 This method relies on availability of the \code{predict} methods for the
 component model classes (except when all component models are of class \code{lm}).
+
 }
 
 \author{Kamil Barto\enc{ń}{n}}

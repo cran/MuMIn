@@ -18,6 +18,8 @@ varying <- list(
 dd <- dredge(fm1Dial.gls, m.max = 2, m.min = 1, fixed=~pressure, varying = varying, extra = "R^2")
 
 models <- get.models(dd, 1:4)
+
+
 ma <- model.avg(models, revised=T)
 ms <- model.sel(models)
 print(ms, abbr = F)
@@ -25,11 +27,12 @@ print(ms, abbr = T)
 summary(ma)
 predict(ma)[1:10]
 
-predict(ma, Dialyzer[1:5, ])
+predict(ma, newdata = Dialyzer[1:5, ])
 
 detach(package:nlme); rm(list=ls())
 
 # TEST glmmML --------------------------------------------------------------------
+if(.checkPkg("glmmML")) {
 library(glmmML)
 
 set.seed(100)
@@ -44,6 +47,7 @@ summary(ma <- model.avg(dd, subset = delta <= 4))
 coefTable(ma)
 
 detach(package:glmmML); rm(list=ls())
+}
 
 # TEST lm ---------------------------------------------------------------------------------
 if(.checkPkg("nlme")) {
@@ -232,14 +236,16 @@ require(MASS)
 quine.nb1 <- glm.nb(Days ~ 0 + Sex/(Age + Eth*Lrn), data = quine)
 #quine.nb1 <- glm.nb(Days ~ Sex/(Age + Eth*Lrn), data = quine)
 
-
 ms <- dredge(quine.nb1, marg.ex = "Sex")
 
 models <- get.models(ms )
 summary(model.avg(models))
 
-dredge(quine.nb1) # Wrong
-dredge(quine.nb1, marg.ex = "Sex") # Right
+#dredge(quine.nb1, marg.ex = NULL) # OK
+#dredge(quine.nb1, marg.ex = NA) # OK
+#dredge(quine.nb1, marg.ex = "Sex") # OK
+dredge(quine.nb1) # OK
+#dredge(quine.nb1, marg.ex = "Sex") # Right, should be the same as above
 ma <- model.avg(dredge(quine.nb1, marg.ex = "Sex"), subset = cumsum(weight)<=.9999)
 
 # Cannot predict with this 'averaging'
