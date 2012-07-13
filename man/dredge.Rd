@@ -41,7 +41,7 @@ dredge(global.model, beta = FALSE, evaluate = TRUE,
 	of terms in \code{global.model}. }
 
 	\item{subset}{ logical expression describing models to keep in the resulting
-		set. See \sQuote{Details}. }
+		set. See \sQuote{Details} and \sQuote{Examples}. }
 
 	\item{marg.ex}{a character vector specifying names of variables for which
 	NOT to check for marginality restrictions when generating model formulas. If
@@ -220,13 +220,16 @@ summary(get.models(dd, 1))[[1]]
 
 \dontrun{
 # Examples of using 'subset':
-# exclude models containing both X1 and X2
-dredge(fm1, subset = !(X1 & X2))
 # keep only models containing X3
 dredge(fm1, subset = ~ X3) # subset as a formula
 dredge(fm1, subset = expression(X3)) # subset as expression object
 # the same, but more effective:
 dredge(fm1, fixed = "X3")
+# exclude models containing both X1 and X2
+dredge(fm1, subset = !(X1 & X2))
+# keep only models containing either X1 or X2 (but not both), inclusion of X4 
+# is conditional upon the presence of X1
+dredge(fm1, subset = xor(X1, X2) & (X1 | !X4))
 
 #Reduce the number of generated models, by including only those with
 # up to 2 terms (and intercept)
@@ -249,12 +252,12 @@ dredge(fm1, m.max = 1, extra = list(
 
 
 # with other information criterions:
-
+\dontshow{
 # there is no BIC in R < 2.13.0, so need to add it:
 if(!exists("BIC", mode = "function"))
     BIC <- function(object, ...)
         AIC(object, k = log(length(resid(object))))
-
+}
 dredge(fm1, m.max = 1, extra = alist(AIC, BIC, ICOMP, Cp))
 
 

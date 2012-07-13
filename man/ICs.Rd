@@ -9,7 +9,9 @@
 \title{Various information criteria}
 \description{
 Calculate Mallows' \emph{Cp} and Bozdogan's ICOMP and CAIFC information criteria.
-Extract Deviance Information Criterion from \code{MCMCglmm} object.
+
+Extract or calculate Deviance Information Criterion from \code{MCMCglmm} and 
+\code{mer} object.
 }
 
 \usage{
@@ -80,7 +82,9 @@ regression models. \emph{Comp. Stat. & Data Analysis} 28: 51-76.
 }
 
 \seealso{
-\code{\link{AIC}} and \code{\link{BIC}} in \pkg{stats}, \code{\link{AICc}}
+\code{\link{AIC}} and \code{\link{BIC}} in \pkg{stats}, \code{\link{AICc}}.
+\code{\link[arm]{extractDIC}} in package \pkg{arm}, on which the (non-visible) 
+method \code{extractDIC.mer} used by \code{DIC} is based.
 }
 
 % \examples{}

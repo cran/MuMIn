@@ -67,8 +67,22 @@ See also \code{\link[stats]{predict.glm}}.
 
 \note{
 This method relies on availability of the \code{predict} methods for the
-component model classes (except when all component models are of class \code{lm}).
+component model classes (except when all component models are of class
+\code{lm}).
 
+The package \pkg{MuMIn} includes \code{predict} methods for \code{lme} and
+\code{lmer} (\pkg{lme4}), both of which can calculate standard errors of the
+predictions (with \code{se.fit = TRUE}).
+The former enhances the \link[=predict.lme]{original function} from package
+\pkg{nlme}, and with \code{se.fit = FALSE} it simply returns its result.
+\pkg{MuMIn}'s version is always used in averaged model predictions (so it is
+possible to predict with standard errors), but from within global environment it
+will be found only if \pkg{MuMIn} is before \pkg{nlme} on the
+\link[=search]{search list} (or directly extracted from namespace as
+\code{MuMIn::predict.lme}).
+\code{predict} method for \code{mer} models currently can only calculate values
+on the outermost level (equivalent to \code{level = 0} in
+\code{\link{predict.lme}}).
 }
 
 \author{Kamil Barto\enc{ń}{n}}

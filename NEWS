@@ -1,5 +1,27 @@
 MuMIn package news:
 
+Version: 1.7.11 (2012-07-13)
+coefTable.multinom: fixed an error when coefficients and standard errors were 
+	matrices
+get.models: now checks for the object class of the passed arguments
+
+Version: 1.7.10 (2012-06-07)
+(fixed) dredge: bug with an error message when number of predictor exceeded 
+	maximum (thanks to Corina Logan for spotting this).
+manual: added 'glmmADMB' to the list of supported classes (reported by Rocio 
+	Jana)
+'coxme' moved from 'Suggested' to 'Enhances' (to avoid build error when the
+	dependency is missing)
+
+Version: 1.7.9 (2012-04-03)
+Added 'predict' methods for 'lme' and 'lmer' (both can calculate 'se.fit').
+	'predict.lme' is a wrapper for its namesake from 'nlme' package (it is
+	not exported, so it's visibility depends on the order the packages were 
+	loaded - but is always visible from MuMIn namespace).
+
+Version: 1.7.8 (2012-04-01)
+(fixed) 'coef.model.selection' returns now proper coefficients
+
 Version: 1.7.7 (2012-04-01)
 fixed dependencies in tests
 

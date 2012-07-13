@@ -7,6 +7,11 @@ function (model, ...) 	{
 `coefTable` <-
 function (model, ...) UseMethod("coefTable")
 
+`print.coefTable` <-
+function (x, ...)
+stats::printCoefmat(x, has.Pvalue = FALSE)
+
+
 .makeCoefTable <- function(x, se, df = NA_real_, coefNames = names(x)) {
 	if(n <- length(x)) {
 		xdefined <- !is.na(x)
@@ -25,6 +30,7 @@ function (model, ...) UseMethod("coefTable")
 		dimnames = list(coefNames, c("Estimate", "Std. Error", "df")))
 	if(n) ret[, ] <- cbind(x, se, rep(if(is.null(df)) NA_real_ else df,
 		length.out = n), deparse.level = 0L)
+	class(ret) <- c("coefTable", "matrix")
 	ret
 }
 
@@ -67,7 +73,10 @@ function(model, ...)
 `coefTable.multinom` <-
 function(model, ...) {
 	s <- summary(model, ...)
-	.makeCoefTable(s$coefficients, s$standard.errors)
+	cf <- s$coefficients
+	se <- s$standard.errors
+	.makeCoefTable(if(is.vector(cf)) cf else cf[, 1L], 
+		if(is.vector(se)) se else se[, 1L])
 }
 
 `coefTable.sarlm` <-
