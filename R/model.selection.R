@@ -189,9 +189,6 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
     return(if (evaluate) eval(cl, parent.frame()) else cl)
 }
 
-`coef.model.selection` <- function (object, ...)
-	object[, attr(object, "terms")]
-
 `logLik.model.selection` <- function (object, ...) {
 	nobs <- attr(object, "nobs")
 	n <- nrow(object)
@@ -201,7 +198,6 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 			class = "logLik")
 	ret
 }
-
 
 `$<-.model.selection` <- function (x, name, value) {
 	ret <- base::`$<-.data.frame`(x, name, value)

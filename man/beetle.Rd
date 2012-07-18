@@ -107,19 +107,13 @@ colnames(tab) <- c("Akaike weight", "Predicted(40)", "SE", "Lower CI",
 rownames(tab) <- c(as.character(ms3$family), "model averaged")
 print(tab, digits = 3, na.print = "")
 
-
 # Figure 4.3
-newdata <- list(dose = seq(min(Beetle$dose), max(Beetle$dose),
-    length.out = 25))
+newdata <- list(dose = seq(min(Beetle$dose), max(Beetle$dose), length.out = 25))
 
 # add model-averaged prediction with CI, using the same method as above
-#pred <- lapply(mod3, predict, newdata, type = "response", se.fit = TRUE)
-#pred.y <- sapply(pred, "[[", "fit")
-#pred.se <- sapply(pred, "[[", "se.fit")
 avpred <- predict(mavg3, newdata, se.fit = TRUE, type = "response")
 
-avci <- matrix(logit.ci(avpred$fit, avpred$se.fit, quantile = 2),
-    ncol = 2)
+avci <- matrix(logit.ci(avpred$fit, avpred$se.fit, quantile = 2), ncol = 2)
 
 matplot(newdata$dose, sapply(mod3, predict, newdata, type = "response"),
     type = "l", xlab = quote(list("Dose of" ~ CS[2],(mg/L))),

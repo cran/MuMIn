@@ -41,8 +41,6 @@ MuMIn:::fixCoefNames(names(coef(fm2oc)))
 #(dd <- dredge(fm2oc, fixed = ~psi(habitat), trace = T))
 (dd <- dredge(fm2oc, fixed = ~psi(habitat)))
 
-#m1 <- occu(formula = ~1 ~ 1 + habitat, data = umfOccu)
-
 
 model.sel(dd, rank = "AIC")
 models <- get.models(dd[1:3])

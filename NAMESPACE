@@ -31,7 +31,6 @@ S3method(nobs, glm)
 #importFrom(methods, slot, slotNames)
 #importFrom(lme4, lmer, logLik, terms)
 
-
 S3method("$<-", model.selection)
 
 S3method(print, averaging)
@@ -78,6 +77,7 @@ S3method(coef, model.selection)
 S3method(coeffs, model.selection)
 S3method(coefTable, model.selection)
 
+S3method(print, coefTable)
 
 S3method(AICc, default)
 
@@ -112,11 +112,13 @@ S3method(nobs, survreg)
 S3method(getAllTerms, lme)
 S3method(coeffs, lme)
 S3method(coefTable, lme)
+S3method(predict, lme)
 
 S3method(getAllTerms, mer)
 S3method(coeffs, mer)
 S3method(coefTable, mer)
 S3method(nobs, mer)
+S3method(predict, mer)
 
 S3method(coefTable, multinom)
 S3method(nobs, multinom)
@@ -194,3 +196,7 @@ S3method(logLik, MCMCglmm)
 S3method(coeffs, MCMCglmm)
 S3method(coefTable, MCMCglmm)
 S3method(makeArgs, MCMCglmm)
+
+S3method(extractDIC, mer)
+S3method(extractDIC, MCMCglmm)
+S3method(extractDIC, lme)

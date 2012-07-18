@@ -1,3 +1,5 @@
+if(length(.find.package("coxme", quiet = TRUE)) == 2) {
+
 library(coxme)
 library(MuMIn)
 
@@ -32,4 +34,6 @@ if(exists("lmekin", mode = "function", envir = asNamespace("coxme"))) {
 	fit2 <- lmekin(effort ~ Type + (1|Subject), data=ergoStool)
 	dd <- dredge(fit2, trace = T)
 	summary(ma <- model.avg(dd))
+}
+
 }

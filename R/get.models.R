@@ -1,7 +1,10 @@
 `get.models` <-
 function(object, subset, ...) {
+    if (!inherits(object, "model.selection"))
+		stop("'object' must be a 'model.selection' object")
+
 	calls <- attr(object, "calls")
-	if(is.null(calls)) stop("object has no 'calls' attribute")
+	if(is.null(calls)) stop("'object' has no 'calls' attribute")
 
 	if(!missing(subset)) {
 	    r <- eval(substitute(subset), object, parent.frame())
@@ -35,6 +38,9 @@ function(object, subset, ...) {
 
 `pget.models` <-
 function(object, cluster = NA, subset, ...) {
+	if (!inherits(object, "model.selection"))
+		stop("'object' must be a 'model.selection' object")
+
 	calls <- attr(object, "calls")
 	if(is.null(calls)) stop("object has no 'calls' attribute")
 

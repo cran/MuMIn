@@ -18,8 +18,10 @@
 
 
 `family.gls` <-
-`family.lme` <-
-stats:::family.lm
+`family.lme` <- function (object, ...) {
+	if (inherits(object$family, "family")) object$family else gaussian()
+}
+
 
 `nobs.rq` <-
 function (object, ...) length(object$y)
@@ -196,4 +198,74 @@ family.glimML <- function(object, ...) switch(object@method,
 	ran <- attr(ttran, "term.labels")
 	if(length(ran)) attr(ret, "random.terms") <- paste("1 |", ran)
 	ret
+}
+
+#_______________________________________________________________________________
+# adds 'se.fit' argument
+# https://stat.ethz.ch/pipermail/r-help/2004-April/050144.html
+# http://web.archiveorange.com/archive/v/rOz2zbtjRgntPMuIDoIl
+
+`predict.lme` <- function (object, newdata, level, asList = FALSE,
+	na.action = na.fail, se.fit = FALSE, ...) {
+	cl <- match.call()
+	#print(match.call(expand.dots = T))
+	cl$se.fit <- NULL
+	cl[[1L]] <- call(":::", as.name("nlme"), as.name("predict.lme"))
+	res <- eval(cl, parent.frame())
+	if(se.fit && (missing(level) || any(level > 0)))
+		warning("cannot calculate standard errors for level > 0")
+	if(se.fit && !missing(level) && length(level) == 1L && all(level == 0)) {
+		if (missing(newdata) || is.null(newdata)) {
+			#newdata <- object$data
+			X <- model.matrix(object, data = object$data)
+		} else {
+			tt <- delete.response(terms(eval(object$call$fixed)))
+			#xlev <- lapply(object$data, levels)
+			#xlev <- xlev[!sapply(xlev, is.null) & names(xlev) %in%
+						 #all.vars(attr(tt, "variables"))]
+			xlev <- .getXlevels(tt, model.frame(object, data = object$data))
+			X <- model.matrix(tt, data = newdata, contrasts.arg =
+							  object$contrasts, xlev = xlev)
+		}
+		se <- sqrt(diag(X %*% vcov(object) %*% t(X)))
+		names(se) <- names(res)
+		list(fit = c(res), se.fit = se)
+	} else res
+}
+
+`predict.mer` <- function (object, newdata, type = c("link", "response"),
+	se.fit = FALSE, ...) {
+    type <- match.arg(type)
+
+	if (!missing(newdata) && !is.null(newdata)) {
+		tt <- delete.response(attr(object@frame, "terms"))
+		xlev <- .getXlevels(tt, model.frame(object))
+		X <- model.matrix(tt, data = newdata,
+			contrasts.arg = attr(model.matrix(object), "contrasts"),
+			xlev = xlev)
+		offset <- rep(0, nrow(X))
+        if (!is.null(off.num <- attr(tt, "offset")))
+            for (i in off.num) offset <- offset + eval(attr(tt,
+                "variables")[[i + 1L]], newdata)
+        if (!is.null(object@call$offset))
+            offset <- offset + eval(object@call$offset, newdata)
+	} else {
+		X <- model.matrix(object)
+		offset <- if(length(object@offset)) object@offset else NULL
+	}
+	coeff <- object@fixef
+	y <- (X %*% coeff)[, 1L]
+	if(!is.null(offset)) y <- y + offset
+	fam <- family(object)
+	if(se.fit) {
+		covmat <- as.matrix(vcov(object))
+		se <- sqrt(diag(X %*% covmat %*% t(X)))
+		if(type == "response" && inherits(fam, "family"))
+			list(fit = fam$linkinv(y), se.fit = se * abs(fam$mu.eta(y)))
+		else
+			list(fit = y, se.fit = se)
+	} else {
+		if(type == "response" && inherits(fam, "family")) fam$linkinv(y) else y
+	}
+	# TODO:
 }

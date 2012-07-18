@@ -10,21 +10,24 @@ List of model classes accepted by \code{model.avg}, \code{model.sel},
 \details{
 Fitted model objects that can be used with model selection and model averaging
 functions include those returned by:
+
 \itemize{
 \item \code{lm}, \code{glm} (package \pkg{stats});
-\item \code{gam}, \code{gamm} (\pkg{mgcv});
-\item \code{gamm4} (\pkg{gamm4});
-\item \code{lme}, \code{gls} (\pkg{nlme});
-\item \code{lmer}, \code{glmer} (\pkg{lme4});
 \item \code{rlm}, \code{glm.nb} and \code{polr} (\pkg{MASS});
 \item \code{multinom} (\pkg{nnet});
-\item \code{sarlm}, \code{spautolm} (\pkg{spdep});
+\item \code{lme}, \code{gls} (\pkg{nlme});
+\item \code{lmer}, \code{glmer} (\pkg{lme4});
+\item \code{gam}, \code{gamm} (\pkg{mgcv});
+\item \code{gamm4} (\pkg{gamm4});
 \item \code{glmmML} (\pkg{glmmML});
-\item \code{coxph}, \code{survreg} (\pkg{survival});
-\item \code{coxme}, \code{lmekin} (\pkg{coxme});
+\item \code{glmmadmb} (\pkg{glmmADMB} from R-Forge);
 \item \code{hurdle}, \code{zeroinfl} (\pkg{pscl});
 \item \code{negbin}, \code{betabin} (class \code{glimML}, package \pkg{aod});
+\item \code{sarlm}, \code{spautolm} (\pkg{spdep});
+\item \code{coxph}, \code{survreg} (\pkg{survival});
+\item \code{coxme}, \code{lmekin} (\pkg{coxme});
 \item \code{rq} (\pkg{quantreg});
+
 \item functions from package \pkg{unmarked}, (within the class \code{unmarkedFit})
 }
 

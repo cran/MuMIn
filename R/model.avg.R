@@ -311,6 +311,8 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 		if(!missing(newdata)) cl$newdata <- as.name("newdata")
 		cl <- as.call(cl)
 
+		#predict.lme <- MuMIn:::predict.lme
+
 		pred <- lapply(models, function(x) {
 			cl[[2L]] <- x
 			y <- tryCatch({

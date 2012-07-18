@@ -50,6 +50,11 @@ additional columns showing them (except for formulas and some other arguments).
 
 \seealso{
 \code{\link{dredge}}, \link[=MuMIn-models]{list of supported models}.
+
+Possible alternatives: \code{\link[bbmle]{ICtab}} (in package \pkg{bbmle}), or
+ \code{\link[AICcmodavg]{aictab}} (\pkg{AICcmodavg}).
+
+
 }
 
 \examples{
