@@ -36,9 +36,9 @@ functions include those returned by:
 
 Other classes are also likely to be supported, in particular if they inherit
 from one of the above classes. In general, the models averaged with
-\code{model.avg} may belong to different types, provided they use the same data
-and response, and if it is valid to do so. This applies also to constructing
-model selection tables with \code{model.sel}.
+\code{model.avg} may belong to different types (e.g. \code{glm} and \code{gam}), 
+provided they use the same data and response, and if it is valid to do so. 
+This applies also to constructing model selection tables with \code{model.sel}.
 
 }
 

@@ -38,9 +38,9 @@ This is only a temporary workaround and it is likely be removed soon.
 }
 
 \note{
-To assure \code{gamm} is called \emph{via} this wrapper in case it is masked by
+To assure \code{gamm} is called \emph{via} this wrapper, in case it is masked by
 the original \code{gamm} from \pkg{mgcv} (when \pkg{MuMIn} was loaded after
-\pkg{mgcv}), use \code{MuMIn::\link[MuMIn]{gamm}}.
+\pkg{mgcv}), use \code{MuMIn::\link[MuMIn]{gamm}} syntax.
 
 
 \code{logLik} method for \code{gamm} models returns log-likelihood value from the
