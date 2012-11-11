@@ -193,15 +193,18 @@ if(!is.null(tryCatch(suppressPackageStartupMessages(library(spdep)), error = fun
 
 suppressMessages(example(NY_data, echo = FALSE))
 
+# method argument changed in spdep 0.5.53 from "full" to "eigen"
+method1 <- if(packageVersion("spdep") < '0.5.53') "full" else "eigen"
+
 
 fm1.spautolm <- spautolm(Z ~ PEXPOSURE * PCTAGE65P + PCTOWNHOME,
- data = nydata, listw = listw_NY, family = "SAR", method = "full", verbose = FALSE)
+ data = nydata, listw = listw_NY, family = "SAR", method = method1, verbose = FALSE)
 
 options(warn=1)
 dd <- dredge(fm1.spautolm, m.max=1, fixed = ~PEXPOSURE,
 	varying = list(
 		family = list("CAR", "SAR"),
-		method=list("Matrix_J", "full")
+		method=list("Matrix_J", method1)
 	), trace=FALSE)
 options(warn=0)
 

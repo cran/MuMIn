@@ -1,8 +1,8 @@
 Package: MuMIn
 Type: Package
 Title: Multi-model inference
-Version: 1.7.11
-Date: 2012-07-13
+Version: 1.7.12
+Date: 2012-11-11
 Encoding: UTF-8
 Author: Kamil Bartoń
 Maintainer: Kamil Bartoń <kamil.barton@go2.pl>
@@ -15,6 +15,6 @@ Suggests: stats4, nlme, mgcv (>= 1.7.5), lme4 (>= 0.999375-16), gamm4,
         MASS, nnet, survival
 Enhances: aod, coxme, glmmML, MCMCglmm, pscl, spdep, unmarked
 LazyLoad: yes
-Packaged: 2012-07-18 10:05:59 UTC; kamil
+Packaged: 2012-11-11 13:31:03 UTC; kamil
 Repository: CRAN
-Date/Publication: 2012-07-18 11:14:00
+Date/Publication: 2012-11-11 14:27:16

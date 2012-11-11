@@ -1,6 +1,6 @@
-c6116303e2c309753d4f7f661263f660 *DESCRIPTION
+5bec183938dad822661b0b84564bf544 *DESCRIPTION
 9aad60c99c42eee1b27583f7f4a8b522 *NAMESPACE
-e352f8f65bac44699b7ad3f7327f512a *NEWS
+184c82f4aa6589b95fe815a383c7345e *NEWS
 aa8b8a81b03f5608694b3d43e90c9029 *R/AICc.R
 e6aef9d5dc2fc03888145a9938619650 *R/Cp.R
 142ab94df5cef243cf60bbc0068d07b9 *R/ICOMP.R
@@ -44,7 +44,7 @@ cc59088a774b5333aab20eb897315872 *man/AICc.Rd
 c6919e50969d96ed0e07799c94999f46 *man/beetle.Rd
 55c75f4f38d0094120fa988aea83d1b6 *man/cement.Rd
 2c07e8c99aa003ed1da1a487af543510 *man/dredge.Rd
-9099bc202d93d83ce6cce6d61d3c033a *man/gamm.Rd
+b7922bec7eb109a3757a34be278a1a47 *man/gamm.Rd
 e0b35b6d1c26ee23b3ea11fca5d6ef70 *man/get.models.Rd
 ae71f22624185e5fa60dd14cfb7dd464 *man/importance.Rd
 5531023a5609a49aed46a3903294f643 *man/mod.sel.Rd
@@ -55,9 +55,9 @@ f7c544bee322c4b8cbe98d7f9056868e *man/pdredge.Rd
 fc7770c6eaaba945a764ec36f9f0aa9c *man/predict.averaging.Rd
 32de91a8c3ef92f7854e1ade2a063da1 *man/r.squaredLR.Rd
 0a8ce4546c2d0c5c5057879116c523a6 *man/subset.model.selection.Rd
-f46c1647fc1f9ca795b308c78ca77c31 *man/supported-classes.Rd
+990b55f5cc68b6e99d44e0864dfa8510 *man/supported-classes.Rd
 bf677c6598601f1ba51a71a1514316a0 *man/weights.Rd
-8581ad5ad0a3f6bcbf8ca6b56781d615 *tests/classes.R
+f72e09c3d3af20dad8ae9676d036ab4d *tests/classes.R
 ebd7da20ed955fa7da01ac609e8033c6 *tests/coxme.R
 8a479224ab9fcee6568e0114560bca81 *tests/misc-tests.R
 f08fb7081333b396593c413aabb9a861 *tests/parallel.R
