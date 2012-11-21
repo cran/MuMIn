@@ -15,7 +15,7 @@ Model averaging based on an information criterion.
 model.avg(object, ..., revised.var = TRUE)
 
 \method{model.avg}{default}(object, ..., beta = FALSE, rank = NULL, rank.args = NULL,
-    revised.var = TRUE, dispersion = NULL)
+    revised.var = TRUE, dispersion = NULL, ct.args = NULL)
 
 \method{model.avg}{model.selection}(object, subset, fit = FALSE, ..., revised.var = TRUE)
 
@@ -46,13 +46,18 @@ model.avg(object, ..., revised.var = TRUE)
 	\item{dispersion}{ the dispersion parameter for the family used. See
 		\code{\link{summary.glm}}. This is used currently only with \code{glm},
 		is silently ignored otherwise. }
-
+	
+	\item{ct.args}{ optional list of arguments to be passed to
+	     \code{\link{coefTable}} (besides \code{dispersion}). }
+		 
 	\item{subset}{ see \code{\link[=subset.model.selection]{subset}} method for
 		\code{model.selection} object. }
 
 	\item{fit}{ if \code{TRUE}, the component models are fitted using
 		\code{get.models}. See \sQuote{Details}.
 	}
+	
+
 
 }
 

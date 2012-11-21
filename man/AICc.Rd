@@ -30,7 +30,7 @@ AICc(object, ..., k = 2, REML = NULL)
 }
 
 \note{
-AIC\eqn{_{c}}{c} should be used instead AIC when the the sample size is small in
+AIC\eqn{_{c}}{c} should be used instead AIC when sample size is small in
 comparison to the number of estimated parameters (Burnham & Anderson 2002
 recommend its use when \eqn{n / K < 40}).
 
@@ -67,7 +67,7 @@ data(Orthodont, package = "nlme")
 
 # Fit model by REML
 fm2 <- lme(distance ~ Sex*age, data = Orthodont,
-    random = ~ 1 | Subject, method = "REML")
+    random = ~ 1|Subject / Sex, method = "REML")
 
 # Model selection: ranking by AICc using ML
 ms2 <- dredge(fm2, trace = TRUE, rank = "AICc", REML = FALSE)
@@ -77,12 +77,12 @@ ms2 <- dredge(fm2, trace = TRUE, rank = "AICc", REML = FALSE)
 # Get the models (fitted by REML, as in the global model)
 fmList <- get.models(ms2, 1:4)
 
-# Because the models originate from 'dredge(..., rank = AICc, REML = FALSE)',
+# Because the models originate from 'dredge(..., rank=AICc, REML=FALSE)',
 # the default weights in 'model.avg' are ML based:
 summary(model.avg(fmList))
 
 # same result
-#model.avg(fmList, rank = "AICc", rank.args = list(REML = FALSE))
+#model.avg(fmList, rank = "AICc", rank.args = list(REML=FALSE))
 
 }
 

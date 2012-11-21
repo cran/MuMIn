@@ -120,47 +120,51 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 })
 
 # test if 'x' can be updated (in current environment or on a cluster)
+# level is 0/FALSE - no checking, 1 - check if variables and functions exist,
+# >1 - reevaluate x and compare with original 
 `testUpdatedObj` <- function(cluster = NA, x, call = .getCall(x),
-	do.eval = FALSE) {
-	xname <- deparse(substitute(x))
-	doParallel <- inherits(cluster, "cluster")
-	if(doParallel) {
-		clusterCall <- get("clusterCall")
-		whereStr <- gettext(" in the cluster nodes' environment")
-		csapply <- function(...) clusterCall(cluster, "sapply", ...)
-	} else {
-		whereStr <- ""
-		csapply <- function(...) sapply(...)
-	}
-	if(is.null(call)) stop(gettextf("'%s' has no call component", xname))
-	call.orig <- call
-	if(!is.null(call$data)) {
-		# get rid of formulas, as they are evaluated within 'data'
-		call <- call[!sapply(call, function(x) "~" %in% all.names(x))]
-		call$subset <- NULL
-	}
-	v <- all.vars(call, functions = FALSE)
-	if(!all(z <- unlist(csapply(v, "exists", where = 1L)))) {
-		z <- unique(names(z[!z]))
-		stop(sprintf(ngettext(length(z), "variable %s not found%s",
-			"variables %s not found%s"), prettyEnumStr(z, quote = "'"), whereStr))
-		}
-	vfun <- all.vars(call, functions = TRUE)
-	if(!all(z <- unlist(csapply(vfun[!(vfun %in% v)], "exists",
-		mode = "function", where = 1L)))) {
-		zz <- unique(names(z[!z]))
-		stop(sprintf(ngettext(length(zz), "function %s not found%s",
-			"functions %s not found%s"), prettyEnumStr(zz, quote = "'"), whereStr))
-		}
+	level = 1L) {
 
-	if(do.eval && !missing(x)) {
+	if (level > 0L) {
+		xname <- deparse(substitute(x))
+		doParallel <- inherits(cluster, "cluster")
 		if(doParallel) {
-			# XXX: Import: clusterCall
-			if(!all(vapply(lapply(clusterCall(cluster, eval, call.orig), all.equal, x), isTRUE, TRUE)))
-				stop(gettextf("'%s' evaluated on the cluster nodes differs from the original one",
-			xname))
-		} else if (!isTRUE(all.equal(x, update(x))))
-			stop(gettextf("updated '%s' differs from the original one",	xname))
+			clusterCall <- get("clusterCall")
+			whereStr <- gettext(" in the cluster nodes' environment")
+			csapply <- function(...) clusterCall(cluster, "sapply", ...)
+		} else {
+			whereStr <- ""
+			csapply <- function(...) sapply(...)
+		}
+		if(is.null(call)) stop(gettextf("'%s' has no call component", xname))
+		call.orig <- call
+		if(!is.null(call$data)) {
+			# get rid of formulas, as they are evaluated within 'data'
+			call <- call[!sapply(call, function(x) "~" %in% all.names(x))]
+			call$subset <- NULL
+		}
+		v <- all.vars(call, functions = FALSE)
+		if(!all(z <- unlist(csapply(v, "exists", where = 1L)))) {
+			z <- unique(names(z[!z]))
+			stop(sprintf(ngettext(length(z), "variable %s not found%s",
+				"variables %s not found%s"), prettyEnumStr(z, quote = "'"), whereStr))
+			}
+		vfun <- all.vars(call, functions = TRUE)
+		if(!all(z <- unlist(csapply(vfun[!(vfun %in% v)], "exists",
+			mode = "function", where = 1L)))) {
+			zz <- unique(names(z[!z]))
+			stop(sprintf(ngettext(length(zz), "function %s not found%s",
+				"functions %s not found%s"), prettyEnumStr(zz, quote = "'"), whereStr))
+			}
+		if(level > 1L && !missing(x)) {
+			if(doParallel) {
+				# XXX: Import: clusterCall
+				if(!all(vapply(lapply(clusterCall(cluster, eval, call.orig), all.equal, x), isTRUE, TRUE)))
+					stop(gettextf("'%s' evaluated on the cluster nodes differs from the original one",
+				xname))
+			} else if (!isTRUE(all.equal(x, update(x))))
+				stop(gettextf("updated '%s' differ(s) from the original one", xname))
+		}
 	}
 }
 

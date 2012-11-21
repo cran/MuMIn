@@ -3,19 +3,17 @@
 # with parallel execution
 ###
 
-if(require(parallel) || require(snow)) {
-require(MuMIn)
+require(parallel) || require(snow)
+library(MuMIn)
 library(unmarked)
 require(stats4)
 
 # Set up the cluster
 ncores <- if(exists("detectCores", mode = "function"))
 	detectCores() else getOption("cl.cores", 2)
-
 clusterType <- if(length(.find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
 clust <- try(makeCluster(getOption("cl.cores", 2), type = clusterType))
-
-if(inherits(clust, "cluster")) {
+if(!inherits(clust, "cluster")) stop("Could not set up the cluster")
 
 data(mallard)
 mallardUMF <- unmarkedFramePCount(mallard.y, siteCovs = mallard.site,
@@ -37,9 +35,10 @@ invisible(clusterCall(clust, "library", "stats4", character.only = TRUE))
 #system.time(print(pdd1 <- pdredge(ufm.mallard,
 #   subset = `p(date)` | !`p(I(date^2))`, rank = AIC)))
 
-system.time(pdd2 <- pdredge(ufm.mallard, clust,
-    subset = `p(date)` | !`p(I(date^2))`, rank = AIC, extra = "adjR^2"))
-
+system.time(pdd2 <-
+	pdredge(ufm.mallard, clust,
+    subset = (`p(date)` || !`p(I(date^2))`),
+	rank = AIC, extra = "adjR^2", eval = T))
 
 # select the top models and null model
 subset(pdd2, delta < 2 | df == min(df))
@@ -51,15 +50,11 @@ attr(pdd2, "warnings") <- NULL
 # the statistics should be identical:
 models <- pget.models(pdd2, clust, delta < 2 | df == min(df))
 
+
 modSel(fitList(fits = structure(models, names = model.names(models,
     labels = getAllTerms(ufm.mallard)))), nullmod = "(Null)")
 
+
+
 stopCluster(clust)
-
-} else # if(inherits(clust, "try-error"))
-message("Could not set up the cluster")
-
-} # if(require(parallel) || require(snow))
-
-
 ########################

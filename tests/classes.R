@@ -122,7 +122,7 @@ stopifnot(all(predict(ma) == predict(ma, Cement)))
 predict(ma, lapply(Cement, nseq, len=30), se.fit=TRUE)
 vcov(ma)
 
-rm(list=ls()); detach(package:MASS)
+rm(list=ls()); #detach(package:MASS)
 
 # TEST multinom --------------------------------------------------------------------------------
 if (.checkPkg("nnet")) {
@@ -265,7 +265,7 @@ ma <- model.avg(dredge(quine.nb1, marg.ex = "Sex"), subset = cumsum(weight)<=.99
 #matplot(pred, type="l")
 #matplot(family(quine.nb1)$linkinv(pred), type="l")
 
-rm(list=ls()); detach(package:MASS)
+rm(list=ls()); #detach(package:MASS)
 }
 
 # TEST quasibinomial -----------------------------------------------------------

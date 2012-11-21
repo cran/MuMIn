@@ -1,3 +1,5 @@
+gees			Model selection with Generalized Estimating Equations
 dredge.distsamp	Model selection with 'distsamp' models from 'unmarked' package
 pdredge.pcount	Model selection with 'pcount' models from 'unmarked' package 
 				and using parallel execution
+dredge.subset 	Generating a subset of a full model excluding collinear variables
