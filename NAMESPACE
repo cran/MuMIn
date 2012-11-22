@@ -2,7 +2,8 @@ export(
 	AICc, beta.weights, dredge, pdredge, get.models, pget.models, model.avg,
 	par.avg, QAIC, QAICc,
 	getAllTerms, coeffs, coefTable, tTable, Weights, model.sel, mod.sel,
-	importance, gamm, Cp, ICOMP, r.squaredLR, null.fit, model.names, CAICF, DIC
+	importance, gamm, Cp, ICOMP, r.squaredLR, null.fit, model.names, CAICF, DIC,
+	QIC, quasiLik
 )
 
 importFrom(stats, family)
@@ -10,7 +11,10 @@ importFrom(stats, family)
 
 # XXX: compatibility with R < 2.13.0
 if (getRversion() >= "2.13.0") {
-importFrom(stats, nobs)
+if (getRversion() >= "2.14.0") {
+	importFrom(stats, nobs, getCall)
+	S3method(getCall, yagsResult)
+}
 } else {
 # I couldn't find a way to make version-dependent documentation, so I can't
 # export nobs here...
@@ -150,6 +154,7 @@ S3method(makeArgs, mer)
 S3method(makeArgs, unmarkedFit)
 S3method(makeArgs, unmarkedFitDS)
 S3method(makeArgs, coxph)
+S3method(makeArgs, clmm)
 
 S3method(family, default)
 S3method(family, gls)
@@ -200,3 +205,23 @@ S3method(makeArgs, MCMCglmm)
 S3method(extractDIC, mer)
 S3method(extractDIC, MCMCglmm)
 S3method(extractDIC, lme)
+
+S3method(coef, geese)
+S3method(coefTable, gee)
+S3method(coefTable, geeglm)
+S3method(coefTable, geese)
+S3method(coefTable, yagsResult)
+
+S3method(getQIC, default)
+S3method(getQIC, gee)
+S3method(getQIC, geeglm)
+S3method(getQIC, yagsResult)
+
+S3method(print, quasiLik)
+S3method(quasiLik, gee)
+S3method(quasiLik, geeglm)
+S3method(quasiLik, yagsResult)
+
+S3method(nobs, yagsResult)
+
+

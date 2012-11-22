@@ -6,7 +6,6 @@ function (object, ...) UseMethod("model.sel")
 
 `model.sel.model.selection` <-
 function (object, rank = NULL, rank.args = NULL, ...) {
-	#if(!is.null(rank)) .NotYetUsed("rank")
 	if(!is.null(rank)) {
 		rank <- .getRank(rank, rank.args = rank.args)
 		ic <- tryCatch(sapply(logLik(object), rank), error = function(e) e)
@@ -60,7 +59,11 @@ function(object, ..., rank = NULL, rank.args = NULL) {
 	all.coef <- fixCoefNames(unique(unlist(lapply(lapply(models, coeffs), names),
 		use.names = FALSE)))
 
-	logLik <- .getLogLik()
+	## TODO: case when models belong to different classes using logLik or qLik 
+	## - give error
+	LL <- .getLik(models[[1L]])
+	logLik <- LL$logLik
+	lLName <- LL$name
 
 	j <- !(all.terms %in% all.coef)
 	#d <- as.data.frame(t(sapply(models, matchCoef, all.terms = all.terms)))
@@ -82,7 +85,7 @@ function(object, ..., rank = NULL, rank.args = NULL) {
 			stop(ic)
 		}
 		c(attr(ll, "df"), ll, ic)
-		}, structure(double(3L), names=c("df", "logLik", ICname)))
+		}, structure(double(3L), names=c("df", lLName, ICname)))
 	ret <- as.data.frame(t(ret))
 
 	ret <- cbind(d, ret)

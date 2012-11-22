@@ -48,6 +48,10 @@ makeArgs.mer <- function(obj, termNames, comb, opt, ...) {
 	ret
 }
 
+## Class 'clmm'  from package 'ordinal':
+`makeArgs.clmm` <- makeArgs.mer
+
+
 # used by makeArgs.unmarkedFit*
 `.makeUnmarkedFitFunnyFormulas` <- function(termNames, opt, fnames) {
 	i <- termNames %in% opt$interceptLabel

@@ -1,5 +1,15 @@
 MuMIn package news:
 
+Version: 1.8.0 (2012-11-21)
+This version introduces support for GEE models ('gee','geeglm' and 'yags') 
+	ranked by QIC (note that 'yags' seems to be still quite buggy).
+	Also 'clmm' and 'clm' from package 'ordinal' are now handled properly.
+QIC, quasiLik: new functions for use with GEE models
+(p)dredge: argument 'subset' can be now a logical matrix representing allowed 
+	parameter combinations. Some improvements for speed have been made.
+(p)dredge, model.avg: new argument 'ct.args' for passing extra arguments 
+	to 'coefTable'.
+
 Version: 1.7.12 (2012-11-11)
 tests/classes.R: fixed compatibility spdep-0.5.53. (spdep::spautolm now uses 
 	method="eigen", was "full") 

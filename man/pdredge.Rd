@@ -8,16 +8,16 @@ Parallelized version of \code{dredge}.
 }
 
 \usage{
-pdredge(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
-    rank = "AICc", fixed = NULL, m.max = NA, m.min = 0, subset,
-    marg.ex = NULL, trace = FALSE, varying, extra, check = FALSE,
-    ...)
+pdredge(global.model, cluster = NA, beta = FALSE, evaluate = TRUE, rank = "AICc", 
+    fixed = NULL, m.max = NA, m.min = 0, subset, marg.ex = NULL, trace = FALSE, 
+    varying, extra, ct.args = NULL, check = FALSE, ...)
+
 }
 
 \arguments{
     \item{global.model, beta, evaluate, rank}{
         see \code{\link{dredge}}. }
-    \item{fixed, m.max, m.min, subset, marg.ex, varying, extra, ...}{
+    \item{fixed, m.max, m.min, subset, marg.ex, varying, extra, ct.args, ...}{
         see \code{\link{dredge}}. }
     \item{trace}{ displays the generated calls, but may not work as expected
         since the models are evaluated in batches rather than one by one. }
@@ -29,10 +29,10 @@ pdredge(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 }
 
 \details{
-All the dependencies for fitting the \code{global.model}, including the data,
-	and any objects the modelling function will use, must be exported
-	(\emph{via} e.g. \code{clusterExport}) into the clurter worker nodes, as
-	well as the required packages must be loaded thereinto (e.g. \emph{via}
+All the dependencies for fitting the \code{global.model}, including the data
+	and any objects the modelling function will use must be exported
+	into the cluster worker nodes (e.g. \emph{via} \code{clusterExport}). 
+	The required packages must be also loaded thereinto (e.g. \emph{via}
 	\code{clusterEvalQ(..., library(package))}, before the cluster is used by
 	\code{pdredge}.
 
@@ -103,8 +103,8 @@ print(system.time(pdd <- pdredge(fm1, cluster = clust, subset = msubset,
 print(pdd)
 
 \dontrun{
-# A time consuming example with 'unmarked' model, based on example(pcount).
-# Having enough patience, you can run this with 'demo(pdredge.pcount)'.
+# Time consuming example with 'unmarked' model, based on example(pcount).
+# Having enough patience you can run this with 'demo(pdredge.pcount)'.
 library(unmarked)
 data(mallard)
 mallardUMF <- unmarkedFramePCount(mallard.y, siteCovs = mallard.site,

@@ -99,12 +99,15 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 		} else random.terms <- attr(x, "random.terms")
 
 		cat("Model selection table \n")
-		dig <- c("R^2" = 4L, df = 0L, logLik = 3L, AICc = 1L, AICc = 1L,
-			AIC = 1L, BIC = 1L, QAIC = 1L, QAICc = 1L, ICOMP = 1L, Cp = 1L,
+		dig <- c(AnyIC = 1L, "R^2" = 4L, df = 0L, logLik = 3L,
 			delta = 2L,	weight = 3L)
 
 		j <- match(colnames(x), names(dig), nomatch = 0L)
+		iic <- length(j) - 2L
+		j[iic] <- 1L # AnyIC
+		names(dig)[1L] <- colnames(x)[iic]
 		i <- sapply(x, is.numeric) & (j == 0L)
+		
 		x[, i] <- signif(x[, i], 4L)
 		for(i in names(dig)[j]) x[, i] <- round(x[, i], digits = dig[i])
 

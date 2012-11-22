@@ -116,8 +116,22 @@ function(x, ...) getAllTerms(lme4::formula(x), ...)
 	ret <- getAllTerms.terms(terms(x), ...)
 	#attr(ret, "random.terms") <-  deparse(call("|", 1,  x$call$cluster))
 	attr(ret, "random.terms") <-  paste("1 |",  x$call$cluster)
-	ret
+	return(ret)
 }
 
 `getAllTerms` <-
 function(x, ...) UseMethod("getAllTerms")
+
+print.allTerms <- function(x, ...) {
+	cat("Model terms: \n")
+	if(!length(x)) {
+		cat("<None>\n")
+	} else {
+	print.default(as.vector(x),quote = TRUE)
+	}
+	ints <- attr(x, "interceptLabel")
+	if(!is.null(ints)) {
+		cat(ngettext(n = length(ints), "Intercept:", "Intercepts:"), "\n")
+		print.default(ints,quote = TRUE)
+	}
+}

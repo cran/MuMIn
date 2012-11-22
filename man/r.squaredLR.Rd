@@ -11,8 +11,7 @@ Calculate a coefficient of determination based on the likelihood-ratio test
 \usage{
 r.squaredLR(x, null = null.fit(x, TRUE, parent.frame()))
 
-null.fit(x, evaluate = FALSE,
-    envir = environment(as.formula(formula(x))))
+null.fit(x, evaluate = FALSE, envir = environment(as.formula(formula(x))))
 }
 
 \arguments{

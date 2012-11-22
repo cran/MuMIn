@@ -26,8 +26,9 @@ Model-averaged predictions with optional standard errors.
     \item{backtransform}{If \code{TRUE}, the averaged predictions are
 		back-transformed from link scale to response scale. This makes sense
 		provided that all component models use the same \code{family}, and the
-		prediction (as specified by \code{type}, for \code{glm}, use
-		\code{type = "link"}).
+		prediction from each of the component models is calculated on the link 
+		scale (as specified by \code{type}. For \code{glm}, use \code{type = 
+		"link"}).
 		See \sQuote{Details}.
 		}
 	\item{full}{ If \code{TRUE}, the full model averaged coefficients are used
@@ -61,7 +62,8 @@ transformation (this is achieved with \code{type = "link"} and
 \code{backtransform = TRUE}). This is only possible if all component models use
 the same family and link function. Alternatively, predictions from each model on
 response scale may be averaged (with \code{type = "response"} and
-\code{backtransform = FALSE}). Note that this leads to different results.
+\code{backtransform = FALSE}). Note that this leads to results differing from 
+those calculated with the former method.
 See also \code{\link[stats]{predict.glm}}.
 }
 

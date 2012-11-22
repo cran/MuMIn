@@ -93,7 +93,7 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 `model.avg.default` <-
 function(object, ..., beta = FALSE,
 	rank = NULL, rank.args = NULL, revised.var = TRUE,
-	dispersion = NULL) {
+	dispersion = NULL, ct.args = NULL) {
 
 	if (inherits(object, "list")) {
 		models <- object
@@ -112,7 +112,7 @@ function(object, ..., beta = FALSE,
 
     alpha <- 0.05
 	.fnull <- function(...) return(NULL)
-	ICname <- deparse(attr(rank,"call")[[1L]])
+	ICname <- deparse(attr(rank, "call")[[1L]])
 
 	allterms1 <- lapply(models, getAllTerms)
 	all.terms <- unique(unlist(allterms1, use.names = FALSE))
@@ -126,12 +126,16 @@ function(object, ..., beta = FALSE,
 	all.model.names <- .modelNames(allTerms = allterms1, uqTerms = all.terms)
 
 	#if(is.null(names(models))) names(models) <- all.model.names
+	
+	coefTableCall <- as.call(c(alist(coefTable, models[[i]],
+		dispersion = dispersion[i]), ct.args))
 
 	# check if models are unique:
 	if(!is.null(dispersion)) dispersion <- rep(dispersion, length.out = nModels)
 	coefTables <- vector(nModels, mode = "list")
 	for(i in seq_len(nModels)) coefTables[[i]] <-
-		coefTable(models[[i]], dispersion = dispersion[i])
+		eval(coefTableCall)
+		#coefTable(models[[i]], dispersion = dispersion[i])
 	mcoeffs <- lapply(coefTables, "[", , 1L)
 
 	dup <- unique(sapply(mcoeffs, function(i) which(sapply(mcoeffs, identical, i))))
@@ -145,6 +149,10 @@ function(object, ..., beta = FALSE,
 		model.matrix.lme <- function(object, data = object$data, ...)
 			model.matrix.default(object, data = data, ...)
 	}
+	
+	LL <- .getLik(object)
+	logLik <- LL$logLik
+	lLName <- LL$name
 
 	ic <- vapply(models, rank, numeric(1L))
 	logLiks <- lapply(models, logLik)
@@ -209,7 +217,7 @@ function(object, ..., beta = FALSE,
 	#mmx <- gmm[, cnmmxx[match(colnames(gmm), cnmmxx, nomatch = 0)]]
 
 	mmxs <- tryCatch(cbindDataFrameList(lapply(models, model.matrix)),
-					 error = .fnull)
+					 error = .fnull, warning = .fnull)
 
 	# Far less efficient:
 	#mmxs <- lapply(models, model.matrix)

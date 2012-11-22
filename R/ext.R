@@ -4,15 +4,14 @@
 
 # family
 `family.default` <- function (object, ...)  {
-	cl <- getElement(object, "call")
-	if(is.null(cl)) return(NULL)
+	cl <- .getCall(object)
+	if(is.null(cl)) 
+		return(NULL)
 	fam <- cl$family
-	if(is.null(fam)) fam <- formals(match.fun(cl[[1L]]))$family
-	if(is.null(fam)) {
-		#warning("unknown family, assuming 'gaussian'")
+	if(is.null(fam)) 
+		fam <- formals(match.fun(cl[[1L]]))$family
+	if(is.null(fam))
 		return(NA)
-		#return(gaussian())
-	}
 	switch(mode(fam), call = eval(fam), name =, character = match.fun(fam)())
 }
 
@@ -171,8 +170,6 @@ function(object, ...) binomial(link = object$link)
 
 #_______________________________________________________________________________
 
-#.makeCoefTable <- MuMIn:::.makeCoefTable
-
 `nobs.glimML` <- function (object, ...) attr(logLik(object), "nobs")
 `formula.glimML` <- function(x, ...) x@formula
 
@@ -269,3 +266,5 @@ family.glimML <- function(object, ...) switch(object@method,
 	}
 	# TODO:
 }
+
+

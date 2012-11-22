@@ -24,11 +24,12 @@ DIC(object, ...)
 \arguments{
   \item{object}{a fitted model object (in case of ICOMP and CAICF, \code{logLik}
 	and \code{vcov} methods must exist for the object). For \code{DIC}, an 
-	object of class \code{MCMCglmm} }
+	object of class \code{MCMCglmm} or \code{mer}.
+	}
   \item{\dots}{optionally more fitted model objects. }
   \item{dispersion}{the dispersion parameter. If \code{NULL}, it is inferred
 	from object. }
-   \item{REML}{ optional logical value, passed to the \code{logLik} method
+  \item{REML}{ optional logical value, passed to the \code{logLik} method
     indicating whether the restricted log-likelihood or log-likelihood should be
     used. The default is to use the method used for model estimation. }
 }
@@ -83,6 +84,7 @@ regression models. \emph{Comp. Stat. & Data Analysis} 28: 51-76.
 
 \seealso{
 \code{\link{AIC}} and \code{\link{BIC}} in \pkg{stats}, \code{\link{AICc}}.
+\code{\link{QIC}} for GEE model selection.
 \code{\link[arm]{extractDIC}} in package \pkg{arm}, on which the (non-visible) 
 method \code{extractDIC.mer} used by \code{DIC} is based.
 }

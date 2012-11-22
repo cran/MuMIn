@@ -6,7 +6,7 @@
 \encoding{utf-8}
 \title{Subsetting model selection table}
 \description{Return subsets of a model selection table returned by
-	\code{dredge}.
+	\code{dredge} or \code{model.sel}.
 }
 
 \usage{
