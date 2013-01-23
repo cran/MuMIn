@@ -38,7 +38,7 @@ account for estimating the overdispersion parameter. Without overdispersion,
 
 Note that \code{glm} does not compute maximum-likelihood estimates in models
 within the \emph{quasi-} family. In case it is justified, and with a proper
-caution, a workaround could be used, by \sQuote{borrowing} the \code{aic}
+caution, a workaround could be used by \sQuote{borrowing} the \code{aic}
 element from the corresponding \sQuote{non-quasi} family (see \sQuote{Example}).
 }
 

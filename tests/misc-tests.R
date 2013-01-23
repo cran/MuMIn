@@ -40,6 +40,7 @@ budworm$SF <- cbind(numdead = budworm$numdead, numalive = 20 - budworm$numdead)
 })(dat))(budworm)
 
 
+
 rm(list=ls())
 
 # END TESTS

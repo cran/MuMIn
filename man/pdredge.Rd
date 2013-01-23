@@ -23,9 +23,9 @@ pdredge(global.model, cluster = NA, beta = FALSE, evaluate = TRUE, rank = "AICc"
         since the models are evaluated in batches rather than one by one. }
     \item{cluster}{ either a valid \code{cluster} object, or \code{NA} for a
         single threaded execution. }
-    \item{check}{ logical, whether to evaluate the \code{global.model} in the
-        cluster and compare with the original one using \code{all.equal}. }
-
+	\item{check}{ either integer or logical value controlling how much checking
+		for existence and correctness of dependencies is done on the cluster
+		nodes. See \sQuote{Details}. }
 }
 
 \details{
@@ -36,17 +36,17 @@ All the dependencies for fitting the \code{global.model}, including the data
 	\code{clusterEvalQ(..., library(package))}, before the cluster is used by
 	\code{pdredge}.
 
-	\code{pdredge} tries to check whether all the variables and functions used
-	in the call to \code{global.model} are present in the cluster nodes'
-	\code{.GlobalEnv} before proceeding further, and also, if \code{check} is
-	\code{TRUE}, it will compare the \code{global.model} updated at the cluster
-	nodes with the one given as argument. This additional test will, however,
-    slow down the execution.
+If \code{check} is \code{TRUE} or positive, \code{pdredge} tries to check whether
+	all the variables and functions used in the call to \code{global.model} are
+	present in the cluster nodes' \code{.GlobalEnv} before proceeding further.
+	This causes false errors if some arguments of the model call (other than
+	\code{subset}) would be evaluated in \code{data} environment. In that case
+	using \code{check = FALSE} (the default) is desirable.
+	
+	If \code{check} is \code{TRUE} or greater than one, \code{pdredge} will
+	compare the \code{global.model} updated at the cluster nodes with the one
+	given as argument.
 
-Use of \code{pdredge} should be considered mainly with large datasets and
-	complex models, for which \code{dredge} takes a long time to complete.
-	Otherwise there may be no perceptible improvement or even the parallel
-	version may perform worse than a single-threaded one.
 }
 
 

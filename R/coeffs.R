@@ -18,5 +18,51 @@ function(model) model$coefficients$fixed
 `coeffs.mer` <-
 function(model) model@fixef
 
+`coeffs.merMod` <-
+function (model) fixef(model)
+
+`coeffs.coxme` <-
+`coeffs.lmekin` <-
+function(model) {
+	# for class coxme:
+	ret <- model$coefficients
+	# for class lmekin and older coxme
+	if(is.list(ret) && !is.null(ret$fixed)) return(ret$fixed)
+	ret
+}
+
+`coeffs.unmarkedFit` <- 
+function(model) {
+	ret <- lapply(model@estimates@estimates, coef, altNames = FALSE)
+	pfx <- rep(vapply(model@estimates@estimates, slot, "", "short.name"),
+		vapply(ret, length, 1L))
+	ret <- unlist(unname(ret))
+	Ints <- which(names(ret) == "Int")
+	names(ret) <- paste(pfx, "(", names(ret), ")", sep = "")
+	attr(ret, "Intercept") <- Ints
+	ret
+}
+
+`coeffs.splm` <- 
+function (model) {
+	c(model$coefficients, model$arcoef,
+	if(is.matrix(model$errcomp)) model$errcomp[, 1L] else model$errcomp)
+}
+
+`coeffs.MCMCglmm` <-
+function (model) summary(model)$solutions[, 1L]
+
+
+`coeffs.gamm` <-
+function (model) coef(model$gam)
+
+`coeffs.mark` <- function(model) {
+	cf <- model$results$beta[, 1L]
+	names(cf) <- gsub("^([a-zA-Z]+):(.*)$", "\\1(\\2)",
+		rownames(model$results$beta), perl = TRUE)
+	cf
+}
+
+
 `coeffs.default` <-
 function(model) coef(model)

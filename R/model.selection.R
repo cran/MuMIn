@@ -38,12 +38,18 @@ function (model) coef.model.selection(model)
 
 
 `subset.model.selection` <-
-function(x, subset, select, recalc.weights = TRUE, ...) {
+function(x, subset, select, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 	if (missing(select)) {
 		if(missing(subset)) return(x)
-		e <- .substHas(substitute(subset))
+		e <- .substHas(.substFun4Fun(substitute(subset), "dc", function(e) {
+			e[[1]] <- call(":::", as.name("MuMIn"), as.name(".subset_vdc"))
+			for(i in 2L:length(e)) e[[i]] <- call("has", e[[i]])
+			e
+		}))
+		
 		i <- eval(e, x, parent.frame())
-		return(`[.model.selection`(x, i, recalc.weights = recalc.weights, ...))
+		return(`[.model.selection`(x, i, recalc.weights = recalc.weights, 
+			recalc.delta = recalc.delta, ...))
 	} else {
 		cl <- match.call(expand.dots = FALSE)
 	    cl <- cl[c(1L, match(names(formals("subset.data.frame")), names(cl), 0L))]
@@ -51,12 +57,14 @@ function(x, subset, select, recalc.weights = TRUE, ...) {
 		ret <- eval(cl, parent.frame())
 		if(recalc.weights && ("weight" %in% colnames(ret)))
 			ret[, 'weight'] <- ret[, 'weight'] / sum(ret[, 'weight'])
+		if(recalc.delta && ("delta" %in% colnames(ret)))
+			ret[, 'delta'] <- ret[, 'delta'] - min(ret[, 'delta'])
 	    return(ret)
 	}
 }
 
 `[.model.selection` <-
-function (x, i, j, recalc.weights = TRUE, ...) {
+function (x, i, j, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 	ret <- `[.data.frame`(x, i, j, ...)
 	if (missing(j)) {
 		s <- c("row.names", "calls", "coefTables", "random.terms", "order")
@@ -66,6 +74,10 @@ function (x, i, j, recalc.weights = TRUE, ...) {
 		attributes(ret) <- attrib
 		if(recalc.weights)
 			ret[, 'weight'] <- `[.data.frame`(ret, ,"weight") / sum(`[.data.frame`(ret, ,"weight"))
+		if(recalc.delta) {
+			delta <- `[.data.frame`(ret, ,"delta") 
+			ret[, 'delta'] <- delta - min(delta)
+		}
 			#ret$weight <- ret$weight / sum(ret$weight)
 			#ret[, 'weight'] <- ret[, 'weight'] / sum(ret[, 'weight'])
 

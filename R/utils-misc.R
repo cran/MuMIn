@@ -62,6 +62,66 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 	return(res)
 }
 
+# substitute function calls in 'e'. 'name' is replaced by 'fun.to'.
+`.substFun` <- function(e, name, fun.to, ignore.I = TRUE) {
+	if(is.expression(e)) e <- e[[1L]]
+	n <- length(e)
+	if(n == 1L && !is.call(e)) return(e)
+	if(ignore.I && e[[1L]] == "I") return(e)
+	if(n != 1L) for(i in 2L:n) e[[i]] <- .substFun(e[[i]], name, fun.to, ignore.I = ignore.I)
+	if(e[[1L]] == name) e[[1L]] <- as.name(fun.to)
+	return(e)
+}
+
+# substitute function calls in 'e'. 'func' must take care of the substitution job.
+`.substFun4Fun` <- function(e, name, func = identity, ...) {
+	if(is.expression(e)) e <- e[[1L]]
+	n <- length(e)
+	if(n == 0L) return(e) else if (n == 1L) {
+		if (!is.call(e)) return(e)
+	} else for(i in 2L:n) e[i] <- list(.substFun4Fun(e[[i]], name, func, ...))
+	if(e[[1L]] == name) e <- func(e, ...)
+	return(e)
+}
+
+# evaluate 'expr' in 'env' after adding variables passed as ...
+.evalExprIn <- function(expr, env, enclos, ...) {
+	list2env(list(...), env)
+	eval(expr, envir = env, enclos = enclos)
+}
+
+# substitute names for varName[1], varName[2], ... in expression
+`.subst4Vec` <- function(expr, names, varName, n = length(names), fun = "[") {
+	eval(call("substitute", expr,
+		env = structure(lapply(seq_len(n), function(i) call(fun, varName, i)), names = names)),
+		envir = NULL)
+}
+
+# tries to make a list of element names
+`.makeListNames` <- function(x) {
+	nm <- names(x)
+	lapply(seq_along(x), function(i) {
+		if(is.null(nm) || nm[i] == "") {
+			switch(mode(x[[i]]),
+				call = deparse(x[[i]], control = NULL),
+				symbol =, name = as.character(x[[i]]),
+				NULL =, logical =, numeric =, complex =, character = x[[i]], i
+				)
+		} else nm[i]
+	})
+}
+
+
+# test if dependency chain is satisfied: x[n] can be TRUE only if x[1:n] are also TRUE
+`.subset_dc` <- function(...) {
+	n <- length(x <- c(...))
+	if(n > 1L) all(x[-n] >= x[-1L]) else TRUE
+}
+
+# vectorized version of .subset_do (used within subset.model.selection)
+`.subset_vdc` <- function(...) apply(cbind(..., deparse.level = 0L), 1L, .subset_dc)
+
+
 `prettyEnumStr` <- function(x, sep = ", ", sep.last = gettext(" and "), quote = TRUE) {
 	n <- length(x)
 	if(is.function(quote))
@@ -99,7 +159,7 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 
 `clusterVExport` <- local({
    `getv` <- function(obj)
-		for (i in names(obj)) assign(i, obj[[i]], envir = .GlobalEnv)
+		for (i in names(obj)) assign(i, obj[[i]], envir = as.environment(1L))
 	function(cluster, ...) {
 		Call <- match.call()
 		Call$cluster <- NULL
@@ -123,7 +183,9 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 # level is 0/FALSE - no checking, 1 - check if variables and functions exist,
 # >1 - reevaluate x and compare with original 
 `testUpdatedObj` <- function(cluster = NA, x, call = .getCall(x),
-	level = 1L) {
+	level = 1L, exclude = "subset") {
+	
+	if(isTRUE(level)) level <- 2L
 
 	if (level > 0L) {
 		xname <- deparse(substitute(x))
@@ -141,8 +203,9 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 		if(!is.null(call$data)) {
 			# get rid of formulas, as they are evaluated within 'data'
 			call <- call[!sapply(call, function(x) "~" %in% all.names(x))]
-			call$subset <- NULL
-		}
+			call[exclude] <- NULL
+		}	
+		
 		v <- all.vars(call, functions = FALSE)
 		if(!all(z <- unlist(csapply(v, "exists", where = 1L)))) {
 			z <- unique(names(z[!z]))

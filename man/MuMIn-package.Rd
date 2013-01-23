@@ -38,7 +38,8 @@ utilised. At least the following ones are currently implemented in \R:
 \code{\link{AIC}} and \code{\link{BIC}} in package \pkg{stats}, and
 \code{\link{QAIC}}, \code{\link{QAICc}}, \code{\link{ICOMP}},
 \code{\link{CAICF}}, and \link{Mallows' Cp} in \pkg{MuMIn}. There is also
-\code{\link{DIC}} extractor for MCMC models, and \code{\link{QIC}} for GEE.
+\code{\link{DIC}} extractor for \acronym{MCMC} models, and \code{\link{QIC}} for
+\acronym{GEE}.
 
 
 Most of \R's common modelling functions are supported, for a full inventory

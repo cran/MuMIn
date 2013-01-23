@@ -3,3 +3,5 @@ dredge.distsamp	Model selection with 'distsamp' models from 'unmarked' package
 pdredge.pcount	Model selection with 'pcount' models from 'unmarked' package 
 				and using parallel execution
 dredge.subset 	Generating a subset of a full model excluding collinear variables
+dredge.varying	Varying model formulations (other than formulas). Using and subsetting
+				the 'varying' variables

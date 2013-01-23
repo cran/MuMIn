@@ -1,7 +1,9 @@
-`AICc` <- function (object, ..., k = 2, REML = NULL)
+`AICc` <- 
+function (object, ..., k = 2, REML = NULL)
 UseMethod("AICc")
 
-`AICc.logLik` <- function (object, ..., k = 2) {
+`AICc.logLik` <- 
+function (object, ..., k = 2) {
 	if (length(list(...)) > 0L) warning("additional arguments ignored")
 	df <- attr(object, "df")
 	no <- attr(object, "nobs")
@@ -10,7 +12,8 @@ UseMethod("AICc")
 	aic + 2 * df * (df + 1) / (no - df - 1)
 }
 
-`AICc.default` <- function (object, ..., k = 2, REML = NULL) {
+`AICc.default` <- 
+function (object, ..., k = 2, REML = NULL) {
 	loglik <- .getLogLik()
 	
 	.aicc <- function(ll, df, no)

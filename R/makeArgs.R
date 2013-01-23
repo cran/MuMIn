@@ -3,6 +3,28 @@
 # This is much a reverse action to getAllTerms
 makeArgs <- function(obj, termNames, comb, opt, ...) UseMethod("makeArgs", obj)
 
+# opt == argsOptions
+
+#argsOptions <- list(
+#	response = attr(allTerms0, "response"),
+#	intercept = nInts,
+#	interceptLabel = interceptLabel,
+#	random = attr(allTerms0, "random"),
+#	gmCall = gmCall,
+#	gmEnv = gmEnv,
+#	allTerms = allTerms0,
+#	gmCoefNames = gmCoefNames,
+#	gmDataHead = if(!is.null(gmCall$data)) {
+#		if(eval(call("is.data.frame", gmCall$data), gmEnv))
+#			eval(call("head", gmCall$data, 1L), gmEnv) else gmCall$data
+#		} else NULL,
+#	gmFormulaEnv = gmFormulaEnv
+#	)
+
+
+
+
+
 .getCoefNames <- function(formula, data, contrasts, envir = parent.frame()) {
 	colnames(eval(call("model.matrix.default",
 		object = formula, data = data, contrasts.arg = contrasts), envir = envir))
@@ -41,7 +63,9 @@ makeArgs.lme <- function(obj, termNames, comb, opt, ...) {
 	ret
 }
 
-makeArgs.mer <- function(obj, termNames, comb, opt, ...) {
+
+`makeArgs.merMod` <-  # since lme4-0.99999911-0
+`makeArgs.mer` <- function(obj, termNames, comb, opt, ...) {
 	ret <- makeArgs.default(obj, termNames, comb, opt)
 	#if(isTRUE(opt$use.ranef))
 	ret$formula <- update.formula(ret$formula, opt$random)
@@ -149,3 +173,54 @@ function(obj, termNames, comb, opt, ...)  {
 #`makeArgs.unmarkedFitOccu` <- function(obj, termNames, comb, opt, ...)
 #	makeArgs.unmarkedFit(obj, termNames, comb, opt, c("psi", "p"),
 #		"formula")
+
+
+`makeArgs.coxme` <-
+`makeArgs.lmekin` <-
+function(obj, termNames, comb, opt, ...) {
+	ret <- makeArgs.default(obj, termNames, comb, opt)
+	ret$formula <- update.formula(update.formula(ret$formula, . ~ . + 1),
+		opt$random)
+	ret
+}
+
+
+
+`makeArgs.mark` <- 
+function(obj, termNames, comb, opt, ...) {
+	interceptLabel <- "(Intercept)"
+	termNames <- sub(interceptLabel, "1", termNames, fixed = TRUE)
+	rxres <- regexpr("^([a-zA-Z]+)\\((.*)\\)$", termNames, perl = TRUE)
+	cs <- attr(rxres, "capture.start")
+	cl <- attr(rxres, "capture.length")
+	parname <- substring(termNames, cs[, 1L], cs[, 1L] + cl[,1L] - 1L)
+	parval <- substring(termNames, cs[, 2L], cs[, 2L] + cl[,2L] - 1L)
+	
+	formulaList <- lapply(split(parval, parname), function(x) {
+		int <- x == "1"
+		x <- x[!int]
+		res <- if(!length(x))
+				if(int) ~ 1 else ~ 0 else 
+			reformulate(x, intercept = any(int))
+		environment(res) <- opt$gmFormulaEnv
+		res
+	})
+	
+	mpar <- if(is.null(obj$model.parameters))
+		eval(opt$gmCall$model$parameters) else
+		obj$model.parameters
+	for(i in names(mpar)) mpar[[i]]$formula <- formulaList[[i]]
+	#ret <- list(model.parameters = mpar)
+	
+	if(opt$gmCall[[1L]] == "run.mark.model") {
+		arg.model <- opt$gmCall$model
+		arg.model$parameters <- mpar
+		ret <- list(model = arg.model)
+	} else {
+		ret <- list(model.parameters = mpar)
+	}
+	
+	attr(ret, "formulaList") <- formulaList
+	ret
+}
+

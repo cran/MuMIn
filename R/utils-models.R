@@ -1,26 +1,16 @@
-# test for marginality constraints
-`formulaAllowed` <-
-function(frm, except = NULL) {
-	if(isTRUE(except)) return(TRUE)
-	factors <- attr(terms(frm), "factors")
-	if(length(factors) == 0L) return(TRUE)
-	ex <- rownames(factors)[apply(factors, 1L, function(x) any(x > 1L))]
-	if(is.character(except))
-		factors <- factors[!(rownames(factors) %in% except), ]
-	ret <- all(factors < 2L)
-	attr(ret, "marg.ex") <- ex
-	return(ret)
-}
+
 
 
 # Hidden functions
+# `.getLogLik` <- function() logLik
+
 `.getLogLik` <- function()
-	if ("stats4" %in% loadedNamespaces())
-        stats4:::logLik else
+	if(isGeneric("logLik")) stats4:::logLik else
 		stats::logLik
+
 		
 `.getLik` <- function(x) {
-    if(inherits(x, c("gee", "geeglm", "geese", "yagsResult"))) {
+    if(isGEE(x)) {
 		logLik <- quasiLik
 		lLName <- "qLik"
 	} else {
@@ -44,22 +34,12 @@ function(frm, except = NULL) {
 	}
 }
 
-`.isREMLFit` <- function(x) {
-	if (inherits(x, "mer")) return (x@dims[["REML"]] != 0)
-	if (inherits(x, c("lme", "gls", "gam")) && !is.null(x$method))
-		return(x$method %in% c("lme.REML", "REML"))
-	if (any(inherits(x, c("lmer", "glmer"))))
-		return(x@status["REML"] != 0)
-	return(NA)
-}
-
 `.getRank` <- function(rank = NULL, rank.args = NULL, object = NULL, ...) {
 	rank.args <- c(rank.args, list(...))
 
 	if(is.null(rank)) {
-		IC <- as.function(c(alist(x=, do.call("AICc", list(x)))))
 		x <- NULL # just not to annoy R check
-		as.function(c(alist(x=, do.call("AICc", list(x)))))
+		IC <- as.function(c(alist(x =, do.call("AICc", list(x)))))
 		attr(IC, "call") <- call("AICc", as.name("x"))
 		class(IC) <- c("function", "ICWithCall")
 		return(IC)
@@ -71,10 +51,11 @@ function(frm, except = NULL) {
 	if(srank == "rank") srank <- substitute(rank)
 
 	rank <- match.fun(rank)
-	ICName <- switch(mode(srank), call=as.name("IC"), character=as.name(srank), name=, srank)
+	ICName <- switch(mode(srank), call = as.name("IC"), character = as.name(srank), name=, srank)
 	ICarg <- c(list(as.name("x")), rank.args)
 	ICCall <- as.call(c(ICName, ICarg))
-	IC <- as.function(c(alist(x=), list(substitute(do.call("rank", ICarg), list(ICarg=ICarg)))))
+	IC <- as.function(c(alist(x =), list(substitute(do.call("rank", ICarg), 
+		list(ICarg = ICarg)))))
 
 	if(!is.null(object)) {
 		test <- IC(object)
@@ -87,7 +68,6 @@ function(frm, except = NULL) {
 	IC
 }
 
-
 `matchCoef` <- function(m1, m2,
 	all.terms = getAllTerms(m2, intercept = TRUE),
 	beta = FALSE,
@@ -96,7 +76,7 @@ function(frm, except = NULL) {
 	allCoef = FALSE,
 	...
 	) {
-	if(any((terms1 %in% all.terms) == FALSE)) stop("'m1' is not nested within 'm2")
+	if(any((terms1 %in% all.terms) == FALSE)) stop("'m1' is not nested within 'm2'")
 	row <- structure(rep(NA_real_, length(all.terms)), names = all.terms)
 
 	fxdCoefNames <- fixCoefNames(names(coef1))
@@ -122,7 +102,7 @@ function(frm, except = NULL) {
 	if(!length(x)) return(x)
 	ox <- x
 	ia <- grep(":", x, fixed = TRUE)
-	if(!length(ia)) return(structure(x, order = rep.int(1, length(x))))
+	if(!length(ia)) return(structure(x, order = rep.int(1L, length(x))))
 	x <- ret <- x[ia]
 	if(peel) {
 		# case of pscl::hurdle, cf are prefixed with count_|zero_
@@ -186,7 +166,7 @@ function(frm, except = NULL) {
 	# which e.g. gives an error in glmmML - the glmmML::nobs method is faulty.
 	nresid <- vapply(models, function(x) nobs(x), numeric(1L)) # , nall=TRUE
 
-	if(!all(datas[-1L] == datas[[1]]) || !all(nresid[-1L] == nresid[[1L]])) {
+	if(!all(datas[-1L] == datas[[1L]]) || !all(nresid[-1L] == nresid[[1L]])) {
 		err("models are not all fitted to the same data")
 		res <- FALSE
 	}
@@ -237,7 +217,7 @@ function(frm, except = NULL) {
 	structure(unlist(s), names = x, variables = av[i])
 }
 
-`model.names` <- function(object, ..., labels = NULL) {
+`model.names` <- function(object, ..., labels = NULL, use.letters = FALSE) {
 	if (missing(object) && length(models <- list(...)) > 0L) {
 		object <- models[[1L]]
 	} else if (inherits(object, "list")) {
@@ -246,16 +226,22 @@ function(frm, except = NULL) {
 		object <- models[[1L]]
 	} else models <- list(object, ...)
 	if(length(models) == 0L) stop("at least one model must be given")
-	.modelNames(models = models, uqTerms = labels)
+	.modelNames(models = models, uqTerms = labels, use.letters = use.letters)
 }
 
-`.modelNames` <- function(models = NULL, allTerms, uqTerms, ...) {
+`.modelNames` <- function(models = NULL, allTerms, uqTerms, use.letters = FALSE, ...) {
 	if(missing(allTerms)) allTerms <- lapply(models, getAllTerms)
 	if(missing(uqTerms) || is.null(uqTerms))
 		uqTerms <- unique(unlist(allTerms, use.names = FALSE))
-
-	ret <- sapply(allTerms, function(x) paste(sort(match(x, uqTerms)),
-		collapse = ""))
+	
+	n <- length(uqTerms)
+	
+	if(use.letters && n > length(LETTERS)) stop("more terms than there are letters")
+	sep <- if(!use.letters && n > 9L) "/" else ""
+	
+	labels <- if (use.letters) LETTERS[seq_len(n)] else as.character(seq_len(n))
+	ret <- sapply(allTerms, function(x) paste(labels[sort(match(x, uqTerms))],
+		collapse = sep))
 
 	dup <- table(ret)
 	dup <- dup[dup > 1L]
@@ -263,7 +249,7 @@ function(frm, except = NULL) {
 	if(length(dup) > 0L) {
 		idup <- which(ret %in% names(dup))
 		ret[idup] <- sapply(idup, function(i) paste(ret[i],
-			letters[sum(ret[seq.int(i)] == ret[i])], sep=""))
+			letters[sum(ret[seq.int(i)] == ret[i])], sep = ""))
 	}
 	ret[ret == ""] <- "(Null)"
 	attr(ret, "variables") <- structure(seq_along(uqTerms), names = uqTerms)
@@ -272,7 +258,7 @@ function(frm, except = NULL) {
 
 `modelDescr` <- function(models, withModel = FALSE, withFamily = TRUE,
 	withArguments = TRUE, remove.cols = c("formula", "random", "fixed", "model",
-	"data", "family", "cluster")) {
+	"data", "family", "cluster", "model.parameters")) {
 
 	if(withModel) {
 		allTermsList <- lapply(models, function(x) {

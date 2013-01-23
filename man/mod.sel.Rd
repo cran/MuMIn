@@ -34,7 +34,6 @@ model.sel(object, ...)
     \item{rank.args}{Optional \code{list} of arguments for the \code{rank}
         function. If one is an expression, an \code{x} within it is substituted
         with a current model. }
-
 }
 
 \value{
@@ -49,12 +48,12 @@ additional columns showing them (except for formulas and some other arguments).
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{dredge}}, \link[=MuMIn-models]{list of supported models}.
+\code{\link{dredge}}, \code{\link{AICc}}, \link[=MuMIn-models]{list of supported
+models}.
 
 Possible alternatives: \code{\link[bbmle]{ICtab}} (in package \pkg{bbmle}), or
  \code{\link[AICcmodavg]{aictab}} (\pkg{AICcmodavg}).
-
-
+ 
 }
 
 \examples{

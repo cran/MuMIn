@@ -13,14 +13,14 @@ importance(x)
 }
 
 \arguments{
-	\item{x}{Either a list of fitted model objects, or a \code{"model.selection"}
-	or \code{"averaging"} object. }
+    \item{x}{Either a list of fitted model objects, or a \code{"model.selection"}
+    or \code{"averaging"} object. }
 
 }
 
 \value{
-	a numeric vector of relative importance values, named as the predictor
-	variables.
+    a numeric vector of relative importance values, named as the predictor
+    variables.
 }
 
 
@@ -55,12 +55,12 @@ importance(get.models(ms1, delta <= 4))
 lognobs <- log(length(resid(fm1)))
 
 importance(subset(mod.sel(ms1, rank = AIC, rank.args = list(k = lognobs)),
-	cumsum(weight) <= .95))
+    cumsum(weight) <= .95))
 
 # This gives a different result than previous command, because 'subset' is
 # applied to the original selection table that is ranked with 'AICc'
 importance(model.avg(ms1, rank = AIC, rank.args = list(k = lognobs),
-	subset = cumsum(weight) <= .95))
+    subset = cumsum(weight) <= .95))
 
 }
 
