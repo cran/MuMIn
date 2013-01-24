@@ -1,13 +1,18 @@
 export(
-	AICc, beta.weights, dredge, pdredge, get.models, pget.models, model.avg,
-	par.avg, QAIC, QAICc,
-	getAllTerms, coeffs, coefTable, tTable, Weights, model.sel, mod.sel,
-	importance, gamm, Cp, ICOMP, r.squaredLR, null.fit, model.names, CAICF, DIC,
-	QIC, quasiLik
+	dredge, pdredge, get.models, pget.models, 
+	model.avg, par.avg, 
+	model.sel, mod.sel,
+	getAllTerms, coeffs, coefTable, tTable, 
+	importance, Weights, 
+	AICc, QAIC, QAICc, Cp, ICOMP, CAICF, DIC, 
+	r.squaredLR, null.fit, r.squaredGLMM,
+	QIC, quasiLik,
+	gamm,
+	beta.weights, model.names,
+	simplify.formula, expand.formula
 )
 
 importFrom(stats, family)
-
 
 # XXX: compatibility with R < 2.13.0
 if (getRversion() >= "2.13.0") {
@@ -16,7 +21,7 @@ if (getRversion() >= "2.14.0") {
 	S3method(getCall, yagsResult)
 }
 } else {
-# I couldn't find a way to make version-dependent documentation, so I can't
+# I couldn't find a way to make version-dependent documentation, so can't
 # export nobs here...
 #export(nobs)
 S3method(nobs, default)
@@ -123,6 +128,10 @@ S3method(coeffs, mer)
 S3method(coefTable, mer)
 S3method(nobs, mer)
 S3method(predict, mer)
+S3method(family, mer)
+
+S3method(coeffs, merMod)
+
 
 S3method(coefTable, multinom)
 S3method(nobs, multinom)
@@ -155,6 +164,7 @@ S3method(makeArgs, unmarkedFit)
 S3method(makeArgs, unmarkedFitDS)
 S3method(makeArgs, coxph)
 S3method(makeArgs, clmm)
+S3method(makeArgs, merMod)
 
 S3method(family, default)
 S3method(family, gls)
@@ -201,8 +211,10 @@ S3method(logLik, MCMCglmm)
 S3method(coeffs, MCMCglmm)
 S3method(coefTable, MCMCglmm)
 S3method(makeArgs, MCMCglmm)
+S3method(getAllTerms, MCMCglmm)
 
 S3method(extractDIC, mer)
+S3method(extractDIC, merMod)
 S3method(extractDIC, MCMCglmm)
 S3method(extractDIC, lme)
 
@@ -221,7 +233,29 @@ S3method(print, quasiLik)
 S3method(quasiLik, gee)
 S3method(quasiLik, geeglm)
 S3method(quasiLik, yagsResult)
-
 S3method(nobs, yagsResult)
 
+S3method(coeffs, mark)
+S3method(coefTable, mark)
+S3method(confint, mark)
+S3method(deviance, mark)
+S3method(formula, mark)
+S3method(getAllTerms, mark)
+S3method(logLik, mark)
+S3method(makeArgs, mark)
+S3method(nobs, mark)
 
+S3method(coefTable, splm)
+S3method(coeffs, splm)
+S3method(nobs, splm)
+S3method(logLik, splm)
+
+S3method(coefTable, logistf)
+S3method(nobs, logistf)
+S3method(logLik, logistf)
+
+S3method(r.squaredGLMM, lm)
+S3method(r.squaredGLMM, lme)
+S3method(r.squaredGLMM, merMod)
+S3method(r.squaredGLMM, mer)
+S3method(r.squaredGLMM, glmmML)

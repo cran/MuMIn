@@ -1,8 +1,9 @@
 \name{QIC}
 \alias{QIC}
+\alias{QICu}
 \alias{quasiLik}
 \encoding{utf-8}
-\title{QIC and Quasi-Likelihood for GEE}
+\title{QIC and quasi-Likelihood for GEE}
 \description{
 Calculate quasi-likelihood under the independence model criterion (QIC)
   for Generalized Estimating Equations.
@@ -10,34 +11,38 @@ Calculate quasi-likelihood under the independence model criterion (QIC)
 
 \usage{
 QIC(object, ..., typeR = FALSE)
+QICu(object, ..., typeR = FALSE)
 quasiLik(object, ...)
 }
 
 \arguments{
   \item{object}{a fitted model object of class \code{gee}, \code{geepack} or
         \code{yags}.}
-  \item{\dots}{ for QIC, optionally more fitted model objects. }  
-  \item{typeR}{ whether to calculate QIC(R) rather than QIC(I). }  
+  \item{\dots}{ for QIC and QIC\eqn{_{u}}{u}, optionally more fitted model objects. }  
+  \item{typeR}{ logical, whether to calculate QIC(R). QIC(R) is
+    based on quasi-likelihood of a working correlation \eqn{R} model. Defaults
+    to \code{FALSE}, and QIC(I) based on independence model is returned.
+        }
 }
 
 \value{
     If just one object is provided, returns a numeric value with the
     corresponding QIC; if more than one object are provided, returns a
-    \code{data.frame} with rows corresponding to the objects and columns
-    representing QIC and QIC\eqn{_{u}}{u}.
+    \code{data.frame} with rows corresponding to the objects and one column
+    representing QIC or QIC\eqn{_{u}}{u}.
 }
 
 \note{
 This implementation is based partly on (revised) code from packages \pkg{yags}
-and \pkg{ape}. The functions are still in experimental stage and should be used
-with caution.
+ (R-Forge) and \pkg{ape}. The functions are still in experimental stage and 
+ should be used with caution.
 }
 
 \references{
 Pan W. (2001) Akaike's Information Criterion in Generalized Estimating Equations.
 \emph{Biometrics} 57: 120-125
 
-Hardin W. J., Hilbe, J. M. (2003) \emph{Generalized Estimating Equations}. CRC Press.
+Hardin J. W., Hilbe, J. M. (2003) \emph{Generalized Estimating Equations}. Chapman & Hall/CRC
 }
 
 
@@ -47,7 +52,7 @@ Hardin W. J., Hilbe, J. M. (2003) \emph{Generalized Estimating Equations}. CRC P
 Methods exist for 
 \code{\link[gee]{gee}} (package \pkg{gee}),
 \code{\link[geepack]{geeglm}} (\pkg{geepack}), and
-\code{\link[yags]{yags}} (\pkg{yags}).
+\code{yags} (\pkg{yags} on R-Forge).
 \code{yags} and
 \code{\link[ape]{compar.gee}} from package \pkg{ape} both provide QIC values.
 

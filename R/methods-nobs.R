@@ -13,7 +13,7 @@
 `nobs.lme` <- function(object, nall = TRUE, ...) {
 	N <- object$dims$N
 	if (nall) return (N)
-	p <- object$dims$ncol[object$dims$Q + 1]
+	p <- object$dims$ncol[object$dims$Q + 1L]
 	REML <- object$method == "REML"
 	N - REML * p
 }
@@ -44,3 +44,48 @@
 `nobs.spautolm` <-
 `nobs.multinom` <-
 function(object, ...) NROW(fitted(object))
+
+`nobs.rq` <-
+function (object, ...) length(object$y)
+
+`nobs.coxme` <-
+function (object, ...) object$n[2L]
+
+`nobs.lmekin` <-
+function (object, ...) object$n[1L]
+
+`nobs.hurdle` <-
+`nobs.zeroinfl` <- `nobs.lmekin`
+
+`nobs.glimML` <- 
+function (object, ...) attr(logLik(object), "nobs")
+
+`nobs.unmarkedFit` <- 
+function(object, ...) 
+	#get("sampleSize", asNamespace("unmarked"))(object)
+	unmarked::sampleSize(object)
+
+`nobs.yagsResult` <-
+function (object, ...) length(object@residuals)
+
+`nobs.splm` <- 
+function (object, ...) length(resid(object))
+
+`nobs.MCMCglmm` <-
+function (object, ...) object$Residual$nrl
+
+
+# XXX: compatibility with R < 2.13.0
+if (exists("nobs", mode = "function", where = "package:stats", inherits = FALSE)) {
+	`nobs.gamm` <-
+	function (object, ...)  stats:::nobs.glm(object$gam, ...)
+} else {
+	`nobs.gamm` <-
+	function (object, ...) nobs.glm(object$gam, ...)
+}
+
+`nobs.mark` <- 
+function (object, ...) object$results[['n']]
+
+`nobs.logistf` <-
+function (object, ...) object$n

@@ -7,23 +7,25 @@ require(MuMIn)
 library(nlme)
 
 fm1Dial.gls <- gls(rate ~(pressure + I(pressure^2) + I(pressure^3))*QB,
-      Dialyzer, method="ML")
+      Dialyzer, method = "ML")
 
 varying <- list(
 	correlation = alist(
-		AR1_0.771=corAR1(0.771, form = ~ 1 | Subject), 	AR1=corAR1(), NULL),
-	weights = alist(vp.press=varPower(form = ~ pressure), NULL)
+		AR1_0.771 = corAR1(0.771, form = ~ 1 | Subject),
+		AR1 = corAR1(), NULL),
+	weights = alist(vp.press = varPower(form = ~ pressure), NULL)
 	)
 
 dd <- dredge(fm1Dial.gls, m.max = 2, m.min = 1, fixed=~pressure, varying = varying, extra = "R^2")
 
 models <- get.models(dd, 1:4)
 
+subset(dd, correlation == "corAR1(0.771, form = ~1 | Subject)", recalc.delta = TRUE)
 
-ma <- model.avg(models, revised=T)
+ma <- model.avg(models, revised = TRUE)
 ms <- model.sel(models)
-print(ms, abbr = F)
-print(ms, abbr = T)
+print(ms, abbr = FALSE)
+print(ms, abbr = TRUE)
 summary(ma)
 predict(ma)[1:10]
 
@@ -39,7 +41,7 @@ set.seed(100)
 dat <- data.frame(y = rbinom(100, prob = rep(runif(20), rep(5, 20)), size = 1),
 	x = rnorm(100), x2 = rnorm(100), id = factor(rep(1:20, rep(5, 20))))
 
-fm1 <- glmmML(y ~ x*x2, data = dat, cluster = id)
+fm1 <- glmmML(y ~ x*x2, data = dat, cluster = id, x = TRUE)
 dd <- dredge(fm1)
 # mod <- get.models(dd, subset = delta <= 4)
 summary(ma <- model.avg(dd, subset = delta <= 4))

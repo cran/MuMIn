@@ -51,8 +51,9 @@ dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	\code{global.model} calls) are printed before actual fitting takes place. }
 
 	\item{varying}{ optionally, a named list describing the additional arguments
-	to vary between the generated models. Names are the names of the arguments,
-	and each item provides a list of choices. Complex items in the choice list
+	to vary between the generated models. Item names correspond to the
+	arguments, and each item provides a list of choices (i.e. \code{list(arg1 =
+	list(choice1, choice2, ...), ...)}). Complex elements in the choice list
 	(such as \code{family} objects) should be either named (uniquely) or quoted
 	(unevaluated, e.g. using \code{\link{alist}}, see \code{\link{quote}}),
 	otherwise it may produce rather unpleasant effects. See example in
@@ -122,41 +123,73 @@ always return a scalar. Typical choice for \code{rank} would be "AIC", "BIC", or
 \subsection{Interactions}{
 \code{dredge} by default respects marginality
 constraints, so \dQuote{all possible combinations} do not include models
-containing interactions without their respective main effects. This behaviour
-can be altered by \code{marg.ex} argument, which can be used to allow for simple
-nested designs. For example, with global model of form \code{a / (x + z)}, one
-would use \code{marg.ex = "a"} and \code{fixed = "a"}. If \code{global.model}
-uses such a formula and \code{marg.ex} is missing or \code{NA}, it will be
-adjusted automatically.
+containing interactions without their respective main effects and all lower order 
+terms. This behaviour can be altered by \code{marg.ex} argument, which can be used 
+to allow for simple nested designs. For example, with global model of form 
+\code{a / (x + z)}, one would use \code{marg.ex = "a"} and \code{fixed = "a"}. 
+If \code{global.model} uses such a formula and \code{marg.ex} is missing or 
+\code{NA}, it will be adjusted automatically.
 }
 
 \subsection{Subsetting}{
-There are three ways to constrain the resulting set of models: setting limits to the
-number of terms in a model with \code{m.max} and \code{m.min}, 
-binding term(s) to all models with \code{fixed}, and more complex rules can be
-applied using argument \code{subset}.
+There are three ways to constrain the resulting set of models: setting limits to
+the number of terms in a model with \code{m.max} and \code{m.min}, binding
+term(s) to all models with \code{fixed}, and more complex rules can be applied
+using argument \code{subset}. To be included in the selection table, the model
+formulation must satisfy all these conditions.
+
+%%Terms in \code{fixed} argument are applied before the combinations are
+%%generated, therefore more efficient than \code{subset}.
 
 \code{subset} can take either a form of an expression or a matrix. The latter
 should be a lower triangular matrix with logical values, where columns and rows
-correspond to \code{global.model} terms. Value \code{subset["a", "b"] == FALSE} will
-exclude any model containing both "a" and "b". Values other than 
+correspond to \code{global.model} terms. Value \code{subset["a", "b"] == FALSE}
+will exclude any model containing both "a" and "b". Values other than
 \code{FALSE} (or \code{0}) are taken as \code{TRUE}.
 
-In the form of \code{expression}, the argument \code{subset} acts in a similar 
-fashion to that in the function \code{subset} for \code{data.frames}: model 
-terms can be referred to by name as variables in the expression, with the difference 
-being that they are always logical (i.e. \code{TRUE} if a term exists in the model). 
-The expression can contain any of the \code{global.model} terms (use 
-\code{getAllTerms(global.model)} to list them). It can have a form of an unevaluated 
-\code{call}, \code{expression} object, or a one sided \code{formula}. 
-See \sQuote{Examples}.
+In the form of \code{expression}, the argument \code{subset} acts in a similar
+fashion to that in the function \code{subset} for \code{data.frames}: model
+terms can be referred to by name as variables in the expression, with the
+difference being that they are always logical (i.e. \code{TRUE} if a term exists
+in the model).
+
+The expression can contain any of the \code{global.model} terms (use
+\code{getAllTerms(global.model)} to list them), as well as names of the
+\code{varying} argument items. Names of \code{global.model} terms take
+precedence when identical to names of \code{varying}), so to avoid ambiguity
+\code{varying} variables in \code{subset} expression should be enclosed in
+\code{V()} (e.g. \code{subset = V(family) == "Gamma"} assuming that
+\code{varying} is something like \code{list(family = c(..., "Gamma"))}).
+
+If element names in \code{varying} are missing, the elements themselves are 
+used. Call and symbol elements are represented as character values (via 
+\code{deparse}), and everything except numeric, logical, character and 
+\code{NULL} values is replaced by item numbers (e.g. \code{varying = 
+list(family = list(..., Gamma)} should be referred to as \code{subset = 
+V(family) == 2}. This can quickly become confusing, therefore it is recommended 
+to use named lists in most cases. \code{demo(dredge.varying)} provides examples.
+
+The \code{subset} expression can also contain variable \code{`*nvar*`} (needs to be 
+backtick-quoted), which is equal to number of terms in the model (\bold{not} 
+the number of estimated parameters \emph{K}).
+
+To make inclusion of a variable conditional on presence of some other variable,
+a function \code{dc} (\dQuote{\bold{d}ependency \bold{c}hain}) can be used in
+the \code{subset} expression. \code{dc} takes any number of variables as
+arguments, and allows a variable to be included only if all preceding variables
+are also present (e.g. \code{subset = dc(a, b, c)} allows for models of form
+\code{a}, \code{a+b }and \code{a+b+c} but not \code{b}, \code{c}, \code{b+c} or
+\code{a+c}).
+
+\code{subset} expression can have a form of an unevaluated \code{call},
+\code{expression} object, or a one sided \code{formula}. See \sQuote{Examples}.
 Compound model terms (such as \sQuote{as-is} expressions within \code{I()} or
 smooths in \code{gam}) should be treated as non-syntactic names and enclosed in
 back-ticks (e.g. \code{subset = `s(x, k = 2)` || `I(log(x))`}, see
 \link[base]{Quotes}). Mind the spacing, names must match exactly the term names
 in model's formula. To simply keep certain terms in all models, use of argument
-\code{fixed} is
-more efficient.
+\code{fixed} is more efficient.
+
 }
 
 \subsection{Missing values}{
@@ -210,16 +243,14 @@ of interest and its scientific setting} (Burnham and Anderson, 2002).
 
 \seealso{
 
-\code{\link{pdredge}} is a parallelized version of this function, which may be
-	faster if execution of \code{\link{dredge}} takes very long.
+\code{\link{pdredge}} is a parallelized version of this function (uses a
+cluster).
 
-\code{\link{get.models}}, \code{\link{model.avg}}.
+\code{\link{get.models}}, \code{\link{model.avg}}. \code{\link{model.sel}} for
+manual model selection tables.
 
 Possible alternatives: \code{\link[glmulti]{glmulti}} in package \pkg{glmulti}
-and \code{\link[bestglm]{bestglm}} (\pkg{bestglm}),
-or \code{\link[AICcmodavg]{aictab}} (\pkg{AICcmodavg}) and
-\code{\link[bbmle]{ICtab}} (\pkg{bbmle}) for "hand-picked" model selection tables.
-
+and \code{\link[bestglm]{bestglm}} (\pkg{bestglm}).
 \code{\link[leaps]{regsubsets}} in package \pkg{leaps} also performs all-subsets
 regression.
 }
@@ -234,7 +265,7 @@ subset(dd, delta < 4)
 
 # Visualize the model selection table:
 if(require(graphics))
-plot(dd)
+    plot(dd)
 
 
 # Model average models with delta AICc < 4
@@ -253,14 +284,15 @@ dredge(fm1, subset = ~ X3) # subset as a formula
 dredge(fm1, subset = expression(X3)) # subset as expression object
 # the same, but more effective:
 dredge(fm1, fixed = "X3")
-# exclude models containing both X1 and X2
-dredge(fm1, subset = !(X1 & X2))
-# keep only models containing either X1 or X2 (but not both), inclusion of X4 
-# is conditional upon the presence of X1
-dredge(fm1, subset = xor(X1, X2) & (X1 | !X4))
+# exclude models containing both X1 and X2 at the same time
+dredge(fm1, subset = !(X1 && X2))
+# Fit only models containing either X3 or X4 (but not both);
+# include X3 only if X2 is present, and X2 only if X1 is present.
+dredge(fm1, subset = dc(X1, X2, X3) && xor(X3, X4))
+# the same as above, but without using "dc"
+dredge(fm1, subset = (X1 | !X2) && (X2 | !X3) && xor(X3, X4))
 
-#Reduce the number of generated models, by including only those with
-# up to 2 terms (and intercept)
+# Include only models with up to 2 terms (and intercept)
 dredge(fm1, m.max = 2)
 }
 
@@ -279,7 +311,7 @@ dredge(fm1, m.max = 1, extra = list(
 )
 
 
-# with other information criterions:
+# Add other information criterions (but rank with AICc):
 \dontshow{
 # there is no BIC in R < 2.13.0, so need to add it:
 if(!exists("BIC", mode = "function"))

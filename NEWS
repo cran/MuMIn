@@ -1,13 +1,43 @@
 MuMIn package news:
 
+Version: 1.9.0 (2013-01-23)
+This version brings in more elaborated subsetting of models in 'dredge' and 
+	'model.selection' object, and new variang of presudo-R^2. 
+[p]dredge: 'subset' can use 'varying' variables (as "V(varying.variable)") and
+	number of model terms (as `*nvar*`). This allows for better fine-tuning of
+	the selection table.
+	'fixed' argument can be set to TRUE to fix all terms of 'global.model'.
+[p]dredge, subset.model.selection: 'subset' expressions can now make use of a new 
+	function 'dc' ("dependency chain") to make inclusion of variables 
+	conditional on other variables.
+New function 'r.squaredGLMM' to calculate R^2 statistic for mixed effect models,
+	described by Nakagawa & Schiezlich (2012).
+Added support for 'splm' (from package 'splm'), and 'logistf' models (from 
+	package 'logistf').
+Cp: now accepts more than one model (like 'AIC').
+New demos: "dredge.varying", "dredge.subset" and "gees".
+
+Version: 1.8.2 (2012-12-07)
+Added support for models of class 'mark' (from package 'RMark'). 'dredge'
+	can currently only manipulate 'formula' element of argument
+	'model.parameters'.
+simplify.formula, expand.formula: new functions to convert formula between 
+	expanded and shorthand notation (i.e. between 'a+b+a:b' and 'a*b').
+model.names: has new argument "use.letters".
+
+Version: 1.8.1 (2012-11-23)
+added methods for class 'merMod' to accommodate recent changes in 
+	lme4_0.99999911-0.
+getAllTerms: now recognizes random effects in 'MCMCglmm'.
+
 Version: 1.8.0 (2012-11-21)
 This version introduces support for GEE models ('gee','geeglm' and 'yags') 
 	ranked by QIC (note that 'yags' seems to be still quite buggy).
 	Also 'clmm' and 'clm' from package 'ordinal' are now handled properly.
-QIC, quasiLik: new functions for use with GEE models
-(p)dredge: argument 'subset' can be now a logical matrix representing allowed 
+QIC, quasiLik: new functions for use with GEE models.
+[p]dredge: argument 'subset' can be now a logical matrix representing allowed 
 	parameter combinations. Some improvements for speed have been made.
-(p)dredge, model.avg: new argument 'ct.args' for passing extra arguments 
+[p]dredge, model.avg: new argument 'ct.args' for passing extra arguments 
 	to 'coefTable'.
 
 Version: 1.7.12 (2012-11-11)
@@ -16,16 +46,16 @@ tests/classes.R: fixed compatibility spdep-0.5.53. (spdep::spautolm now uses
 
 Version: 1.7.11 (2012-07-13)
 coefTable.multinom: fixed an error when coefficients and standard errors were 
-	matrices
-get.models: now checks for the object class of the passed arguments
+	matrices.
+get.models: now checks for the object class of the passed arguments.
 
 Version: 1.7.10 (2012-06-07)
 (fixed) dredge: bug with an error message when number of predictor exceeded 
 	maximum (thanks to Corina Logan for spotting this).
 manual: added 'glmmADMB' to the list of supported classes (reported by Rocio 
-	Jana)
+	Jana).
 'coxme' moved from 'Suggested' to 'Enhances' (to avoid build error when the
-	dependency is missing)
+	dependency is missing).
 
 Version: 1.7.9 (2012-04-03)
 Added 'predict' methods for 'lme' and 'lmer' (both can calculate 'se.fit').
@@ -305,14 +335,14 @@ Version: 0.13.16 (2010-09-07)
 dredge, model.avg: broken support for several types of models was fixed
 
 Version: 0.13.15 (2010-09-06)
-support for MASS::multinom
+support for 'MASS::multinom'
 
 Version: 0.13.14 (2010-09-03)
-print.model.selection:empty columns are not printed now
+print.model.selection: empty columns are not printed now
 
 Version: 0.13.13 (2010-09-02)
 dredge: handling of models with no intercept, added "call" attribute
-update.model.selection: new
+update.model.selection: new function
 
 Version: 0.13.12 (2010-08-29)
 dredge, getAllTerms, dredge.Rd: small modifications

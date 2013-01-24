@@ -12,7 +12,8 @@ function (x, ...)
 stats::printCoefmat(x, has.Pvalue = FALSE)
 
 
-.makeCoefTable <- function(x, se, df = NA_real_, coefNames = names(x)) {
+.makeCoefTable <- 
+function(x, se, df = NA_real_, coefNames = names(x)) {
 	if(n <- length(x)) {
 		xdefined <- !is.na(x)
 		ndef <- sum(xdefined)
@@ -100,3 +101,98 @@ function(model, ...)  {
 	} else se <- NULL
 	.makeCoefTable(beta, se)
 }
+
+`coefTable.rq` <- 
+function(model, ...)
+	.makeCoefTable(model$coefficients, rep(NA_real_, length(model$coefficients)))
+
+	
+`coefTable.zeroinfl` <-
+function(model, ...)
+	.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))))
+
+`coefTable.hurdle` <- 
+function(model, ...) {
+	cts <- summary(model)$coefficients
+	ct <- do.call("rbind", unname(cts))
+	cfnames <- paste(rep(names(cts), vapply(cts, nrow, 1L)), "_", rownames(ct),
+		sep = "")
+	.makeCoefTable(ct[, 1L], ct[, 2L], coefNames = cfnames)
+	#.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))))
+}
+
+`coefTable.glimML` <-
+function(model, ...)
+	.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))))
+
+`coefTable.unmarkedFit` <- 
+function (model, ...)
+	.makeCoefTable(coef(model), sqrt(diag(vcov(model))))
+
+	
+`coefTable.gee` <-
+`coefTable.geeglm` <-
+function(model, ..., type = c("naive", "robust")) {
+	cf <- summary(model, ...)$coefficients
+	type <- match.arg(type)
+	j <- if(type == "naive") 2L else 4L
+	.makeCoefTable(cf[, 1L], cf[, j], coefNames = rownames(cf))
+}
+
+
+`coefTable.geese` <-
+function(model, ..., type = c("naive", "robust")) {
+	cf <- summary(model, ...)$mean
+	type <- match.arg(type)
+	j <- if(type == "naive") 2L else 4L
+	.makeCoefTable(cf[, 1L], cf[, j], coefNames = rownames(cf))
+}
+
+`coefTable.yagsResult` <-
+function(model, ..., type = c("naive", "robust")) {
+	type <- match.arg(type)
+	vcv <- slot(model, if(type == "naive") "naive.parmvar" else "robust.parmvar")
+	.makeCoefTable(model@coefficients, sqrt(diag(vcv)), coefNames = model@varnames)
+}
+
+`coefTable.splm` <- 
+function (model, ...) {
+	cf <- sapply(c("coefficients", "arcoef", "errcomp"), function(i)
+		if(is.matrix(model[[i]])) model[[i]][, 1L] else model[[i]],
+		simplify = FALSE)
+	
+	ncf <- sapply(cf, length)
+	vcovlab <- c(coefficients = "vcov", arcoef = "vcov.arcoef", errcomp = "vcov.errcomp")
+	se <- sqrt(unlist(lapply(names(vcovlab), function(i) {
+		vcv2 <- diag(model[[vcovlab[i]]])
+		c(vcv2, rep(NA_real_, ncf[[i]] - length(vcv2)))
+	})))
+	
+	.makeCoefTable(unlist(cf, use.names = FALSE), se,
+		coefNames = unlist(lapply(cf, names), use.names = FALSE))
+}
+
+`coefTable.MCMCglmm` <-
+function (model, ...) {
+	cf <- coeffs(model)
+	.makeCoefTable(cf, se = rep(NA_real_, length.out = length(cf)))
+}
+
+`coefTable.gamm` <-
+function (model, ...) coefTable.lm(model$gam, ...)
+
+
+`coefTable.mark` <- 
+function (model, orig.names = FALSE, ...) {
+    dfs <- model$results[['n']] - model$results[['npar']]
+    beta <- model$results[['beta']]
+    .makeCoefTable(beta[, 1L], beta[, 2L], dfs,
+		coefNames = if(orig.names) rownames(beta) else
+			gsub("^([a-zA-Z]+):(.*)$", "\\1(\\2)", rownames(beta), perl = TRUE))
+}
+
+`coefTable.logistf` <-
+function (model, ...)
+.makeCoefTable(model$coefficients, sqrt(diag(model$var)))
+
+

@@ -24,16 +24,23 @@ functions include those returned by:
 \item \code{hurdle}, \code{zeroinfl} (\pkg{pscl});
 \item \code{negbin}, \code{betabin} (class \code{glimML}, package \pkg{aod});
 \item \code{sarlm}, \code{spautolm} (\pkg{spdep});
+\item \code{spml} (if fitted by \acronym{ML}, \pkg{splm});
 \item \code{coxph}, \code{survreg} (\pkg{survival});
 \item \code{coxme}, \code{lmekin} (\pkg{coxme});
 \item \code{rq} (\pkg{quantreg});
 \item \code{clm} and \code{clmm} (\pkg{ordinal});
-\item functions from package \pkg{unmarked} (within the class \code{unmarkedFit}).
+\item \code{logistf} (\pkg{logistf}); %% Bias-reduced logistic regression
+\item functions from package \pkg{unmarked} (within the class \code{unmarkedFit});
+\item \code{mark} and related functions (class \code{mark} from package
+	\pkg{RMark}). Note currently \code{dredge} can only manipulate \code{formula}
+	element of the argument \code{model.parameters}, keeping its other elements
+	intact.
 }
+
 
 Generalized Estimation Equation model implementations: \code{\link[geepack]{geeglm}} 
 from package \pkg{geepack}, \code{\link[gee]{gee}} from \pkg{gee}, and 
-\code{\link[yags]{yags}} from \pkg{yags} can be used with \code{\link{QIC}} 
+\code{yags} from \pkg{yags} (from R-Forge) can be used with \code{\link{QIC}} 
 as the selection criterion.
 
 \code{MCMCglmm} models (package \pkg{MCMCglmm}) with \code{\link{DIC}} as the 

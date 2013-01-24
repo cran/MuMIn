@@ -42,6 +42,13 @@ MuMIn:::fixCoefNames(names(coef(fm2oc)))
 (dd <- dredge(fm2oc, fixed = ~psi(habitat)))
 
 
+# Checking if 'dc' works properly in both subset.model.selection and dredge.
+dd2 <- dredge(fm2oc, subset = `psi(habitat)` & dc(`p(habitat)`, `p(veght)`))
+dd1a <- subset(dd, has(`psi(habitat)`) &  dc(`p(habitat)`, `p(veght)`), recalc.delta = TRUE)
+stopifnot(all.equal(dd2, dd1a, check.attributes = FALSE))
+stopifnot(!any(is.na(dd2[, "p(habitat)"]) & !is.na(dd2[, "p(veght)"])))
+
+
 model.sel(dd, rank = "AIC")
 models <- get.models(dd[1:3])
 

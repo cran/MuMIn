@@ -144,7 +144,7 @@ The \sQuote{subset} (or \sQuote{conditional}) average only averages over the
 	version >= 1.5.0 argument \code{method} is no longer accepted).
 
 Averaging models with different contrasts for the same factor would yield
-	nonsense results.
+	nonsense results, currently no checking for contrast consistency is done.
 
 From version 1.0.1, \code{print} method provides only a concise output
 	(similarly as for \code{lm}). To print a full summary of the results use
@@ -165,9 +165,6 @@ Springer-Verlag.
 
 See \code{\link{par.avg}} for more details of model averaged parameter
 calculation.
-
-%Vignette \sQuote{Extending \pkg{MuMIn}'s functionality} demonstrates how to
-%provide support for other types of models.
 
 \code{\link{dredge}}, \code{\link{get.models}} \cr
 \code{\link{AICc}} has examples of averaging models fitted by REML.

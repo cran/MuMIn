@@ -4,14 +4,13 @@
 
 \title{Parameter averaging}
 \description{
-Average a single model coefficient based on provided weights.
+Average a single model coefficient based on provided weights. It is mostly intended for 
+	internal use.
 }
 
 \usage{
 par.avg(x, se, weight, df = NULL, level = 1 - alpha, alpha = 0.05,
     revised.var = TRUE, adjusted = TRUE)
-
-
 }
 
 \arguments{

@@ -8,7 +8,6 @@
 ## quasiLik 
 ##=============================================================================
 
-
 `quasiLik` <- function (object, ...) UseMethod("quasiLik")
 
 .qlik <- function(y, mu, fam) {
@@ -54,74 +53,81 @@ function(object, ...) {
 ##=============================================================================
 ## QIC 
 ##=============================================================================
-.qic <- function(mu, vbeta, i.vbeta.naiv, qlik) {
-	AIinv <- solve(i.vbeta.naiv) # solve via indenity
+
+.qic2 <- function(y, mu, vbeta, mui, vbeta.naiv.i, fam, typeR = FALSE) {
+	ql <- if(typeR) .qlik(y, mu, fam) else .qlik(y, mui, fam)
+	# XXX: should be typeR = TRUE for QICu???
+	n <- length(y)
+	# yags/yags.cc: p140 of Hardin and Hilbe
+	if(fam == "gaussian") ql <- (n * log(-2 * ql / n)) / -2
+	AIinv <- solve(vbeta.naiv.i)
 	tr <- sum(diag(AIinv %*% vbeta))
-	px <- length(mu) # number non-redunant columns in design matrix
-	# QIC
-	# ret <- -2 * qlik + 2 * tr
-	ret <- 2 * (tr - qlik)
-	QICu <- 2 * (px - qlik)    # Approximation assuming model structured correctly
-	#attr(ret, "QICu") <- QICu
-	c(ret, QICu)
+	px <- length(mu)
+	## When all modelling specifications in GEE are correct tr = px.
+	c(2 * (c(QIC = tr, QICu = px) - ql), n = n)
 }
 
-`getQIC` <- function(x, typeR = FALSE) UseMethod("getQIC")
+
+
+`getQIC` <- 
+function(x, typeR = FALSE) UseMethod("getQIC")
 	
 `getQIC.default` <-
 function(x, typeR = FALSE) .NotYetImplemented()
 
+
+`getQIC.gee` <- 
+function(x, typeR = FALSE) {
+	if(x$model$corstr != "Independent")
+		capture.output(suppressMessages(xi <- update(x, corstr = "independence",
+		silent = TRUE))) else
+		xi <- x
 	
-`getQIC.gee` <- function(x, typeR = FALSE) {
-	capture.output(suppressMessages(xi <- update(x, corstr = "independence",
-		silent = TRUE)))
-	qx <- if(typeR) x else xi
-	ql <- .qlik(qx$y, qx$fitted.values, family(qx)$family)
-	n <- length(x$y)
-	# yags/yags.cc: p140 of Hardin and Hilbe   
-	ql <- if(family(x)$family == "gaussian")
-			(n * log(-2 * ql / n)) / -2	 else ql
-	c(.qic(x$fitted.values, x$robust.variance, xi$naive.variance, ql), n)
+	.qic2(x$y, x$fitted.values, x$robust.variance, 
+		  xi$fitted.values, xi$naive.variance, family(x)$family,
+		  typeR = typeR)
 }
 
-`getQIC.geeglm` <- function(x, typeR = FALSE) {
-	xi <- update(x, corstr = "independence")
-	qx <- if(typeR) x else xi
-	ql <- .qlik(qx$y, qx$fitted.values, family(qx)$family)
-	n <- length(x$y)
-	# yags/yags.cc: p140 of Hardin and Hilbe
-	ql <- if(family(x)$family == "gaussian")
-			(n * log(-2 * ql / n)) / -2	 else ql
-	c(.qic(x$fitted.values, x$geese$vbeta, xi$geese$vbeta.naiv, ql), n)
+`getQIC.geeglm` <- 
+function(x, typeR = FALSE) {
+	xi <- if(x$corstr != "independence")
+		update(x, corstr = "independence") else x
+	.qic2(x$y, x$fitted.values, x$geese$vbeta, 
+		  xi$fitted.values, xi$geese$vbeta.naiv, family(x)$family,
+		  typeR = typeR)
 }
 
-`getQIC.yagsResult` <- function(x, typeR = FALSE) {
-	xi <- update(x, corstruct = "independence")
-	##
-	#cl <- match.call(call = getCall(yags1), yags::yags)
-	#cl[[1L]] <- as.name("model.frame.default")
-	#cl$formula[[3L]] <- 1L
-	#cl <- cl[c(TRUE, (names(cl)[-1L] %in% c("formula", "data", "subset")))]
-	#y <- eval(cl, parent.frame())[, 1L]
-	qx <- if(typeR) x else xi
-	y <- qx@fitted.values + qx@residuals
-	n <- length(y)
-	ql <- .qlik(y, qx@fitted.values, family(qx)$family)
-		# yags/yags.cc: p140 of Hardin and Hilbe
-	ql <- if(family(x)$family == "gaussian")
-			(n * log(-2 * ql / n)) / -2	 else ql
-	c(.qic(x@fitted.values, x@robust.parmvar, xi@naive.parmvar, ql), n)
+`getQIC.yagsResult` <- 
+function(x, typeR = FALSE) {
+	xi <- if(x@corstruct.tag != "independence")
+		update(x, corstruct = "independence") else x
+	.qic2(x@fitted.values + x@residuals, x@fitted.values, x@robust.parmvar, 
+		  xi@fitted.values, xi@naive.parmvar, family(x)$family,
+		  typeR = typeR)
 }
 
 `QIC` <- function (object, ..., typeR = FALSE) {
 	if (length(list(...))) {
 		res <- sapply(list(object, ...), getQIC, typeR = typeR)
-		#val <- data.frame(QIC = res[1L, ], QICu = res[2L, ])
-		val <- as.data.frame(t(res[1L:2L, ]))
-		colnames(val) <- c("QIC", "QICu")
+		val <- as.data.frame(t(res[1L,, drop = FALSE]))
+		colnames(val) <- c("QIC")
 		Call <- match.call()
 		Call$typeR <- NULL
 		row.names(val) <- as.character(Call[-1L])
 		val
 	} else getQIC(object, typeR = typeR)[1L]
 }
+
+`QICu` <- function (object, ..., typeR = FALSE) {
+	if (length(list(...))) {
+		res <- sapply(list(object, ...), getQIC, typeR = typeR)
+		val <- as.data.frame(t(res[2L,, drop = FALSE]))
+		colnames(val) <- "QICu"
+		Call <- match.call()
+		Call$typeR <- NULL
+		row.names(val) <- as.character(Call[-1L])
+		val
+	} else getQIC(object, typeR = typeR)[2L]
+}
+
+

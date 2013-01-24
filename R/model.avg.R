@@ -230,8 +230,9 @@ function(object, ..., beta = FALSE,
 		weighted.mean, w = weight), error = .fnull)
 	trm <- tryCatch(terms(models[[1L]]),
 			error = function(e) terms(formula(models[[1L]])))
+	response <- attr(trm, "response")
 	frm <- reformulate(all.terms,
-				response = attr(trm, "variables")[-1L][[attr(trm, "response")]])
+				response = if(response > 0L) attr(trm, "variables")[response + 1L] else NULL)
 
 	ret <- list(
 		summary = as.data.frame(mstab),

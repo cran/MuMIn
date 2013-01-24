@@ -17,8 +17,10 @@ function(x, se, weight, df = NULL, level = 1 - alpha, alpha = 0.05,
 	xvar <- se^2
 
 	do.ase <- adjusted && !(missing(df) || is.null(df) || any(is.na(df[!is.na(x)])))
+	
+	# Note: pdistr(qdistr(x)) == x
 
-	a <- 1 - (alpha / 2)
+	a <- 1 - ((1 - level) / 2)
 	if(do.ase) {
 		z <- c(qt(a, df) / qnorm(a))^2
 		i <- is.na(df) & !is.na(x)
