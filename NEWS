@@ -1,24 +1,50 @@
 MuMIn package news:
 
+Version: 1.9.5 (2013-04-04)
+AICc: now takes number of observations from "nall" (if it is available) attribute 
+	of the 'logLik' object. If not present, "nobs" attribute is used.
+r.squaredGLMM: current implementation does not calculate the marginal variant 
+	correctly for Poisson family models, so until it is resolved 'NA' is returned,
+	with a warning.
+	
+Version: 1.9.4 (2013-04-01)
+(fixed) pdredge: bug with wrong number of updated rows.
+Replaced all calls to the soon-to-be deprecated ".find.package" with "find.package"
+
+Version: 1.9.3 (2013-02-21)
+(fixed) method registration for 'getAllTerms.gam' was missing (reported by 
+	Steven Delean) 
+
+Version: 1.9.2 (2013-02-01)
+updateable: new function to create a wrapper for functions returning 
+	non-updateable objects (adds a 'call' element to the function's result).
+(renamed) removed 'gamm' wrapper, which is now replaced by 'uGamm'.
+(added) 'predict' method replacement for 'gls' models (adds 'se.fit' argument).
+model.avg: no longer returns residuals (this is because residuals for models other 
+	than 'lm' can be calculated in several different ways - with different results).
+
+Version: 1.9.1 (2013-01-24)
+(fixed) bugs with 'MCMCglmm' models and 'varying' lists in 'dredge'.
+
 Version: 1.9.0 (2013-01-23)
 This version brings in more elaborated subsetting of models in 'dredge' and 
-	'model.selection' object, and new variang of presudo-R^2. 
+	'model.selection' object, and a new variant of pseudo-R^2. 
 [p]dredge: 'subset' can use 'varying' variables (as "V(varying.variable)") and
 	number of model terms (as `*nvar*`). This allows for better fine-tuning of
 	the selection table.
 	'fixed' argument can be set to TRUE to fix all terms of 'global.model'.
-[p]dredge, subset.model.selection: 'subset' expressions can now make use of a new 
-	function 'dc' ("dependency chain") to make inclusion of variables 
+[p]dredge, subset.model.selection: 'subset' expressions can now make use of a 
+	new function 'dc' ("dependency chain") to make inclusion of variables 
 	conditional on other variables.
-New function 'r.squaredGLMM' to calculate R^2 statistic for mixed effect models,
+r.squaredGLMM: new function to calculate R^2 statistic for mixed effect models,
 	described by Nakagawa & Schiezlich (2012).
-Added support for 'splm' (from package 'splm'), and 'logistf' models (from 
+(added) support for 'splm' (from package 'splm'), and 'logistf' models (from 
 	package 'logistf').
 Cp: now accepts more than one model (like 'AIC').
-New demos: "dredge.varying", "dredge.subset" and "gees".
+New demos "dredge.varying", "dredge.subset" and "gees".
 
 Version: 1.8.2 (2012-12-07)
-Added support for models of class 'mark' (from package 'RMark'). 'dredge'
+(added) support for models of class 'mark' (from package 'RMark'). 'dredge'
 	can currently only manipulate 'formula' element of argument
 	'model.parameters'.
 simplify.formula, expand.formula: new functions to convert formula between 
@@ -26,7 +52,7 @@ simplify.formula, expand.formula: new functions to convert formula between
 model.names: has new argument "use.letters".
 
 Version: 1.8.1 (2012-11-23)
-added methods for class 'merMod' to accommodate recent changes in 
+(added) methods for class 'merMod' to accommodate recent changes in 
 	lme4_0.99999911-0.
 getAllTerms: now recognizes random effects in 'MCMCglmm'.
 
@@ -42,7 +68,7 @@ QIC, quasiLik: new functions for use with GEE models.
 
 Version: 1.7.12 (2012-11-11)
 tests/classes.R: fixed compatibility spdep-0.5.53. (spdep::spautolm now uses 
-	method="eigen", was "full") 
+	method = "eigen", was "full") 
 
 Version: 1.7.11 (2012-07-13)
 coefTable.multinom: fixed an error when coefficients and standard errors were 
@@ -58,7 +84,7 @@ manual: added 'glmmADMB' to the list of supported classes (reported by Rocio
 	dependency is missing).
 
 Version: 1.7.9 (2012-04-03)
-Added 'predict' methods for 'lme' and 'lmer' (both can calculate 'se.fit').
+(added) 'predict' methods for 'lme' and 'lmer' (both can calculate 'se.fit').
 	'predict.lme' is a wrapper for its namesake from 'nlme' package (it is
 	not exported, so it's visibility depends on the order the packages were 
 	loaded - but is always visible from MuMIn namespace).
@@ -67,7 +93,7 @@ Version: 1.7.8 (2012-04-01)
 (fixed) 'coef.model.selection' returns now proper coefficients
 
 Version: 1.7.7 (2012-04-01)
-fixed dependencies in tests
+(fixed) dependencies in tests
 
 Version: 1.7.6 (2012-04-01)
 dredge: with nested formula designs, 'marg.ex' is now found automatically
@@ -75,14 +101,14 @@ predict.averaging: is now more flexible in how the predictions from generalized
 	models are calculated (new attribute "backtransform").
 
 Version: 1.7.5 (2012-03-27)
-Added methods for 'MCMCglmm' class, and function 'DIC': works with 'model.sel' 
+(added) methods for 'MCMCglmm' class, and function 'DIC': works with 'model.sel'
 	and 'dredge' (but not 'model.avg').
 'unmarked' is removed from 'Suggested' packages (recently it is often 
 	unavailable on CRAN and causes errors during R CHECK). Added workarounds to 
 	pass (=cheat) the R CHECK.
 
 Version: 1.7.3 (2012-02-01)
-Added methods for 'glimML' class from package 'aod'
+(added) methods for 'glimML' class from package 'aod'
 
 Version: 1.7.2 (2012-01-30)
 (fixed) 'nobs.coxme' returned the number of events was returned rather than 
@@ -95,7 +121,7 @@ dredge: checks each generated model for the correct number of observations.
 
 
 Version: 1.7.1 (2012-01-26)
-Added methods for 'hurdle' and 'zeroinfl' classes (package 'pscf').
+(added) methods for 'hurdle' and 'zeroinfl' classes (package 'pscf').
 coef, coefTable: new methods to extract coefficients from model selection 
 	tables.
 Documentation: list of supported models put into a separate page.
@@ -116,7 +142,7 @@ get.models: can handle 'model.selection' objects from 'model.sel'
 model.sel: re-ranking 'model.selection' without recreating original models 
 	(works only if the IC can be applied to logLik). Output has additional 
 	columns showing differences between models (based on call's arguments)
-Added generic methods for 'coxme' and 'lmekin' classes (package 'coxme').
+(added) generic methods for 'coxme' and 'lmekin' classes (package 'coxme').
 
 Version: 1.6.6 (2012-01-07)
 model.avg: fixed error occurring when non-estimable coefficients existed in the 
@@ -134,7 +160,7 @@ pdredge: collects all the warnings and errors which occur during fitting, and
 	The function does more thorough checking of the cluster nodes' environment,
 	for possible missing variables and functions.
 get.models:  "subset" argument can be now a character vector giving model names.
-Added demos for model selection with models from 'unmarked' package using 
+(added) demos for model selection with models from 'unmarked' package using 
 	'dredge' and 'pdredge'.
 
 Version: 1.6.3 (2011-11-15)
@@ -164,9 +190,10 @@ dredge: most important change (although invisible to the user) is in the way the
 dredge: has new argument 'extra' to add additional statistics into the model 
 	selection table.
 r.squared: new function to calculate likelihood-ratio based pseudo-R-squared
-subset method for 'model.selection' accepts a shorthand notation "has(x)" to 
+subset method for 'model.selection': accepts a shorthand notation "has(x)" to 
 	select rows where a variable is present.
-support for 'survreg' and 'rq' models (packages 'survival' and 'quantreg')
+(added) support for 'survreg' and 'rq' models (packages 'survival' and 
+	'quantreg')
 
 Version: 1.5.2 (2011-10-21)
 dredge: fixed a bug with wrong ordering of column names in the returned 
@@ -254,7 +281,8 @@ model.avg: now may be used directly with 'model.selection' object
 summary.averaging: gives now more information
 
 Version: 1.2.4 (2011-07-29)
-fixed handling of spatial parameters (lambda, rho) in models from package 'spdep'
+fixed handling of spatial parameters (lambda, rho) in models from package 
+	'spdep'
 dredge: modified for better performance
 dredge, get.models: can deal with glms with starting values provided ('start'
 	argument)

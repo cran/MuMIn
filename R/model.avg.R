@@ -226,8 +226,12 @@ function(object, ..., beta = FALSE,
 	#	mx <- cbind(mx, i[,!(colnames(i) %in% colnames(mx)), drop=FALSE])
 
 	# residuals averaged (with brute force)
-	rsd <- tryCatch(apply(vapply(models, residuals, residuals(object)), 1L,
-		weighted.mean, w = weight), error = .fnull)
+	#rsd <- tryCatch(apply(vapply(models, residuals, residuals(object)), 1L,
+		#weighted.mean, w = weight), error = .fnull)
+	#rsd <- NULL
+	## XXX: how to calc residuals ?
+	
+	
 	trm <- tryCatch(terms(models[[1L]]),
 			error = function(e) terms(formula(models[[1L]])))
 	response <- attr(trm, "response")
@@ -244,7 +248,7 @@ function(object, ..., beta = FALSE,
 		beta = beta,
 		term.names = coefNames,
 		x = mmxs,
-		residuals = rsd,
+		residuals = NULL, # no residuals
 		formula = frm,
 		call = match.call()
 	)
@@ -260,7 +264,6 @@ function(object, ..., beta = FALSE,
 `coef.averaging` <-
 function(object, full = FALSE, ...) if(full) object$coef.shrinkage else
 	object$avg.model[, 1L]
-
 
 
  #TODO: predict p -="response" + average on response scale
@@ -345,7 +348,7 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 							error = function(e) NULL)
 			if (!is.null(fam)) {
 				if(any(fam[, 1L] != fam[, -1L]))
-				stop("Cannot calculate prediction on a response scale ",
+				stop("cannot calculate prediction on a response scale ",
 					 "with models using different families or link functions")
 				fam1 <- family(models[[1L]])
 				if(is.null(se.fit))

@@ -9,6 +9,7 @@ library(MuMIn)
 # from example(corSpher)
 fm1BW.lme <- lme(weight ~ Time * Diet, BodyWeight, random = ~ Time)
 
+
 # generate model selection table:
 fm1BW.dd <- dredge(fm1BW.lme,
 	# fix all terms in all models:
@@ -30,5 +31,6 @@ fm1BW.dd <- dredge(fm1BW.lme,
 	# selection we use AICc of a ML model. This additional argument is passed to
 	# AICc.
 	REML = FALSE)
+
 
 print(fm1BW.dd)

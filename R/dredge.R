@@ -10,15 +10,16 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	if (is.null(gmCall)) {
 		gmCall <- substitute(global.model)
 		if(!is.call(gmCall)) {
-			if(inherits(global.model, c("gamm", "gamm4")))
-				message("for 'gamm' models use 'MuMIn::gamm' wrapper")
-			stop("could not retrieve the call to 'global.model'")
+			stop("need a 'global.model' with call component. Consider using ", 
+				if(inherits(global.model, c("gamm", "gamm4"))) 
+					"'uGamm'" else "'updateable'")
 		}
 		#"For objects without a 'call' component the call to the fitting function \n",
 		#" must be used directly as an argument to 'dredge'.")
 		# NB: this is unlikely to happen:
-		if(!exists(as.character(gmCall[[1L]]), parent.frame(), mode = "function"))
-			 stop("could not find function '", gmCall[[1L]], "'")
+		if(!is.function(eval(gmCall[[1L]], parent.frame())))
+			gettext('could not find function "%s"', deparse(gmCall[[1L]], 
+				control = NULL), domain = "R")
 	} else {
 		# if 'update' method does not expand dots, we have a problem
 		# with expressions like ..1, ..2 in the call.
@@ -76,10 +77,11 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		as.character(gmCall$na.action) %in% c("na.omit", "na.exclude")) {
 		stop("'global.model' should not use 'na.action' = ", gmCall$na.action)
 	}
-
-	if(names(gmCall)[2L] == "") names(gmCall)[2L] <-
-		names(formals(deparse(gmCall[[1L]]))[1L])
-
+	
+	if(names(gmCall)[2L] == "") gmCall <-
+		match.call(gmCall, definition = eval(gmCall[[1]], envir = parent.frame()), expand.dots = TRUE)
+		
+		
 	# TODO: other classes: model, fixed, etc...
 	gmCoefNames <- fixCoefNames(names(coeffs(global.model)))
 
@@ -133,7 +135,9 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		variants <- as.matrix(expand.grid(split(seq_len(sum(vlen)),
 			rep(seq_len(nvarying), vlen))))
 		
-		flat.variant.Vvals <- .makeListNames(fvarying)
+		flat.variant.Vvals <- unlist(lapply(varying, .makeListNames),
+			recursive = FALSE, use.names = FALSE)
+		
 	} else {
 		variants <- varying.names <- NULL
 		nvariants <- 1L

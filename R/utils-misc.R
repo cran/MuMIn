@@ -146,9 +146,9 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 	# all this is to trick the R-check
 	if(!("snow" %in% loadedNamespaces())) {
 		if(getRversion() < "2.14.0") {
-			if(length(.find.package("snow", quiet = TRUE)))
+			if(length(find.package("snow", quiet = TRUE)))
 				do.call("require", list("snow"))
-		} else if(length(.find.package("parallel", quiet = TRUE)))
+		} else if(length(find.package("parallel", quiet = TRUE)))
 			do.call("require", list("parallel", quiet = TRUE))
 	}
 	if(!exists("clusterCall", mode = "function")) {

@@ -1,4 +1,4 @@
-if(length(.find.package("coxme", quiet = TRUE)) == 2) {
+if(length(find.package("coxme", quiet = TRUE)) == 2) {
 
 library(coxme)
 library(MuMIn)

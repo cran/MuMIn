@@ -23,6 +23,14 @@ expand.formula(x)
 }
 \author{Kamil Barto\enc{ń}{n}}
 
+\seealso{
+\code{\link[stats]{formula}}
+
+\code{\link{delete.response}}, \code{\link{drop.terms}}, and 
+\code{\link{reformulate}}
+
+}
+
 
 \examples{
 

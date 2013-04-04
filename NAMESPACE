@@ -7,9 +7,10 @@ export(
 	AICc, QAIC, QAICc, Cp, ICOMP, CAICF, DIC, 
 	r.squaredLR, null.fit, r.squaredGLMM,
 	QIC, quasiLik,
-	gamm,
 	beta.weights, model.names,
-	simplify.formula, expand.formula
+	simplify.formula, expand.formula,
+	updateable, updateable2,
+	uGamm
 )
 
 importFrom(stats, family)
@@ -98,6 +99,8 @@ S3method(getAllTerms, terms)
 S3method(getAllTerms, lm)
 S3method(coefTable, lm)
 
+S3method(getAllTerms, gam)
+
 S3method(nobs, sarlm)
 S3method(coefTable, sarlm)
 
@@ -122,6 +125,7 @@ S3method(getAllTerms, lme)
 S3method(coeffs, lme)
 S3method(coefTable, lme)
 S3method(predict, lme)
+S3method(predict, gls)
 
 S3method(getAllTerms, mer)
 S3method(coeffs, mer)
@@ -131,8 +135,6 @@ S3method(predict, mer)
 S3method(family, mer)
 
 S3method(coeffs, merMod)
-
-
 S3method(coefTable, multinom)
 S3method(nobs, multinom)
 
@@ -259,3 +261,9 @@ S3method(r.squaredGLMM, lme)
 S3method(r.squaredGLMM, merMod)
 S3method(r.squaredGLMM, mer)
 S3method(r.squaredGLMM, glmmML)
+
+S3method(getCall, default)
+
+S3method(nobs, caic)
+S3method(formula, caic)
+S3method(nobs, pgls)
