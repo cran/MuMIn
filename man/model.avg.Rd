@@ -84,7 +84,7 @@ An object of class \code{averaging} is a list with components:
 \item{x, formula}{ the model matrix and formula corresponding to the one that
 	would be used in a single model. \code{formula} contains only the averaged
 	coefficients. }
-\item{residuals}{ model averaged residuals (response minus fitted values). }
+%%\item{residuals}{ model averaged residuals (response minus fitted values). }
 \item{call}{ the matched call. }
 
 In addition, the object has following attributes:
@@ -122,7 +122,8 @@ Several standard methods for fitted model objects exist for class
 \code{averaging}, including
 	\code{summary}, \code{\link[=predict.averaging]{predict}},
 	\code{coef}, \code{confint}, \code{\link{formula}},
-	\code{\link{residuals}}, \code{\link{vcov}}.
+	%%\code{\link{residuals}},
+	\code{\link{vcov}}.
 The \code{coef} method a accepts argument \code{full}, if set to \code{TRUE} the
 	full model-averaged coefficients are returned, rather than subset-averaged
 	ones.

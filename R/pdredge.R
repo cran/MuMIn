@@ -102,8 +102,9 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		stop("'global.model' should not use 'na.action' = ", gmCall$na.action)
 	}
 
-	if(names(gmCall)[2L] == "") names(gmCall)[2L] <-
-		names(formals(deparse(gmCall[[1L]]))[1L])
+	if(names(gmCall)[2L] == "") gmCall <-
+		match.call(gmCall, definition = eval(gmCall[[1]], envir = parent.frame()), expand.dots = TRUE)
+
 
 	gmCoefNames <- fixCoefNames(names(coeffs(global.model)))
 
@@ -157,7 +158,9 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		variants <- as.matrix(expand.grid(split(seq_len(sum(vlen)),
 			rep(seq_len(nvarying), vlen))))
 		
-		flat.variant.Vvals <- .makeListNames(fvarying)
+		flat.variant.Vvals <- unlist(lapply(varying, .makeListNames),
+			recursive = FALSE, use.names = FALSE)
+		
 	} else {
 		variants <- varying.names <- NULL
 		nvariants <- 1L
@@ -176,7 +179,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		extra <- structure(as.list(unique(extra)), names = extraNames)
 
 		if(any(c("adjR^2", "R^2") %in% extra)) {
-			null.fit <- null.fit(global.model, RE.keep = TRUE, envir = gmFormulaEnv)
+			null.fit <- null.fit(global.model, evaluate = TRUE, envir = gmFormulaEnv)
 			extra[extra == "R^2"][[1L]] <- function(x) r.squaredLR(x, null = null.fit)
 			extra[extra == "adjR^2"][[1L]] <-
 				function(x) attr(r.squaredLR(x, null = null.fit), "adj.r.squared")
@@ -347,7 +350,6 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	warningList <- list()
 
 	####
-
 	prevJComb <- 0L
 	for(iComb in seq.int(ncomb)) {
 		jComb <- ceiling(iComb / nvariants)
@@ -417,8 +419,8 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			#DebugPrint(paste(qi, nvariants, qlen, iComb, ncomb))
 			qseq <- seq_len(qi)
 			qresult <- .getRow(queued[qseq])
-			#cat(sprintf("queue done: %d\n", qi)) # DEBUG
-
+			utils::flush.console()
+		
 			if(any(vapply(qresult, is.null, TRUE)))
 				stop("some results returned from cluster node(s) are NULL. \n",
 					"This should not happen and indicates problems with ",
@@ -454,7 +456,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			qresultLen <- length(qrows)
 			retNrow <- nrow(ret)
 			if(k + qresultLen > retNrow) {
-				nadd <- min(ret.nchunk, nmax - retNrow)
+				nadd <- min(max(ret.nchunk, qresultLen), nmax - retNrow)
 				coefTables <- c(coefTables, vector(nadd, mode = "list"))
 				ret <- rbind(ret, matrix(NA, ncol = ret.ncol, nrow = nadd),
 					deparse.level = 0L)

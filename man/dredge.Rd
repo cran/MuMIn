@@ -108,8 +108,9 @@ the result. To get (a subset of) the models, use \code{\link{get.models}} on the
 object returned by \code{dredge}.
 
 For a list of model types that can be used as a \code{global.model} see
-\link[=MuMIn-models]{list of supported models}. \code{gamm} and \code{gamm4}
-should be evaluated \emph{via} the wrapper \code{MuMIn::\link[MuMIn]{gamm}}.
+\link[=MuMIn-models]{list of supported models}. 
+Modelling functions not storing \code{call} in their result should be evaluated 
+\emph{via} the wrapper created by \code{\link{updateable}}.
 
 \subsection{Information criterion}{
 \code{rank} is found by a call to \code{match.fun} and may be specified as a
@@ -141,11 +142,12 @@ formulation must satisfy all these conditions.
 %%Terms in \code{fixed} argument are applied before the combinations are
 %%generated, therefore more efficient than \code{subset}.
 
-\code{subset} can take either a form of an expression or a matrix. The latter
-should be a lower triangular matrix with logical values, where columns and rows
-correspond to \code{global.model} terms. Value \code{subset["a", "b"] == FALSE}
-will exclude any model containing both "a" and "b". Values other than
-\code{FALSE} (or \code{0}) are taken as \code{TRUE}.
+\code{subset} can take either a form of an \emph{expression} or a \emph{matrix}.
+The latter should be a lower triangular matrix with logical values, where
+columns and rows correspond to \code{global.model} terms. Value
+\code{subset["a", "b"] == FALSE} will exclude any model containing both \var{a}
+and \var{b}. Values other than \code{FALSE} (or \code{0}) are taken as
+\code{TRUE}.
 
 In the form of \code{expression}, the argument \code{subset} acts in a similar
 fashion to that in the function \code{subset} for \code{data.frames}: model
@@ -153,10 +155,10 @@ terms can be referred to by name as variables in the expression, with the
 difference being that they are always logical (i.e. \code{TRUE} if a term exists
 in the model).
 
-The expression can contain any of the \code{global.model} terms (use
-\code{getAllTerms(global.model)} to list them), as well as names of the
+The expression can contain any of the \code{global.model} terms
+(\code{getAllTerms(global.model)} lists them), as well as names of the
 \code{varying} argument items. Names of \code{global.model} terms take
-precedence when identical to names of \code{varying}), so to avoid ambiguity
+precedence when identical to names of \code{varying}, so to avoid ambiguity
 \code{varying} variables in \code{subset} expression should be enclosed in
 \code{V()} (e.g. \code{subset = V(family) == "Gamma"} assuming that
 \code{varying} is something like \code{list(family = c(..., "Gamma"))}).
@@ -169,9 +171,9 @@ list(family = list(..., Gamma)} should be referred to as \code{subset =
 V(family) == 2}. This can quickly become confusing, therefore it is recommended 
 to use named lists in most cases. \code{demo(dredge.varying)} provides examples.
 
-The \code{subset} expression can also contain variable \code{`*nvar*`} (needs to be 
-backtick-quoted), which is equal to number of terms in the model (\bold{not} 
-the number of estimated parameters \emph{K}).
+The \code{subset} expression can also contain variable \code{`*nvar*`} (needs to
+be backtick-quoted), which is equal to number of terms in the model (\bold{not}
+the number of estimated parameters \var{K}).
 
 To make inclusion of a variable conditional on presence of some other variable,
 a function \code{dc} (\dQuote{\bold{d}ependency \bold{c}hain}) can be used in
@@ -190,6 +192,16 @@ back-ticks (e.g. \code{subset = `s(x, k = 2)` || `I(log(x))`}, see
 in model's formula. To simply keep certain terms in all models, use of argument
 \code{fixed} is more efficient.
 
+\subsection{\code{subset} expression syntax summary}{
+	\tabular{ll}{
+	\code{a & b} \tab indicates that variables \var{a} and \var{b} must be
+	present (see \sQuote{\link[=Logic]{Logical Operators}}) \cr 
+	\code{V(x)} \tab indicates a \code{varying} variable \var{x} \cr
+	\code{dc(a,b,c,...)} \tab \sQuote{dependency chain}: \var{a} is allowed only
+		if \var{b} is present, and \var{b} only if \var{c} is present, etc. \cr
+	\code{`*nvar*`} \tab number of variables \cr
+	}
+}
 }
 
 \subsection{Missing values}{

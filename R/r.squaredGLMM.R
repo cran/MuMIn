@@ -33,6 +33,7 @@ function(x, nullfx = NULL) {
 		)
 }
 
+
 `r.squaredGLMM.glmmML` <-
 function(x, nullfx = NULL) {
 	if(is.null(x$x)) {
@@ -64,8 +65,6 @@ function(x, ...)
 		 fxNullCoef = coef(null.fit(x, evaluate = TRUE)))
 
 
-
-
 `.rsqGLMM` <-
 function(x, fam, varFx, varRan, resVar, fxNullCoef) {
 	v <- switch(paste(fam$family, fam$link, sep = "."), 
@@ -78,6 +77,11 @@ function(x, fam, varFx, varRan, resVar, fxNullCoef) {
 	)
 	varAll <- sum(varFx, varRan)
 	res <- c(varFx, varAll) / (varAll + v)
+	if(fam$family == "poisson") {
+		res[2L] <- NA_real_
+		warning(simpleWarning("conditional statistic for 'poisson' family cannot be (yet) calculated", 
+			sys.call(1L)))
+	}
 	names(res) <- c("R2m", "R2c")
 	res
 }

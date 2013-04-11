@@ -59,8 +59,6 @@ function(object, ...) binomial(link = object$link)
 	"NB" = get("negative.binomial", asNamespace("MASS"))(
 		theta = 1 / object@param['phi.(Intercept)'], link = object@link))
 
-
-
 #_______________________________________________________________________________
 
 `terms.glimML` <- function (x, ...) terms.formula(x@formula, ...)
@@ -70,19 +68,57 @@ function(object, ...) binomial(link = object$link)
 # https://stat.ethz.ch/pipermail/r-help/2004-April/050144.html
 # http://web.archiveorange.com/archive/v/rOz2zbtjRgntPMuIDoIl
 
-`predict.lme` <- function (object, newdata, level, asList = FALSE,
+# based on the original 'predict.gls' in package 'nlme'
+`predict.gls` <-
+function (object, newdata, se.fit = FALSE, na.action = na.fail, ...) {
+    if (missing(newdata) && missing(se.fit)) return(fitted(object))
+	
+    form <- formula(object)[-2L]
+	if(length(form[[2L]]) == 3L && form[[2L]][[1L]] == "|" )
+		form[[2L]] <- form[[2L]][[2L]] 
+	
+	dataMod <- model.frame(object, data = newdata, na.action = na.action,
+										drop.unused.levels = TRUE)
+	contr <- object$contrasts
+	for(i in names(contr)) {
+		levs <- levels(dataMod[, i])
+		if (any(wch <- is.na(match(levs, rownames(contr[[i]]))))) {
+                stop(sprintf(ngettext(sum(wch), "level %s not allowed for %s", 
+                  "levels %s not allowed for %s"), paste(levs[wch], 
+                  collapse = ",")), domain = NA)
+            }
+		attr(dataMod[[i]], "contrasts") <- contr[[i]][levs, , drop = FALSE]
+	}
+	X <- model.matrix(terms(form), data = dataMod)
+	
+    cf <- coef(object)
+    val <- c(X[, names(cf), drop = FALSE] %*% cf)
+	if(se.fit) {
+		se <- sqrt(diag(X %*% vcov(object) %*% t(X)))
+		val <- list(fit = val, se.fit = unname(se))
+	}
+	attr(val, "label") <- "Predicted values"
+    if (!is.null(aux <- attr(object, "units")$y)) {
+        attr(val, "label") <- paste(attr(val, "label"), aux)
+    }
+	val
+}
+
+`predict.lme` <-
+function (object, newdata, level, asList = FALSE,
 	na.action = na.fail, se.fit = FALSE, ...) {
 	cl <- match.call()
 	cl$se.fit <- NULL
-	cl[[1L]] <- call(":::", as.name("nlme"), as.name("predict.lme"))
+	cl[[1L]] <- call("get", "predict.lme", asNamespace("nlme"))	
 	res <- eval(cl, parent.frame())
+	
 	if(se.fit && (missing(level) || any(level > 0)))
 		warning("cannot calculate standard errors for level > 0")
 	if(se.fit && !missing(level) && length(level) == 1L && all(level == 0)) {
 		if (missing(newdata) || is.null(newdata)) {
 			X <- model.matrix(object, data = object$data)
 		} else {
-			tt <- delete.response(terms(eval(object$call$fixed)))
+			tt <- delete.response(terms(formula(object)))
 			xlev <- .getXlevels(tt, model.frame(object, data = object$data))
 			X <- model.matrix(tt, data = newdata, contrasts.arg =
 							  object$contrasts, xlev = xlev)
@@ -92,6 +128,7 @@ function(object, ...) binomial(link = object$link)
 		list(fit = c(res), se.fit = se)
 	} else res
 }
+
 
 `predict.mer` <- function (object, newdata, type = c("link", "response"), se.fit = FALSE, 
     ...)
@@ -203,3 +240,8 @@ function (x, ...) x$Fixed$formula
 
 `family.MCMCglmm` <-
 function (object, ...) object$family
+
+
+`formula.caic` <-
+function(x, ...) formula(x$mod)
+

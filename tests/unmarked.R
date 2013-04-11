@@ -1,4 +1,4 @@
-if(length(.find.package("unmarked", quiet = TRUE)) != 0L) {
+if(length(find.package("unmarked", quiet = TRUE)) != 0L) {
 
 library(MuMIn)
 library(stats4)

@@ -1,5 +1,5 @@
 if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) {
-	clusterType <- if(length(.find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
+	clusterType <- if(length(find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
 	clust <- try(makeCluster(getOption("cl.cores", 2), type = clusterType))
 	if(inherits(clust, "cluster")) {
 		library(MuMIn)

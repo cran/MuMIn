@@ -20,20 +20,6 @@
 	list(logLik = logLik, name = lLName)
 }
 
-`.getCall` <- function(x) {
-	if(isS4(x)) {
-		if(any(i <- (sln <- c("call", "CALL", "Call")) %in% slotNames(x)))
-			slot(x, sln[i][1L]) else NULL
-	} else {
-		if(!is.null(x$call)) {
-			x$call
-		} else if(!is.null(attr(x, "call"))) {
-			attr(x, "call")
-		} else
-			NULL
-	}
-}
-
 `.getRank` <- function(rank = NULL, rank.args = NULL, object = NULL, ...) {
 	rank.args <- c(rank.args, list(...))
 

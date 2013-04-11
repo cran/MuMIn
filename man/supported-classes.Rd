@@ -17,8 +17,8 @@ functions include those returned by:
 \item \code{multinom} (\pkg{nnet});
 \item \code{lme}, \code{gls} (\pkg{nlme});
 \item \code{lmer}, \code{glmer} (\pkg{lme4});
-\item \code{gam}, \code{gamm} (\pkg{mgcv});
-\item \code{gamm4} (\pkg{gamm4});
+\item \code{gam}, \code{gamm}* (\pkg{mgcv});
+\item \code{gamm4}* (\pkg{gamm4});
 \item \code{glmmML} (\pkg{glmmML});
 \item \code{glmmadmb} (\pkg{glmmADMB} from R-Forge);
 \item \code{hurdle}, \code{zeroinfl} (\pkg{pscl});
@@ -30,6 +30,7 @@ functions include those returned by:
 \item \code{rq} (\pkg{quantreg});
 \item \code{clm} and \code{clmm} (\pkg{ordinal});
 \item \code{logistf} (\pkg{logistf}); %% Bias-reduced logistic regression
+\item \code{crunch}*, \code{pgls} (\pkg{caper});
 \item functions from package \pkg{unmarked} (within the class \code{unmarkedFit});
 \item \code{mark} and related functions (class \code{mark} from package
 	\pkg{RMark}). Note currently \code{dredge} can only manipulate \code{formula}
@@ -43,7 +44,7 @@ from package \pkg{geepack}, \code{\link[gee]{gee}} from \pkg{gee}, and
 \code{yags} from \pkg{yags} (from R-Forge) can be used with \code{\link{QIC}} 
 as the selection criterion.
 
-\code{MCMCglmm} models (package \pkg{MCMCglmm}) with \code{\link{DIC}} as the 
+\code{MCMCglmm}* models (package \pkg{MCMCglmm}) with \code{\link{DIC}} as the 
 \code{rank} function are accepted by \code{model.sel} and \code{dredge}.
 
 Other classes are also likely to be supported, in particular if they inherit
@@ -51,7 +52,11 @@ from one of the above classes. In general, the models averaged with
 \code{model.avg} may belong to different types (e.g. \code{glm} and \code{gam}), 
 provided they use the same data and response, and if it is valid to do so. 
 This applies also to constructing model selection tables with \code{model.sel}.
+}
 
+\note{
+* In order to use \code{gamm4}, \code{gamm4}, \code{crunch} or \code{MCMCglmm} with \code{dredge}, 
+an  \code{\link{updateable}} wrapper for these functions should be created.
 }
 
 \seealso{

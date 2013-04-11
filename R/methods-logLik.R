@@ -89,8 +89,9 @@ function (object, ...) {
 
 `logLik.MCMCglmm` <-
 function (object, ...)
-	structure(NA, df = object$Fixed$nfl + object$Random$nfl,
-			  nobs = object$Residual$nrl, class = "logLik")
+	structure(NA, df = sum(object$Fixed$nfl, object$Random$nfl,
+		object$Residual$nfl), nobs = object$Residual$nrl, 
+		class = "logLik")
 
 
 `logLik.gamm` <-

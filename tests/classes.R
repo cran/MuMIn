@@ -1,7 +1,7 @@
 # Test support for different classes of models
 
 require(MuMIn)
-.checkPkg <- function(package) length(.find.package(package, quiet=TRUE)) != 0
+.checkPkg <- function(package) length(find.package(package, quiet = TRUE)) != 0
 
 # TEST gls --------------------------------------------------------------------------------
 library(nlme)
@@ -20,7 +20,9 @@ dd <- dredge(fm1Dial.gls, m.max = 2, m.min = 1, fixed=~pressure, varying = varyi
 
 models <- get.models(dd, 1:4)
 
-subset(dd, correlation == "corAR1(0.771, form = ~1 | Subject)", recalc.delta = TRUE)
+predict(fm1Dial.gls, se.fit = TRUE, newdata = Dialyzer[1:5, ])
+
+subset(dd, correlation == "AR1_0.771", recalc.delta = TRUE)
 
 ma <- model.avg(models, revised = TRUE)
 ms <- model.sel(models)
@@ -29,7 +31,10 @@ print(ms, abbr = TRUE)
 summary(ma)
 predict(ma)[1:10]
 
-predict(ma, newdata = Dialyzer[1:5, ])
+# testing predict replacement:
+fm1 <- lme(rate ~ (pressure + I(pressure^2) + I(pressure^3)) * QB, ~ 1 | Subject, data = Dialyzer)
+MuMIn:::predict.lme(fm1, newdata = Dialyzer[1:5, ], level = 0, se.fit = TRUE)
+
 
 detach(package:nlme); rm(list=ls())
 
@@ -215,7 +220,7 @@ options(warn=0)
 gm <- get.models(dd, cumsum(weight) <= .99)
 ma <- model.avg(gm)
 summary(ma)
-signif(resid(ma), 5)[1:10]
+# signif(resid(ma), 5)[1:10]
 
 rm(list=ls())
 
@@ -285,6 +290,10 @@ budworm.qqlg <- glm(SF ~ sex*ldose + sex*I(ldose^2), data = budworm, family = qb
 #budworm.qlg <- glm(SF ~ sex*ldose + sex*I(ldose^2), data = budworm, family = quasibinomial)
 budworm.lg <- glm(SF ~ sex*ldose + sex*I(ldose^2), data = budworm, family = binomial)
 
+#R2(budworm.lg)
+r.squaredLR(budworm.lg)
+r.squaredGLMM(budworm.lg)
+
 dd <- dredge(budworm.lg, rank = "QAIC", chat = summary(budworm.lg)$dispersion)
 #dd <- dredge(budworm.lg) # should be the same
 mod <- get.models(dd, seq(nrow(dd)))
@@ -294,7 +303,7 @@ mod <- get.models(dd, seq(nrow(dd)))
 # but this will not: ('rank' attribute passed from 'dredge' is lost)
 # ma <- model.avg(mod)
 # so, need to supply them
-ma <- model.avg(mod[1:5], rank="QAICc", rank.args = list(chat = 0.403111))
+ma <- model.avg(mod[1:5], rank = "QAICc", rank.args = list(chat = 0.403111))
 
 rm(list=ls())
 

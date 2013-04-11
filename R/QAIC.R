@@ -16,12 +16,12 @@ function(object, ..., chat, k = 2) {
 
 	qaic <- function(object, chat, k) {
 		ll <- logLik(object)
-		n <- attr(ll, "nobs")
+		# no <- attr(ll, "nobs")
 		# df is the number of parameters plus 1 for estimating c-hat
 		df <- attr(ll, "df") + npar.adj
-		#neg2ll <- log(deviance(object)) * n # + Constant...
+		#neg2ll <- log(deviance(object)) * no # + Constant...
 		neg2ll <- -2 * c(ll)
-		#ret <- (neg2ll * n / chat) + k * df
+		#ret <- (neg2ll * no / chat) + k * df
 		#ret <- -2 * ll / chat + k * df
 		ret <- neg2ll / chat + k * df
 		return (ret)
@@ -51,13 +51,13 @@ function(object, ..., chat, k = 2) {
 
 	qaicc <- function(object, chat, k) {
 		ll <- logLik(object)
-		n <- attr(ll, "nobs")
-		if (is.null(n)) n <- nobs(object, use.fallback = FALSE)
+		no <- .get.nobs(ll, error = FALSE)
+		if (is.null(no)) no <- nobs(object, use.fallback = FALSE)
 		# df is the number of parameters plus 1 for estimating c-hat
 		df <- attr(ll, "df") + npar.adj
 		#neg2ll <- log(deviance(object)) * n # + Constant...
 		neg2ll <- -2 * c(ll) # + Constant...
-		ret <- (neg2ll / chat) + (k * df) * (1 + ((df + 1) / (n - df - 1)))
+		ret <- (neg2ll / chat) + (k * df) * (1 + ((df + 1) / (no - df - 1)))
 		return (ret)
 	}
 

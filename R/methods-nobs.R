@@ -24,11 +24,10 @@
 # #  (last two values are equal to the number of fixed effects and one).
 
 # Extends: survival
-`nobs.survreg` <- function (object, ...) {
-	length(object$linear)
-}
+`nobs.survreg` <-
+function (object, ...)
+length(object$linear)
 
-`nobs.coxph` <- function(object, ...) object$n
 
 # Extends: lme4
 `nobs.mer` <- function(object, nall = TRUE, ...) {
@@ -87,5 +86,12 @@ if (exists("nobs", mode = "function", where = "package:stats", inherits = FALSE)
 `nobs.mark` <- 
 function (object, ...) object$results[['n']]
 
+`nobs.coxph` <- 
+`nobs.pgls` <-
 `nobs.logistf` <-
-function (object, ...) object$n
+function (object, ...)
+object$n
+
+nobs.caic <-
+function (object, ...)
+nobs(object$mod)

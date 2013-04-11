@@ -11,7 +11,7 @@ require(stats4)
 # Set up the cluster
 ncores <- if(exists("detectCores", mode = "function"))
 	detectCores() else getOption("cl.cores", 2)
-clusterType <- if(length(.find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
+clusterType <- if(length(find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
 clust <- try(makeCluster(getOption("cl.cores", 2), type = clusterType))
 if(!inherits(clust, "cluster")) stop("Could not set up the cluster")
 
