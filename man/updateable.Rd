@@ -94,7 +94,7 @@ update(ct2, alternative = "two.sided")
 
 
 ## predefined wrapper for 'gamm':
-library(mgcv)
+if(require(mgcv)) {
 set.seed(0)
 dat <- gamSim(6, n = 100, scale = 5, dist = "normal")
 
@@ -103,6 +103,7 @@ fmm1 <- uGamm(y ~s(x0)+ s(x3) + s(x2), family = gaussian, data = dat,
 
 getCall(fmm1)
 class(fmm1)
+}
 ###
 
 
@@ -121,10 +122,7 @@ getCall(fm1)
 getCall(fm2)
 update(fm2) # Error with 'fm1'
 dredge(fm2)
-
 }
-
-
 
 }
 

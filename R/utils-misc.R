@@ -4,6 +4,13 @@
 	return(if(ret$visible) ret$value else invisible(ret$value))
 }
 
+`.cry` <-
+function(Call = NA, Message, ..., warn = FALSE) {
+	if(is.na(Call)) Call <- sys.call(-1L)
+	if(warn) warning(simpleWarning(gettextf(Message, ..., domain = "R-MuMIn"), Call)) else
+		stop(simpleError(gettextf(Message, ..., domain = "R-MuMIn"), Call))
+}
+
 #if (!exists("getElement", mode = "function", where = "package:base", inherits = FALSE)) {
 `getElement` <- function (object, name) {
     if (isS4(object))
@@ -103,7 +110,10 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 	lapply(seq_along(x), function(i) {
 		if(is.null(nm) || nm[i] == "") {
 			switch(mode(x[[i]]),
-				call = deparse(x[[i]], control = NULL),
+				call = {
+						v <- deparse(x[[i]], control = NULL, width.cutoff = 20L, nlines = 2L)
+						if(length(v) != 1L) v <- sprintf("%s...", v[1L])
+						v },
 				symbol =, name = as.character(x[[i]]),
 				NULL =, logical =, numeric =, complex =, character = x[[i]], i
 				)
@@ -111,8 +121,7 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 	})
 }
 
-
-# test if dependency chain is satisfied: x[n] can be TRUE only if x[1:n] are also TRUE
+# test if dependency chain is satisfied: x[n] can be TRUE only if x[n+1] are also TRUE
 `.subset_dc` <- function(...) {
 	n <- length(x <- c(...))
 	if(n > 1L) all(x[-n] >= x[-1L]) else TRUE
@@ -158,8 +167,9 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 }
 
 `clusterVExport` <- local({
-   `getv` <- function(obj)
-		for (i in names(obj)) assign(i, obj[[i]], envir = as.environment(1L))
+	
+   `getv` <- function(obj, env = as.environment(1L))
+		for (i in names(obj)) assign(i, obj[[i]], envir = env)
 	function(cluster, ...) {
 		Call <- match.call()
 		Call$cluster <- NULL
@@ -247,3 +257,23 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 	for(i in seq_len(n)) if(!is.null(z <- FUN(X[i, ], ...))) ret[[i]] <- z
 	ret
 }
+
+
+## from stats:::format.perc
+`format.perc` <-
+function (probs, digits) 
+paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits), 
+    "%")
+
+
+## from stats:::nobs.glm
+`nobs.glm` <-
+function (object, ...) 
+if (!is.null(w <- object$prior.weights)) sum(w != 0) else length(object$residuals)
+	
+## Cheating RCheck:
+.xget <-
+function(pkg, name)
+get(name, envir = asNamespace(pkg), inherits = FALSE)
+
+	

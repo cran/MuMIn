@@ -49,14 +49,14 @@ with \code{delta <= 4}.
 \examples{
 # Mixed models:
 
-require(nlme)
+if(require(nlme)) {
 fm2 <- lme(distance ~ age + Sex, data = Orthodont,
     random = ~ 1 | Subject, method = "ML")
 ms2 <- dredge(fm2)
 
 # Get top-most models, but fitted by REML:
 (confset.d4 <- get.models(ms2, subset = delta < 4, method = "REML"))
-
+}
 }
 
 \keyword{models}

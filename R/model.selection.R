@@ -36,6 +36,13 @@ function (model) coef.model.selection(model)
 	ret
 }
 
+`getCall.model.selection`  <-
+function (x, i = NULL, ...) {
+	if(is.null(i))
+		return(attr(x, "call"))
+	if(length(i) == 1L) return(attr(x, "calls")[[i]])
+	return(attr(x, "calls")[i])
+}
 
 `subset.model.selection` <-
 function(x, subset, select, recalc.weights = TRUE, recalc.delta = FALSE, ...) {

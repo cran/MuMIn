@@ -1,7 +1,14 @@
 TODO list for the MuMIn package:
 
+
+*** fit.args - additional arguments for updated models (underwrite)
+*** model.sel, with class mark "parameters" should be removed
+
+*   predictions from 'multinom'
+*   untransforming predictions from 'unmarkedFit'
 *   model.names: return a textual representation of the model
 *   model.avg: checking for consistency of contrasts used in the models
+*   model.sel: add 'extra' and 'beta' (requested by Dennis Duro)
 **  handling random effects in 'dredge' (with 'lme', 'lmer', etc). Currently
         'varying' may be used with lme's "random" argument for that purpose.
 *   consistent ordering of columns in 'model.selection' tables

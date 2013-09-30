@@ -46,6 +46,13 @@ the estimated standard errors.
 }
 
 \details{
+
+\code{predict}ing is possible only with \code{averaging} objects with
+\code{"modelList"} attribute, i.e. those created \emph{via} \code{model.avg}
+from a model list, or from \code{model.selection} object with argument \code{fit
+= TRUE} (note this will recreate the model objects which may be time consuming,
+see \code{\link{model.avg}}).
+
 If all the component models are oridinary linear models, the prediction can be
 made either with the full averaged coefficients (the argument \code{full =
 TRUE} this is the default) or subset-averaged coefficients. Otherwise the
@@ -97,7 +104,7 @@ on the outermost level (equivalent to \code{level = 0} in
 
 \examples{
 
-require(graphics)
+if(require(graphics)) {
 
 # Example from Burnham and Anderson (2002), page 100:
 data(Cement)
@@ -143,6 +150,8 @@ legend("topleft",
     lty = 1, lwd = c(rep(2,n),3,3,3),  cex = .75, col=1:8)
 
 palette(opal)
+
+}
 
 }
 

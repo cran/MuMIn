@@ -89,15 +89,16 @@ Ecology and Evolution}: (online) doi:10.1111/j.2041-210x.2012.00261.x
 }
 
 \examples{
-library(lme4)
+
+if(require(nlme)) { 
 data(Orthodont, package = "nlme")
 
-fm1 <- lmer(distance ~ Sex * age + (1 | Subject), data = Orthodont)
+fm1 <- lme(distance ~ Sex * age, ~ 1 | Subject, data = Orthodont)
 
 r.squaredGLMM(fm1)
 r.squaredLR(fm1)
 r.squaredLR(fm1, null.RE = TRUE)
-
+}
 }
 
 \keyword{models}

@@ -67,6 +67,7 @@ function(object, ...)
 `nobs.yagsResult` <-
 function (object, ...) length(object@residuals)
 
+`nobs.aodml` <-
 `nobs.splm` <- 
 function (object, ...) length(resid(object))
 
@@ -74,14 +75,8 @@ function (object, ...) length(resid(object))
 function (object, ...) object$Residual$nrl
 
 
-# XXX: compatibility with R < 2.13.0
-if (exists("nobs", mode = "function", where = "package:stats", inherits = FALSE)) {
-	`nobs.gamm` <-
-	function (object, ...)  stats:::nobs.glm(object$gam, ...)
-} else {
-	`nobs.gamm` <-
+`nobs.gamm` <-
 	function (object, ...) nobs.glm(object$gam, ...)
-}
 
 `nobs.mark` <- 
 function (object, ...) object$results[['n']]
@@ -92,6 +87,6 @@ function (object, ...) object$results[['n']]
 function (object, ...)
 object$n
 
-nobs.caic <-
+`nobs.caic` <-
 function (object, ...)
 nobs(object$mod)

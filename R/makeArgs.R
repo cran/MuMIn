@@ -135,7 +135,9 @@ function(obj, termNames, comb, opt, ...)  {
 	ret
 }
 
-`makeArgs.zeroinfl` <- function(obj, termNames, comb, opt, ...) {
+`makeArgs.hurdle` <- 
+`makeArgs.zeroinfl` <-
+function(obj, termNames, comb, opt, ...) {
 	i <- termNames %in% opt$interceptLabel
 	termNames[i] <- gsub("(Intercept)", "1", termNames[i], fixed = TRUE)
 	pos <- regexpr("_", termNames, fixed = TRUE)

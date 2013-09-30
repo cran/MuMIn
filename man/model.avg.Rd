@@ -178,7 +178,6 @@ averaging.
 \examples{
 
 # Example from Burnham and Anderson (2002), page 100:
-library(MuMIn)
 data(Cement)
 fm1 <- lm(y ~ ., data = Cement)
 (ms1 <- dredge(fm1))

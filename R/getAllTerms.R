@@ -102,7 +102,7 @@ function(x, ...) {
 # `getAllTerms.glmer` <- # For backwards compatibility
 # `getAllTerms.lmer` <-  # with older versions of lme4
 `getAllTerms.mer` <-
-function(x, ...) getAllTerms(lme4::formula(x), ...)
+function(x, ...) getAllTerms(.xget("lme4", "formula")(x), ...)
 
 # Apparently there is no (explicit) intercept in coxph, but 'terms' gives
 # attr(,"intercept") == 1.
@@ -120,16 +120,19 @@ function(x, ...) getAllTerms(lme4::formula(x), ...)
 	return(ret)
 }
 
-`getAllTerms.hurdle` <- function(x, intercept = FALSE, ...) {
-	f <- as.formula(formula(x))
-	# to deal with a dot in formula (other classes seem to expand it)
-	if("." %in% all.vars(f))
-		getAllTerms.terms(terms.formula(f, data = eval(x$call$data, envir =
-			environment(f))), intercept = intercept)
-	else getAllTerms.formula(f, intercept = intercept)
-}
+#`getAllTerms.hurdle` <- function(x, intercept = FALSE, ...) {
+#	f <- as.formula(formula(x))
+#	# to deal with a dot in formula (other classes seem to expand it)
+#	if("." %in% all.vars(f))
+#		getAllTerms.terms(terms.formula(f, data = eval(x$call$data, envir = environment(f)))
+#			
+#			, intercept = intercept)
+#	else getAllTerms.formula(f, intercept = intercept)
+#}
 
-`getAllTerms.zeroinfl` <- function(x, intercept = FALSE, ...) {
+`getAllTerms.hurdle` <- 
+`getAllTerms.zeroinfl` <-
+function(x, intercept = FALSE, ...) {
 	f <- formula(x)
 	if(length(f[[3L]]) != 1L && f[[3L]][[1L]] == "|"){
 		f1 <- call("~", f[[2L]], f[[3L]][[2L]])
@@ -170,7 +173,7 @@ function(x, ...) getAllTerms(lme4::formula(x), ...)
 
 `getAllTerms.coxme` <-
 function(x, ...)  {
-	ret <- MuMIn:::getAllTerms.terms(terms(x))
+	ret <- getAllTerms.terms(terms(x))
 	random <- x$formulaList$random
 	attr(ret, "random.terms") <- as.character(random)
 	f <- as.name(".")
@@ -180,7 +183,6 @@ function(x, ...)  {
 	attr(ret, "interceptLabel") <- NULL
 	ret
 }
-
 
 `getAllTerms.unmarkedFit` <- function (x, intercept = FALSE, ...)  {
 	f <- formula(x)
@@ -218,7 +220,7 @@ function(x, ...)  {
 
 `getAllTerms.MCMCglmm` <- 
 function (x, ...) {
-	res <- MuMIn:::getAllTerms.default(x, ...)
+	res <- getAllTerms.default(x, ...) 
 	attr(res, "random") <- .formulaEnv(.~., environment(formula(x)))
 	attr(res, "random.terms") <- deparse(x$Random$formula, control = NULL)[1]
 	res

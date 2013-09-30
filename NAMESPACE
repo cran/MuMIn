@@ -263,6 +263,7 @@ S3method(r.squaredGLMM, mer)
 S3method(r.squaredGLMM, glmmML)
 
 S3method(getCall, default)
+S3method(getCall, model.selection)
 
 S3method(nobs, caic)
 S3method(formula, caic)
