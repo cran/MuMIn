@@ -32,17 +32,28 @@ function (object, rank = NULL, rank.args = NULL, ...) {
 
 `model.sel.default` <-
 function(object, ..., rank = NULL, rank.args = NULL) {
+	.makemnames <- function(cl) {
+		cl[1L] <- cl$rank <- cl$rank.args <- NULL
+		unlist(.makeListNames(cl))
+	}
 
 	if (missing(object) && length(models <- list(...)) > 0L) {
 		object <- models[[1L]]
+		names(models) <- .makemnames(sys.call())
 	} else if (inherits(object, "list")) {
 		if(length(object) ==  0L) stop("at least one model must be given")
 		models <- object
 		object <- models[[1L]]
+		names(models) <- unlist(.makeListNames(models))
 	} else {
 		models <- list(object, ...)
-		names(models)[1L] <- deparse(substitute(object))
+		if(length(models) > 1L) {
+			names(models) <- .makemnames(sys.call())
+		} else {
+			names(models)[1L] <- unlist(.makeListNames(list(substitute(object))))
+		}
 	}
+
 	if(length(models) == 0L) stop("at least one model must be given")
 
 	.checkModels(models, FALSE)

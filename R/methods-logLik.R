@@ -46,12 +46,12 @@ function (object, ...) {
 }
 
 `logLik.coxme` <-
-function(object, type = c("integrated", "penalized"), ...) {
+function(object, type = c("penalized", "integrated"), ...) {
 	type <- match.arg(type)
 	i <- which(type == c("integrated", "penalized"))[1L]
 	ret <- object$loglik[[i + 1L]]
 	attr(ret, "df") <- object$df[i]
-	attr(ret, "nobs") <- object$n[1L]
+	attr(ret, "nobs") <- object$n[2L] # XXX: 1 or 2 ?
 	class(ret) <- "logLik"
 	ret
 }
@@ -79,7 +79,8 @@ function(object, ...) {
 `logLik.splm` <- 
 function (object, ...) {
 	ret <- object$logLik
-	if(is.null(ret)) return(NA)
+	#if(is.null(ret)) return(NA)
+	if(is.null(ret)) ret <- NA_real_
 	attr(ret, "nobs") <- length(resid(object))
 	attr(ret, "df") <- length(object$coefficients) + length(object$errcomp) +
 		length(object$arcoef) + 1L

@@ -11,5 +11,5 @@ if(!("intercept" %in% names(formals(stats::reformulate)))) {
 if (!exists("nobs", mode = "function", where = "package:stats", inherits = FALSE)) {
 `nobs` <- function(object, ...) UseMethod("nobs")
 `nobs.default` <- function(object, ...) NROW(resid(object, ...))
-`nobs.glm` <- function (object, ...) sum(!is.na(object$residuals))
+#`nobs.glm` <- function (object, ...) sum(!is.na(object$residuals))
 }

@@ -32,14 +32,14 @@ dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	See \sQuote{Details}. }
 
 	\item{fixed}{optional, either a single sided formula or a character vector
-	giving names of terms to be included in all models. }
+	giving names of terms to be included in all models. See \sQuote{Subsetting}. }
 
-	\item{m.max, m.min}{optionally the maximum and minimum number of terms in a
+	\item{m.max, m.min}{optionally, the maximum and minimum number of terms in a
 	single model (excluding the intercept), \code{m.max} defaults to the number
-	of terms in \code{global.model}. }
+	of terms in \code{global.model}. See \sQuote{Subsetting}. }
 
 	\item{subset}{ logical expression describing models to keep in the resulting
-		set. See \sQuote{Details}. }
+		set. See \sQuote{Subsetting}. }
 
 	\item{marg.ex}{a character vector specifying names of variables for which
 	NOT to check for marginality restrictions when generating model formulas. If
@@ -145,8 +145,8 @@ formulation must satisfy all these conditions.
 \code{subset} can take either a form of an \emph{expression} or a \emph{matrix}.
 The latter should be a lower triangular matrix with logical values, where
 columns and rows correspond to \code{global.model} terms. Value
-\code{subset["a", "b"] == FALSE} will exclude any model containing both \var{a}
-and \var{b}. Values other than \code{FALSE} (or \code{0}) are taken as
+\code{subset["a", "b"] == FALSE} will exclude any model containing both terms 
+\var{a} and \var{b}. Values other than \code{FALSE} (or \code{0}) are taken as
 \code{TRUE}.
 
 In the form of \code{expression}, the argument \code{subset} acts in a similar
@@ -154,6 +154,13 @@ fashion to that in the function \code{subset} for \code{data.frames}: model
 terms can be referred to by name as variables in the expression, with the
 difference being that they are always logical (i.e. \code{TRUE} if a term exists
 in the model).
+
+There is also \code{.(x)} and \code{.(+x)} notation that indicate respectively
+any or all model terms including a \emph{variable} \code{x}. This concerns only
+interactions containing a particular main effect \code{x} (e.g. \code{x:z},
+\code{v:x:z}), and \emph{not} a variable in a complex expression, such as
+\code{x} in \code{log(x)} or \code{I(x^2)}. This is only useful with marginality
+ exceptions, see \code{marg.ex} argument.
 
 The expression can contain any of the \code{global.model} terms
 (\code{getAllTerms(global.model)} lists them), as well as names of the
@@ -190,14 +197,20 @@ smooths in \code{gam}) should be treated as non-syntactic names and enclosed in
 back-ticks (e.g. \code{subset = `s(x, k = 2)` || `I(log(x))`}, see
 \link[base]{Quotes}). Mind the spacing, names must match exactly the term names
 in model's formula. To simply keep certain terms in all models, use of argument
-\code{fixed} is more efficient.
+\code{fixed} is more efficient. Note that the \code{fixed} formula is 
+interpreted in the same manner as model formula and so the terms need not to be 
+quoted.
 
 \subsection{\code{subset} expression syntax summary}{
 	\tabular{ll}{
-	\code{a & b} \tab indicates that variables \var{a} and \var{b} must be
+	\code{a & b} \tab indicates that model terms \var{a} and \var{b} must be
 	present (see \sQuote{\link[=Logic]{Logical Operators}}) \cr 
 	\code{V(x)} \tab indicates a \code{varying} variable \var{x} \cr
-	\code{dc(a,b,c,...)} \tab \sQuote{dependency chain}: \var{a} is allowed only
+	\code{.(x)} \tab indicates that at least one term containing variable \var{x} 
+		must be present \cr
+	\code{.(+x)} \tab indicates that all the terms containing variable \var{x} 
+		must be present \cr
+	\code{dc(a, b, c,...)} \tab \sQuote{dependency chain}: \var{a} is allowed only
 		if \var{b} is present, and \var{b} only if \var{c} is present, etc. \cr
 	\code{`*nvar*`} \tab number of variables \cr
 	}
@@ -228,15 +241,17 @@ Coefficients can be extracted with \code{coef} or \code{\link{coefTable}}.
 	the information criterion specified by \code{rank} (lowest on top).
 
 The attribute \code{"calls"} is a list containing the model calls used (arranged
-in the same order as the models).
+in the same order as the models). A model call can be retrieved with
+\code{getCall(*, i)} where \var{i} is a vector of model index or name (if given
+as character string).
+
+
 Other attributes:
 \code{"global"} - the \code{global.model} object,
 \code{"rank"} - the \code{rank} function used, \code{"call"} - the matched
 call, and
 \code{"warnings"} - list of errors and warnings given by the modelling function
-	during the fitting, with model number appended to each. The associated model
-	call can be found with \code{attr(*, "calls")[["i"]]}, where \var{i} is the
-	model number.
+	during the fitting, with model number appended to each. 
 }
 
 \author{Kamil Barto\enc{ń}{n}}

@@ -35,7 +35,7 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 		use.names = FALSE)), sort = TRUE)
 
 	cfarr <- coefArray(ct)
-	coefNames <- dimnames(cfarr)[[3]]
+	coefNames <- dimnames(cfarr)[[3L]]
 	nCoef <- length(coefNames)
 	nModels <- length(ct)
 	weight <- object$weight / sum(object$weight)
@@ -61,7 +61,7 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 	all.model.names <- .modelNames(allTerms = allterms1, uqTerms = all.vterms)
 
 	mstab <- object[, -(seq_len(ncol(object) - 5L))]
-	colnames(mstab)[4:5] <- c("Delta", "Weight")
+	colnames(mstab)[4L:5L] <- c("Delta", "Weight")
 	rownames(mstab) <- all.model.names
 
 	avgcoef[is.nan(avgcoef)] <- NA
@@ -180,7 +180,7 @@ function(object, ..., beta = FALSE,
 	}
 
 	cfarr <- coefArray(coefTables)
-	coefNames <- dimnames(cfarr)[[3]]
+	coefNames <- dimnames(cfarr)[[3L]]
 	nCoef <- length(coefNames)
 
 	# Benchmark: 3.7x faster
@@ -339,7 +339,8 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 			lapply(pred[err], warning)
 			stop(sprintf(ngettext(sum(err), "'predict' for model %s caused error",
 				"'predict' for models %s caused errors"),
-					paste(sQuote(names(models[err])), collapse = ", ")))
+				prettyEnumStr(names(models[err]), quote = "'")
+				))
 		}
 
 		.untransform <- function(fit, se.fit = NULL, models) {
@@ -375,9 +376,8 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 			#no.ase <- all(is.na(object$avg.model[,3]))
 			# if(no.ase) 2 else 3
 			ret <-  if (backtransform)
-					.untransform(apred[1L, ], apred[2L, ], models = models)
-				else
-					list(fit = apred[1L, ], se.fit = apred[2L, ])
+					.untransform(apred[1L, ], apred[2L, ], models = models) else
+						list(fit = apred[1L, ], se.fit = apred[2L, ])
 		} else {
 			#tryCatch({
 			i <- !vapply(pred, is.numeric, FALSE)
@@ -402,7 +402,7 @@ function (object, ...) object$x
 function (object, ...) {
 	cf <- object$avg.model
 	no.ase <- all(is.na(cf[, 3L]))
-	z <- abs(cf[,1] / cf[, if(no.ase) 2L else 3L])
+	z <- abs(cf[, 1L] / cf[, if(no.ase) 2L else 3L])
 	pval <- 2 * pnorm(z, lower.tail = FALSE)
 	object$coefmat <- cbind(cf[, if(no.ase) 1L:2L else 1L:3L],
 					 `z value` = z,
@@ -424,7 +424,7 @@ function (object, parm, level = 0.95, ...) {
     dfs <- object$coefArray[, 3L, ]
     ci <- t(sapply(parm, function(i)
 		par.avg(cf[,i], se[,i], wts, dfs[, i], alpha = a2)))[, 4L:5L]
-    pct <- stats:::format.perc(c(a, 1L - a), 3L)
+    pct <- .xget("stats", "format.perc")(c(a, 1L - a), 3L)
 
 	ci[is.na(object$coef.shrinkage), ] <- NA_real_
     colnames(ci) <- pct
@@ -495,10 +495,10 @@ function(x, ...) {
 	wts <- wts / sum(wts) # normalize just in case
 
 	#vcov0 <- matrix(NA, nrow=nvars, ncol = nvars,	dimnames = list(names.all, names.all))
-	vcov0 <- matrix(if(full) 0 else NA, nrow = nvars,
+	vcov0 <- matrix(if(full) 0 else NA_real_, nrow = nvars,
 		ncol = nvars, dimnames = list(names.all, names.all))
 
-	v <- vcovs[[1]]
+	v <- vcovs[[1L]]
 
 	vcovs2 <- lapply(vcovs, function(v) {
 		i <- match(dimnames(v)[[1L]], names.all)
@@ -531,4 +531,4 @@ function(x, ...) {
 	}
 }
 
-`coefTable.averaging` <- function (model, ...)  model$avg.model[, 1:2]
+`coefTable.averaging` <- function (model, ...)  model$avg.model[, 1L:2L]

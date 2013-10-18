@@ -28,14 +28,13 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		if(length(is.dotted) > 0L) {
 			substGmCall <- substitute(global.model)
 			if(is.name(substGmCall)) {
-				stop("call to 'global.model' contains '...' arguments and ",
-					"cannot be updated: ", deparse(gmCall, control = NULL))
+				.cry(NA, "call to 'global.model' contains '...' arguments and cannot be updated: %s", deparse(gmCall, control = NULL))
 			} else gmCall[is.dotted] <-
 				substitute(global.model)[names(gmCall[is.dotted])]
 		}
 		
 		## object from 'run.mark.model' has $call of 'make.mark.model' - fixing it here:
-		if(inherits(global.model, "mark") && gmCall[[1]] == "make.mark.model") {
+		if(inherits(global.model, "mark") && gmCall[[1L]] == "make.mark.model") {
 			gmCall <- call("run.mark.model", model = gmCall, invisible = TRUE)
 		}
 		
@@ -50,12 +49,17 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	
 	if(!rank.custom && lLName == "qLik") {
 		rank <- "QIC"
-		warning("using 'QIC' instead of 'AICc'")
+		.cry(NA, "using 'QIC' instead of 'AICc'", warn = TRUE)
 	}
 	
 	rankArgs <- list(...)
 	IC <- .getRank(rank, rankArgs)
 	ICName <- as.character(attr(IC, "call")[[1L]])
+	
+	tryCatch(IC(global.model), error = function(e) {
+		e$call <- do.call(substitute, list(attr(IC, "call"), list(x = as.name("global.model"))))
+		stop(e)
+	})
 
 	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,
 		data = eval(gmCall$data, envir = gmEnv))
@@ -75,7 +79,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	# Check for na.omit
 	if (!is.null(gmCall$na.action) &&
 		as.character(gmCall$na.action) %in% c("na.omit", "na.exclude")) {
-		stop("'global.model' should not use 'na.action' = ", gmCall$na.action)
+		.cry(NA, "'global.model' should not use 'na.action' = \"%s\"", gmCall$na.action)
 	}
 	
 	if(names(gmCall)[2L] == "") gmCall <-
@@ -88,12 +92,12 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	n.vars <- length(allTerms)
 
 	if(isTRUE(rankArgs$REML) || (isTRUE(.isREMLFit(global.model)) && is.null(rankArgs$REML)))
-		warning("comparing models fitted by REML")
+		.cry(NA, "comparing models fitted by REML", warn = TRUE)
 
 	if (beta && is.null(tryCatch(beta.weights(global.model), error = function(e) NULL,
 		warning = function(e) NULL))) {
-		warning("do not know how to calculate beta weights for ",
-				class(global.model)[1L], ", argument 'beta' ignored")
+		.cry(NA, "do not know how to calculate beta weights for '%s', argument 'beta' ignored",
+			 class(global.model)[1L], warn = TRUE)
 		beta <- FALSE
 	}
 
@@ -103,16 +107,16 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	if (!is.null(fixed)) {
 		if (inherits(fixed, "formula")) {
 			if (fixed[[1L]] != "~" || length(fixed) != 2L)
-				warning("'fixed' should be a one-sided formula")
+				.cry(NA, "'fixed' should be a one-sided formula", warn = TRUE)
 			fixed <- as.vector(getAllTerms(fixed))
 		} else if (identical(fixed, TRUE)) {
 			fixed <- as.vector(allTerms[!(allTerms %in% interceptLabel)])
 		} else if (!is.character(fixed)) {
-			stop ("'fixed' should be either a character vector with"
+			.cry(NA, "'fixed' should be either a character vector with"
 				  + " names of variables or a one-sided formula")
 		}
 		if (!all(fixed %in% allTerms)) {
-			warning("not all terms in 'fixed' exist in 'global.model'")
+			.cry(NA, "not all terms in 'fixed' exist in 'global.model'", warn = TRUE)
 			fixed <- fixed[fixed %in% allTerms]
 		}
 	}
@@ -165,7 +169,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		applyExtras <- function(x) unlist(lapply(extra, function(f) f(x)))
 		extraResult <- applyExtras(global.model)
 		if(!is.numeric(extraResult))
-			stop("function in 'extra' returned non-numeric result")
+			.cry(NA, "function in 'extra' returned non-numeric result")
 
 		nextra <- length(extraResult)
 		extraNames <- names(extraResult)
@@ -178,8 +182,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	nov <- as.integer(n.vars - n.fixed)
 	ncomb <- (2L ^ nov) * nvariants
 
-	if(nov > 31L) stop(gettextf("number of predictors (%d) exceeds allowed maximum (31)",
-								nov, domain = "R-MuMIn"))
+	if(nov > 31L) .cry(NA, "number of predictors (%d) exceeds allowed maximum (31)", nov)
 	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
 	nmax <- ncomb * nvariants
 	if(evaluate) {
@@ -208,8 +211,9 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			n <- length(allTerms)
 			if(is.null(dn) || any(sapply(dn, is.null))) {
 				di <- dim(subset)
-				if(any(di != n)) stop("unnamed 'subset' matrix does not have ",
-					"both dimensions equal to number of terms in 'global.model': %d", n)
+				if(any(di != n)) stop("unnamed 'subset' matrix does not have both dimensions",
+					" equal to number of terms in 'global.model': %d", n)
+				
 				dimnames(subset) <- list(allTerms, allTerms)
 			} else {
 				if(!all(unique(unlist(dn)) %in% allTerms))
@@ -234,20 +238,55 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			}
 			subset <- as.expression(subset)
 			ssValidNames <- c("comb", "*nvar*")
-			subsetExpr <- .subst4Vec(subset[[1L]], allTerms, as.name("comb"))
+
+			subsetExpr <- subset[[1L]]
+
+			## subset X
+			#gloFactorTable <- t(attr(terms(global.model), "factors")[-1L, ] != 0)
+			gloFactorTable <- t(attr(terms(reformulate(allTerms0[!(allTerms0
+				%in% interceptLabel)])), "factors") != 0)
+			
+			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
+	
+			
+			subsetExpr <- .substFun4Fun(subsetExpr, ".", function(x, fac, at, vName) {
+				if(length(x) != 2L) .cry(x, "exactly one argument needed, %d given.", length(x) - 1L)
+				if(length(x[[2L]]) == 2L && x[[2L]][[1L]] == "+") {
+					fun <- "all"
+					sx <- as.character(x[[2L]][[2L]])
+				} else {
+					fun <- "any"
+					sx <- as.character(x[[2L]])
+				}
+				#print(sx)
+				dn <- dimnames(fac)
+				#print(dn)
+				#browser()
+				if(!(sx %in% dn[[2L]])) .cry(x, "unknown variable name '%s'", sx)
+				as.call(c(as.name(fun), call("[", vName, as.call(c(as.name("c"), 
+					match(dn[[1L]][fac[, sx]], at))))))
+			}, gloFactorTable, allTerms, as.name("comb"))
+			
+			subsetExpr <- .subst4Vec(subsetExpr, allTerms, as.name("comb"))
+			
 			
 			if(nvarying) {
 				ssValidNames <- c("cVar", "comb", "*nvar*")
 				subsetExpr <- .substFun4Fun(subsetExpr, "V", function(x, cVar, fn) {
-					if(length(x) > 2L)
-						warning("discarding extra arguments for 'V' in 'subset' expression")
+					if(length(x) > 2L) .cry(x, "discarding extra arguments", warn = TRUE)
 					i <- which(fn == x[[2L]])[1L]
-					if(is.na(i)) stop(sQuote(x[[2L]]), " is not a valid name of 'varying' element")
+					if(is.na(i)) .cry(x, "'%s' is not a valid name of 'varying' element",
+									  as.character(x[[2L]]), warn = TRUE)
 					call("[[", cVar, i)
 				}, as.name("cVar"), varying.names)
 				if(!all(all.vars(subsetExpr) %in% ssValidNames))
-					subsetExpr <- .subst4Vec(subsetExpr, varying.names, as.name("cVar"), fun = "[[")
+					subsetExpr <- .subst4Vec(subsetExpr, varying.names,
+											 as.name("cVar"), fun = "[[")
 			}
+			
+			
+			# DebugPrint(subsetExpr)
+			
 			ssVars <- all.vars(subsetExpr)
 			okVars <- ssVars %in% ssValidNames
 			if(!all(okVars)) stop("unrecognized names in 'subset' expression: ",
@@ -259,11 +298,13 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			
 			hasSubset <- if(any(ssVars == "cVar")) 4L else # subset as expression
 				3L # subset as expression using 'varying' variables
+				
+			#DebugPrint(subsetExpr)
+			
 
 		}
 	} # END: manage 'subset'
-
-
+	
 	comb.sfx <- rep(TRUE, n.fixed)
 	comb.seq <- if(nov != 0L) seq_len(nov) else 0L
 	k <- 0L
@@ -315,7 +356,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		if(jComb != prevJComb) {
 			isok <- TRUE
 			prevJComb <- jComb
-
+			
 			#DebugPrint(hasSubset)
 			comb <- c(as.logical(intToBits(jComb - 1L)[comb.seq]), comb.sfx)
 			nvar <- sum(comb) - nInts

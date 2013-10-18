@@ -62,7 +62,7 @@ Methods exist for
 
 \examples{
 
-library(geepack)
+if(require(geepack)) {
 data(ohio)
 
 fm1 <- geeglm(resp ~ age * smoke, id = id, data = ohio,
@@ -77,6 +77,7 @@ model.sel(fm1, fm2, fm3, rank = QIC)
     dredge(fm1, m.min = 3, rank = QIC, varying = list(
     corstr = list("exchangeable", "unstructured", "ar1")
     ))      
+}
 }
 
 }

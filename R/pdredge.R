@@ -12,26 +12,12 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		clusterCall <- get("clusterCall")
 		clusterApply <- get("clusterApply")
 		clusterCall(cluster, "require", "MuMIn", character.only = TRUE)
-		clusterCall(cluster, assign, "assignFromNs", function(name, asName = name,
-			ns = "MuMIn") {
-			assign(asName, get(name, loadNamespace(ns)), envir = as.environment(1L))
-			invisible(NULL)
-		}, envir = .GlobalEnv)
-
-		clusterCall(cluster, "assignFromNs", ".getLik")
-		clusterCall(cluster, "assignFromNs", "tryCatchWE")
-		clusterCall(cluster, "assignFromNs", "matchCoef")
-		clusterCall(cluster, "assignFromNs", "parGetMsRow")
-
-		.getRow <- function(X) clusterApply(cluster, X, fun = "parGetMsRow")
-
+		.getRow <- function(X) clusterApply(cluster, X, fun = ".pdredge_process_model")
 	} else {
-		.getRow <- function(X) lapply(X, parGetMsRow, parCommonProps)
+		.getRow <- function(X) lapply(X, pdredge_process_model, envir = props)
 		clusterCall <- function(...) NULL
 		message("Not using cluster.")
 	}
-
-
 
 	gmEnv <- parent.frame()
 	gmCall <- .getCall(global.model)
@@ -63,7 +49,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 				substitute(global.model)[names(gmCall[is.dotted])]
 		}
 		## object from 'run.mark.model' has $call of 'make.mark.model' - fixing it here:
-		if(inherits(global.model, "mark") && gmCall[[1]] == "make.mark.model") {
+		if(inherits(global.model, "mark") && gmCall[[1L]] == "make.mark.model") {
 			gmCall <- call("run.mark.model", model = gmCall, invisible = TRUE)
 		}
 	}
@@ -103,7 +89,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	}
 
 	if(names(gmCall)[2L] == "") gmCall <-
-		match.call(gmCall, definition = eval(gmCall[[1]], envir = parent.frame()), expand.dots = TRUE)
+		match.call(gmCall, definition = eval(gmCall[[1L]], envir = parent.frame()), expand.dots = TRUE)
 
 
 	gmCoefNames <- fixCoefNames(names(coeffs(global.model)))
@@ -326,23 +312,29 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	# BEGIN parallel
 	qi <- 0L
 	queued <- vector(qlen, mode = "list")
-	parCommonProps <- list(gmEnv = gmEnv, IC = IC, 
-		# beta = beta,
-		# allTerms = allTerms, 
-		nextra = nextra,
-		matchCoefCall = as.call(c(list(
-			as.name("matchCoef"), as.name("fit1"), 
-			all.terms = allTerms, beta = beta, 
-			allCoef = TRUE), ct.args))
-		# matchCoefCall = as.call(c(alist(matchCoef, fit1, all.terms = Z$allTerms, 
-		#   beta = Z$beta, allCoef = TRUE), ct.args))
+	props <- list(
+				gmEnv = gmEnv,
+				IC = IC, 
+				# beta = beta,
+				# allTerms = allTerms, 
+				nextra = nextra,
+				matchCoefCall = as.call(c(list(
+					as.name("matchCoef"), as.name("fit1"), 
+					all.terms = allTerms, beta = beta, 
+					allCoef = TRUE), ct.args))
+				# matchCoefCall = as.call(c(alist(matchCoef, fit1, all.terms = Z$allTerms, 
+				#   beta = Z$beta, allCoef = TRUE), ct.args))
 		)
 	if(nextra) {
-		parCommonProps$applyExtras <- applyExtras
-		parCommonProps$extraResult <- extraResult
+		props$applyExtras <- applyExtras
+		props$extraResultNames <- names(extraResult)
 	}
-	if(doParallel) clusterVExport(cluster, clustDredgeProps = parCommonProps,
-		tryCatchWE)
+	props <- as.environment(props)
+	
+	if(doParallel) clusterVExport(cluster,
+								  pdredge_props = props,
+								  .pdredge_process_model = pdredge_process_model
+								  )
 	# END parallel
 
 	retColIdx <- if(nvarying) -n.vars - seq_len(nvarying) else TRUE
@@ -360,7 +352,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			nvar <- sum(comb) - nInts
 			
 			
-			# POSITIVE condition for 'pdredge', NEGATIVE for 'dredge':
+			# !!! POSITIVE condition for 'pdredge', NEGATIVE for 'dredge':
 			if((nvar >= m.min && nvar <= m.max) && switch(hasSubset,
 					# 1 - no subset, 2 - matrix, 3 - expression
 					TRUE,                                    # 1 
@@ -548,39 +540,44 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		attr(ret, "random.terms") <- attr(allTerms0, "random.terms")
 
 	if(doParallel) clusterCall(cluster, "rm",
-		list = c("parGetMsRow", "clustDredgeProps", ".getLik", "tryCatchWE",
-			"matchCoef", "parGetMsRow"), envir = .GlobalEnv)
+		list = c(".pdredge_process_model", "pdredge_props"), envir = .GlobalEnv)
+		
+
 	return(ret)
 } ######
 
 
-`parGetMsRow` <- function(modv, Z = get("clustDredgeProps", .GlobalEnv)) {
+
+`pdredge_process_model` <- function(modv, envir = get("pdredge_props", .GlobalEnv)) {
 	### modv == list(call = clVariant, id = modelId)
-	result <- tryCatchWE(eval(modv$call, Z$gmEnv))
+	result <- tryCatchWE(eval(modv$call, get("gmEnv", envir)))
 	if (inherits(result$value, "condition")) return(result)
 
 	fit1 <- result$value
-	if(Z$nextra != 0L) {
-		extraResult1 <- Z$applyExtras(fit1)
-		if(length(extraResult1) < Z$nextra) {
-			tmp <- rep(NA_real_, Z$nextra)
-			tmp[match(names(extraResult1), names(Z$extraResult))] <-
+	if(get("nextra", envir) != 0L) {
+		extraResult1 <- get("applyExtras", envir)(fit1)
+		nextra <- get("nextra", envir)
+		if(length(extraResult1) < nextra) {
+			tmp <- rep(NA_real_, nextra)
+			tmp[match(names(extraResult1), get("extraResultNames", envir))] <-
 				extraResult1
 			extraResult1 <- tmp
 		}
 	} else extraResult1 <- NULL
 	ll <- .getLik(fit1)$logLik(fit1)
 
-	#mcoef <- matchCoef(fit1, all.terms = Z$allTerms, beta = Z$beta, allCoef = TRUE)
-	mcoef <- eval(Z$matchCoefCall)
+	#mcoef <- matchCoef(fit1, all.terms = get("allTerms", envir),
+	# beta = get("beta", envir), allCoef = TRUE)
+	mcoef <- eval(get("matchCoefCall", envir))
 
 	list(value = c(mcoef, extraResult1, df = attr(ll, "df"), ll = ll,
-		ic = Z$IC(fit1)),
+		ic = get("IC", envir)(fit1)),
 		nobs = nobs(fit1),
 		coefTable = attr(mcoef, "coefTable"),
 		warnings = result$warnings)
-}
 
+}
+		
 .test_pdredge <- function(dd) {
 	cl <- attr(dd, "call")
 	cl$cluster <- cl$check <- NULL

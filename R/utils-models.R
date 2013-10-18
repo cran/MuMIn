@@ -5,8 +5,10 @@
 # `.getLogLik` <- function() logLik
 
 `.getLogLik` <- function()
-	if(isGeneric("logLik")) stats4:::logLik else
-		stats::logLik
+	if(isGeneric("logLik")) .xget("stats4", "logLik") else
+		.xget("stats", "logLik")
+	#if(isGeneric("logLik")) stats4:::logLik else
+	#	stats::logLik
 
 		
 `.getLik` <- function(x) {

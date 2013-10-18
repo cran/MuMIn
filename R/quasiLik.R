@@ -76,6 +76,17 @@ function(x, typeR = FALSE) UseMethod("getQIC")
 function(x, typeR = FALSE) .NotYetImplemented()
 
 
+`getQIC.coxph` <- function(x, ...) {
+	warning("QIC for coxph is experimental")
+	naive.var <- x[[ if (is.null(x$naive.var)) "var" else "naive.var" ]]
+	tr <- sum(diag(solve(naive.var) %*% x$var))
+	ll <- x$loglik[2L]
+	px <- x$n
+	c(2 * (c(QIC = tr, QICu = px) - ll), n = px)
+}
+
+
+
 `getQIC.gee` <- 
 function(x, typeR = FALSE) {
 	if(x$model$corstr != "Independent")
