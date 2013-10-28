@@ -1,5 +1,12 @@
 MuMIn package news:
 
+Version: 1.9.13 (2013-10-28)
+fixed: handling response variables with more than two levels in 'nnet::multinom'
+	models. (reported by L. Duvaux on Stackoverflow)
+
+Version: 1.9.12 (2013-10-21)
+further adjustments to deal with unavailability of 'lme4' on CRAN.
+
 Version: 1.9.11 (2013-09-30)
 Documentation: examples that depend on suggested packages have been made 
 	conditional on availability of the package.
