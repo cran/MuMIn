@@ -71,14 +71,11 @@ function(model, ...)
 	#sm <- eval(expression(summary), asNamespace("lme4"))
 	.makeCoefTable(fixef(model), vcov(model, ...)@factors$correlation@sd)
 
-`coefTable.multinom` <-
-function(model, ...) {
-	s <- summary(model, ...)
-	cf <- s$coefficients
-	se <- s$standard.errors
-	.makeCoefTable(if(is.vector(cf)) cf else cf[, 1L], 
-		if(is.vector(se)) se else se[, 1L])
+`coefTable.multinom` <- 
+function (model, ...) {
+	.makeCoefTable(coeffs(model), sqrt(diag(vcov(model))))
 }
+
 
 `coefTable.sarlm` <-
 `coefTable.spautolm` <-

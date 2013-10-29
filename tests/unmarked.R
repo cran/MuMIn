@@ -1,11 +1,11 @@
-if(length(find.package("unmarked", quiet = TRUE)) != 0L) {
+if(length(find.package("unmarked", quiet = TRUE)) == 1L) {
 
 library(MuMIn)
 library(stats4)
-library(unmarked) # cheating R check
-#do.call(library, alist(unmarked)) # cheating R check
+library(unmarked)
 
 # Simulate occupancy data
+
 set.seed(1)
 umfOccu <- local({
 	nSites <- 100
@@ -29,7 +29,6 @@ fm2oc <- occu(~veght+habitat ~veght*habitat, umfOccu)
 fm3oc <- occu(~habitat ~veght+habitat, umfOccu)
 fm4oc <- occu(~veght ~veght+habitat, umfOccu)
 
-MuMIn:::fixCoefNames(names(coef(fm2oc)))
 
 #str(fm4oc)
 #showMethods("backTransform")
@@ -41,6 +40,10 @@ MuMIn:::fixCoefNames(names(coef(fm2oc)))
 #(dd <- dredge(fm2oc, fixed = ~psi(habitat), trace = T))
 (dd <- dredge(fm2oc, fixed = ~psi(habitat)))
 
+# mod <- get.models(dd, 1:5)
+
+# ma <- model.avg(mod)
+## predict(ma, umfOccu, type = "state")
 
 # Checking if 'dc' works properly in both subset.model.selection and dredge.
 dd2 <- dredge(fm2oc, subset = `psi(habitat)` & dc(`p(habitat)`, `p(veght)`))

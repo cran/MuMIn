@@ -143,7 +143,7 @@ function (object, newdata, level, asList = FALSE,
 .predict_glm(object, newdata, type, se.fit,
 		trms = delete.response(terms(formula(object, fixed.only = TRUE))),
 		coeff = fixef(object),
-		offset = getME(object, "offset"),
+		offset = lme4::getME(object, "offset"),
 		...)
 
 

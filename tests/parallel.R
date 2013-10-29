@@ -3,19 +3,18 @@ if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) {
 	clust <- try(makeCluster(getOption("cl.cores", 2), type = clusterType))
 	if(inherits(clust, "cluster")) {
 		library(MuMIn)
-		library(lme4)
+	
+		library(nlme)
 		data(Orthodont, package = "nlme")
 
 		# Orthodont$rand <- runif(nrow(Orthodont))
 		# fm2 <- lmer(log(distance) ~ rand*Sex*age + (1|Subject) + (1|Sex),
 		#	data = Orthodont, REML=FALSE)
-		fm2 <- lmer(log(distance) ~ Sex*age + (1|Subject) + (1|Sex),
-			data = Orthodont, REML = FALSE)
-
+		fm2 <- lme(log(distance) ~ Sex*age, ~ 1|Subject / Sex,
+			data = Orthodont, method = "ML")
 
 		clusterExport(clust, "Orthodont")
-		#clusterEvalQ(clust, library(lme4))
-		clusterCall(clust, "library", "lme4", character.only = TRUE)
+		clusterCall(clust, "library", "nlme", character.only = TRUE)
 
 		print(system.time(pddc <- pdredge(fm2, cluster = clust)))
 		print(system.time(pdd1 <- pdredge(fm2, cluster = FALSE)))

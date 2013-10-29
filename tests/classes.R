@@ -177,7 +177,7 @@ gam1 <- gam(y ~ s(x0) + s(x1) + s(x2) +  s(x3) + (x1+x2+x3)^2,
 
 dd <- dredge(gam1, subset=!`s(x0)` & (!`s(x1)` | !x1) & (!`s(x2)` |
 	!x2) & (!`s(x3)` | !x3), fixed = "x1")
-
+	
 gm <- get.models(dd, cumsum(weight) <= .95)
 ma <- model.avg(gm)
 

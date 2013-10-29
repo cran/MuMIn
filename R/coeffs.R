@@ -63,6 +63,22 @@ function (model) coef(model$gam)
 	cf
 }
 
+`coeffs.multinom` <- 
+function (model) {
+	coefs <- coef(model)
+	if (is.vector(coefs)) {
+      	coefs <- t(as.matrix(coefs))
+    	}
+    	coefdim <- dim(coefs)
+	Names <- dimnames(coefs)
+	if (is.null(Names[[1L]])) 
+      	Names <- Names[[2L]]
+    	else Names <- as.vector(outer(Names[[2L]], Names[[1L]], function(name2, 
+      	name1) paste(name1, name2, sep = ":")))
+	res <- as.vector(coefs)
+	names(res) <- Names
+	res
+}
 
 `coeffs.default` <-
 function(model) coef(model)
