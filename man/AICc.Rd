@@ -72,6 +72,8 @@ fm2 <- lme(distance ~ Sex*age, data = Orthodont,
 # Model selection: ranking by AICc using ML
 ms2 <- dredge(fm2, trace = TRUE, rank = "AICc", REML = FALSE)
 
+
+
 (attr(ms2, "rank.call"))
 
 # Get the models (fitted by REML, as in the global model)

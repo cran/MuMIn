@@ -3,8 +3,8 @@ function(object, subset, ...) {
     if (!inherits(object, "model.selection"))
 		stop("'object' must be a 'model.selection' object")
 
-	calls <- attr(object, "calls")
-	if(is.null(calls)) stop("'object' has no 'calls' attribute")
+	calls <- attr(object, "model.calls")
+	if(is.null(calls)) stop("'object' has no 'model.calls' attribute")
 
 	if(!missing(subset)) {
 	    r <- eval(substitute(subset), object, parent.frame())
@@ -21,7 +21,7 @@ function(object, subset, ...) {
 
 	glo <- attr(object, "global")
 	if(is.null(glo)) {
-		models <- lapply(attr(object, "calls"), function(cl) {
+		models <- lapply(attr(object, "model.calls"), function(cl) {
 			eval(cl, envir = environment(formula(cl)))
 		})
 	} else {
@@ -41,7 +41,7 @@ function(object, cluster = NA, subset, ...) {
 	if (!inherits(object, "model.selection"))
 		stop("'object' must be a 'model.selection' object")
 
-	calls <- attr(object, "calls")
+	calls <- attr(object, "model.calls")
 	if(is.null(calls)) stop("object has no 'calls' attribute")
 
 	if(!missing(subset)) {
@@ -66,7 +66,7 @@ function(object, cluster = NA, subset, ...) {
 	} else {
 		glo <- attr(object, "global")
 		if(is.null(glo)) {
-			models <- lapply(attr(object, "calls"), function(cl) {
+			models <- lapply(attr(object, "model.calls"), function(cl) {
 				eval(cl, envir = environment(formula(cl)))
 			})
 		} else {

@@ -50,7 +50,10 @@ function (model) {
 }
 
 `coeffs.MCMCglmm` <-
-function (model) summary(model)$solutions[, 1L]
+function (model)
+#summary(model)$solutions[, 1L]
+colMeans(model$Sol[, seq.int(model$Fixed$nfl), drop = FALSE])
+
 
 
 `coeffs.gamm` <-
@@ -79,6 +82,21 @@ function (model) {
 	names(res) <- Names
 	res
 }
+
+
+`coeffs.aodml` <-
+function (model) {
+	c(model$b, model$phi)
+}
+
+`coeffs.asreml` <- 
+function (model) {
+	coef(model)$fixed  ## should include also '$sparse' ?
+}
+
+`coeffs.cpglmm` <-
+function (model) 
+model@fixef
 
 `coeffs.default` <-
 function(model) coef(model)

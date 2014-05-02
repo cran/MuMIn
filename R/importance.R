@@ -8,12 +8,25 @@ function(x) return(x$importance)
 function(x) {
 	tt <- attr(x, "terms")
 	z <- x[, tt, drop = FALSE]
-	z <- z[, !apply(apply(z, 2L, is.na), 2, all) & !(tt %in% attr(tt, "interceptLabel")),
-		drop = FALSE]
+	z <- !is.na(z[, !apply(apply(z, 2L, is.na), 2, all) & !(tt %in% attr(tt, "interceptLabel")),
+		drop = FALSE])
 	wt <- x[, "weight"]
-	return(sort(apply(z, 2L, function(y) sum(wt[!is.na(y)])), decreasing = TRUE))
+	res <- sort(apply(z, 2L, function(y) sum(wt[y])), decreasing = TRUE)
+	attr(res, "n.models") <- colSums(z)
+	class(res) <- c("importance", "numeric") 
+	return(res)
 }
 
+
+`print.importance` <-
+function(x, ...) {
+	print.default(format(matrix(c(
+		format(ifelse(x < 0.01, "<0.01", zapsmall(x, 2L)), scientific = FALSE,
+		justify = "r"), format(attr(x, "n.models"))), nrow = 2L, byrow = TRUE,
+		dimnames = list(c("Importance:", "N containing models:"), names(x))),
+		justify = "r"), quote = FALSE)
+	invisible(x)
+}
 
 
 

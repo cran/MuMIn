@@ -64,9 +64,9 @@ model.names(object, ..., labels = NULL, use.letters = FALSE)
 	be used to prevent this happening.
  }
   \item{\dots}{ for \code{model.names}, more fitted model objects.
-	For \code{coefTable} arguments that are passed to appropriate \code{summary}
-	method (e.g. \code{dispersion} parameter for \code{glm} may be used here).
-	In other functions often not used.
+	For \code{coefTable} arguments that are passed to appropriate \code{\link{vcov}}
+	or \code{summary} method (e.g. \code{dispersion} parameter for \code{glm} may
+	be used here). In other functions often not used.
   }
   \item{use.letters}{logical, whether letters should be used instead of numeric codes. }
   

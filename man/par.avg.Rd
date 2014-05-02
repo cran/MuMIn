@@ -41,17 +41,16 @@ calculated either according to the original equation in Burnham and Anderson
 or a newer, revised formula from Burnham and Anderson (2004, equation 4)
 (if \code{revised.var = TRUE}, this is the default).
 If \code{adjusted = TRUE} (the default) and degrees of freedom are given, the
- adjusted standard error estimator and 
-confidence intervals with improved coverage are returned (see Burnham and Anderson 2002, 
-section 4.3.3).
+adjusted standard error estimator and confidence intervals with improved 
+coverage are returned (see Burnham and Anderson 2002, section 4.3.3).
 
 }
 
 \references{
-Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
+Burnham, K. P. and Anderson, D. R. (2002) \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed.
 
-Burnham, K. P. and Anderson, D. R. (2004). \emph{Multimodel inference -
+Burnham, K. P. and Anderson, D. R. (2004) \emph{Multimodel inference -
 understanding AIC and BIC in model selection}. Sociological Methods & Research
 33(2): 261-304.
 }

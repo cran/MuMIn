@@ -64,6 +64,10 @@ model selection by AIC.
 
 data(Cement)
 
+options(na.action = "na.fail") #  change the default "na.omit" to prevent models 
+                               #  from being fitted to different datasets in 
+                               #  case of missing values.
+
 fm1 <- lm(y ~ ., data = Cement)
 ms1 <- dredge(fm1)
 plot(ms1)

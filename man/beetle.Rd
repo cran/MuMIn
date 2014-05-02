@@ -49,7 +49,7 @@ globmod <- glm(Prop ~ dose + I(dose^2) + log(dose) + I(log(dose)^2),
 # A logical expression defining the subset of models to use:
 # * either log(dose) or dose
 # * the quadratic terms can appear only together with linear terms
-msubset <- expression(xor(dose, `log(dose)`) & (dose | !`I(dose^2)`)
+msubset <- expression(xor(dose,`log(dose)`) & (dose | !`I(dose^2)`)
     & (`log(dose)` | !`I(log(dose)^2)`))
 
 

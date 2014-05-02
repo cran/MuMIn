@@ -56,6 +56,10 @@ S3method(model.matrix, averaging)
 S3method(print, model.selection)
 S3method(subset, model.selection)
 S3method("[", model.selection)
+S3method("row.names<-", model.selection)
+
+S3method(merge, model.selection)
+
 S3method(update, model.selection)
 S3method(coef, model.selection)
 S3method(logLik, model.selection)
@@ -126,6 +130,11 @@ S3method(coeffs, lme)
 S3method(coefTable, lme)
 S3method(predict, lme)
 S3method(predict, gls)
+
+S3method(model.frame, lme)
+S3method(model.matrix, lme)
+
+
 
 S3method(getAllTerms, mer)
 S3method(coeffs, mer)
@@ -262,9 +271,44 @@ S3method(r.squaredGLMM, merMod)
 S3method(r.squaredGLMM, mer)
 S3method(r.squaredGLMM, glmmML)
 
+S3method(coefTable, aodml)
+S3method(coeffs, aodml)
+S3method(coefTable, aodml)
+S3method(makeArgs, aodml)
+S3method(nobs, aodql)
+S3method(coefTable, aodql)
+
+
+S3method(getAllTerms, betareg)
+S3method(makeArgs, betareg)
+S3method(coefTable, betareg)
+
 S3method(getCall, default)
 S3method(getCall, model.selection)
 
 S3method(nobs, caic)
 S3method(formula, caic)
 S3method(nobs, pgls)
+
+S3method(nobs, asreml)
+S3method(coefTable, asreml)
+S3method(family, asreml)
+S3method(formula, asreml)
+S3method(getAllTerms, asreml)
+S3method(logLik, asreml)
+S3method(makeArgs, asreml)
+S3method(coeffs, asreml)
+
+S3method(nobs, phylolm)
+S3method(logLik, phylolm)
+
+S3method(coefTable, cplm)
+S3method(coefTable, cpglmm)
+S3method(nobs, cplm)
+S3method(nobs, cpglmm)
+S3method(logLik, cplm)
+S3method(coeffs, cpglmm)
+S3method(getAllTerms, cpglmm)
+
+
+

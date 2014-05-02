@@ -11,7 +11,6 @@ function (model, ...) UseMethod("coefTable")
 function (x, ...)
 stats::printCoefmat(x, has.Pvalue = FALSE)
 
-
 .makeCoefTable <- 
 function(x, se, df = NA_real_, coefNames = names(x)) {
 	if(n <- length(x)) {
@@ -73,7 +72,7 @@ function(model, ...)
 
 `coefTable.multinom` <- 
 function (model, ...) {
-	.makeCoefTable(coeffs(model), sqrt(diag(vcov(model))))
+	.makeCoefTable(coeffs(model), sqrt(diag(vcov(model, ...))))
 }
 
 
@@ -118,13 +117,12 @@ function(model, ...) {
 	#.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))))
 }
 
+`coefTable.aodql` <-
+`coefTable.betareg` <- 
 `coefTable.glimML` <-
+`coefTable.unmarkedFit` <- 
 function(model, ...)
 	.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))))
-
-`coefTable.unmarkedFit` <- 
-function (model, ...)
-	.makeCoefTable(coef(model), sqrt(diag(vcov(model))))
 
 	
 `coefTable.gee` <-
@@ -194,8 +192,23 @@ function (model, ...)
 
 `coefTable.aodml` <-
 function (model, ...) {
-	s <- summary(model)
-	ct <- rbind(s$BCoef[, c(1L, 2L)], s$FixedBCoef, s$Phi, s$FixedPhi)
-	.makeCoefTable(ct[,1L], ct[, 2L], coefNames = rownames(ct))
+	.makeCoefTable(coeffs(model), sqrt(diag(model$varparam)))
 }
 
+## XXX: fixed effects coefficients only
+`coefTable.asreml` <- 
+function (model, ...)  {
+	.makeCoefTable(
+		x = model$coefficients$fixed, 
+		se = sqrt(model$vcoeff$fixed * model$sigma2) ## ?
+		) 
+}
+
+`coefTable.cplm` <-
+function (model, ...) 
+.makeCoefTable(coef(model), sqrt(diag(vcov(model))),
+			   model@df.residual)
+
+`coefTable.cpglmm` <-
+function (model, ...) 
+.makeCoefTable(coeffs(model), sqrt(diag(vcov(model))))
