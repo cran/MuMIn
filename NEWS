@@ -1,37 +1,117 @@
 MuMIn package news:
 
+Version: 1.10.0 (2014-05-02)
+r.squaredGLMM: throws an error if contrasts that have been used for random 
+	factors in the "merMod" model do not match the ones in model matrix. This 
+	happens if there are factors in random slope formula and user has changed 
+	relevant 'options(contrasts)' since the model was fitted.
+dredge: na.action checking now allows "option(na.action)" to be a function and 
+	not only character string.
+
+Version: 1.9.26 (2014-03-16)
+(fixed) dredge: when columns/rows in a subset matrix were in different order 
+	than model terms, the values became wrongly rearranged (spotted by 
+	a certain 'Frank' on Stackoverflow).
+
+Version: 1.9.25 (2014-03-13)
+(added) methods for 'cpglm' and 'cpglmm' (from package 'cplm') (suggested by 
+Andrew Cooper)
+
+Version: 1.9.24 (2014-02-26)
+(fixed) 'getAllTerms.unmarkedFit' gave error when 'alpha' was estimated in 
+	pcount model (when else?) (reported by Lindsey Garner)
+
+Version: 1.9.23 (2014-02-24)
+(added) methods 'model.matrix' and 'model.frame' for 'lme', because the default 
+	ones give wrong results when there is 'subset' or 'contrasts' set, or 
+	'na.omit'ting.
+
+Version: 1.9.22 (2014-02-20)
+r.squaredGLMM: can be now applied to models with random slopes (based on idea 
+	and R code by Paul Johnson). Added calculation of conditional R^2 for 
+	Poisson family models.
+
+Version: 1.9.21 (2014-02-17)
+logLik.asreml: number of estimated parameters ('df') is now calculated as the
+	number of fixed effect coefficients + number of variance parameters
+	(non-fixed and non-constained). This gives comparable numbers to similar
+	lmer models. In 'Asreml-R manual', however, only the number of variance
+	components is used as K for AIC calculation (page 15). The log-likelihood
+	values of asreml are far different from those from lmer(REML = TRUE), even
+	though coefficients are very close. Note also that REstricted-likelihood is
+	returned, so model comparisions based on it are invalid.
+r.squaredGLMM: checks if it is applied to a random intercepts model, otherwise
+	error is given. This is a limitation of the original formula by Nakagawa &
+	Schiezlich.
+
+Version: 1.9.20 (2014-02-12)
+(added) methods for 'phylolm' (suggestion by Rafael Maia)
+
+Version: 1.9.19 (2013-12-21)
+(added) 'merge.model.selection' combines two 'model.selection' tables. Note that
+	this is different than 'merge' for 'data.frame's (requested by Rafael Maia)
+
+Version: 1.9.18 (2013-12-18)
+(added) methods for 'asreml' model (in commercial package 'asreml'). Note this 
+	has not been tested extensively (thanks to Emeline Mourocq for an incentive 
+	and testing)
+
+Version: 1.9.17 (2013-12-14)
+full-averaged coefficients and standard errors are now calculated by 'model.avg' 
+	and relevant methods (argument full = TRUE) (suggested by Candan Soykan)
+importance: result gives now also number of models containg each variable
+
+Version: 1.9.16 (2013-11-24)
+model.sel: now accepts arguments 'extra' and 'beta', like 'dredge' (requested by
+	D. Duro on R-Forge).
+
+Version: 1.9.15 (2013-11-17)
+[p]dredge: improved checking for whether the global model removes missing data
+	(na.action = "na.omit" or "na.exclude"). Note that code working with
+	previous versions may give you an error now, setting options(na.action =
+	"na.fail") prevents it.
+
+Version: 1.9.14 (2013-11-03)
+(added) support for 'betareg' (from package 'betareg') (suggested by Marie-Line
+	Gentes)
+(added) support for 'aodml' and 'aodql' (from package 'aods3') (suggested by 
+	Renaud Lancelot)
+[p]dredge: fixed a bug that occurred when there was 'na.action=na.omit' in
+	global model (spotted by Laura Busia on R-help).
+
 Version: 1.9.13 (2013-10-28)
-fixed: handling response variables with more than two levels in 'nnet::multinom'
-	models. (reported by L. Duvaux on Stackoverflow)
+(fixed) handling response variables with more than two levels in 
+	'nnet::multinom' models (reported by Ludo Duvaux on Stackoverflow)
 
 Version: 1.9.12 (2013-10-21)
-further adjustments to deal with unavailability of 'lme4' on CRAN.
+further adjustments to deal with unavailability of 'lme4' on CRAN
 
 Version: 1.9.11 (2013-09-30)
 Documentation: examples that depend on suggested packages have been made 
-	conditional on availability of the package.
+	conditional on availability of the package
 getCall method for 'model.selection' can retrieve a component model call if 
 	index is given as a second argument.
 
 Version: 1.9.10 (2013-08-27)
-pdredge: removed global assignments (within cluster nodes)
+pdredge: removed global assignments (within cluster nodes).
 
 Version: 1.9.9 (2013-05-21)
-(fixed) beta.weights: bug with dimensions dropped (thanks to D. Duro for 
-	spotting it and B. Bolker for tracking it down)
+(fixed) beta.weights: bug with dimensions dropped (spotted by Dennis Duro, 
+	thanks to Ben Bolker for tracking it down)
 
 Version: 1.9.8 (2013-05-02)
-(fixed) handling bar in formulas for 'hurdle' class of models (reported by J.Y. 
-	Barnagaud)
+(fixed) handling bar in formulas for 'hurdle' class of models (reported by 
+	Jean-Yves Barnagaud)
 
 Version: 1.9.7 (2013-04-19)
-dredge: 'subset' expression now recognizes ".(x)" notation to indicate a variable 
-	rather than a model term. Error message from within a 'rank' function gives 
-	now a more meaningfull call (apparently it is a common mistake to have some 
-	misspeled arguments that get passed to 'rank' function through '...')
+dredge: 'subset' expression now recognizes ".(x)" notation to indicate a 
+	variable rather than a model term. Error message from within a 'rank' 
+	function gives now a more meaningfull call (apparently it is a common 
+	mistake to have some misspelled arguments that get passed to 'rank' function 
+	through '...').
 
 Version: 1.9.6 (2013-04-12)
-model.sel: better model naming in the result table.
+model.sel: better model naming in the result table
 (fixed) logLik.coxme: 'nobs' attribute now uses a correct number of observations 
 	(model$n[2]). "penalized" log-lik. is the default type now (Note that 
 	"logLik.coxme"'s argument "type" is undocumented).
@@ -514,4 +594,4 @@ now dredge stops with a more explanatory message
 Version 0.1.0
 dRedging (0.11.2) moved to R-Forge.
 Since model averaging is now the main focus of the package, its name changed
-to MuMIn - MUltiModelINference.
+to MuMIn (from MUlti Model INference).

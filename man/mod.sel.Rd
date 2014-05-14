@@ -16,8 +16,8 @@ Build a model selection table.
 model.sel(object, ...)
 %mod.sel(object, ...)
 
-\method{model.sel}{model.selection}(object, rank = NULL, rank.args = NULL, ...)
-\method{model.sel}{default}(object, ..., rank = NULL, rank.args = NULL)
+\method{model.sel}{model.selection}(object, rank = NULL, rank.args = NULL, ..., beta = FALSE, extra)
+\method{model.sel}{default}(object, ..., rank = NULL, rank.args = NULL, beta = FALSE, extra)
 
 }
 
@@ -26,7 +26,7 @@ model.sel(object, ...)
 	\code{"model.selection"} object.}
 
     \item{\dots}{ More fitted model objects. }
-
+	
     \item{rank}{Optional, custom rank function (information criterion) to use
         instead of \code{AICc}, e.g. \code{QAIC} or \code{BIC}, may be omitted
         if \code{object} is a model list returned by \code{get.models}. }
@@ -34,6 +34,13 @@ model.sel(object, ...)
     \item{rank.args}{Optional \code{list} of arguments for the \code{rank}
         function. If one is an expression, an \code{x} within it is substituted
         with a current model. }
+	
+	\item{beta}{logical, should standardized coefficients be returned? }
+	
+	\item{extra}{ optional additional statistics to include in the result,
+		provided as functions, function names or a list of such (best if named
+		or quoted). See \code{\link{dredge}} for details. }
+
 }
 
 \value{

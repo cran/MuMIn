@@ -17,12 +17,16 @@ functions include those returned by:
 \item \code{multinom} (\pkg{nnet});
 \item \code{lme}, \code{gls} (\pkg{nlme});
 \item \code{lmer}, \code{glmer} (\pkg{lme4});
+\item \code{cpglm}, \code{cpglmm} (\pkg{cplm});
 \item \code{gam}, \code{gamm}* (\pkg{mgcv});
 \item \code{gamm4}* (\pkg{gamm4});
 \item \code{glmmML} (\pkg{glmmML});
 \item \code{glmmadmb} (\pkg{glmmADMB} from R-Forge);
+\item \code{asreml} (\pkg{asreml}, non-free commercial package; REML comparisons only);
 \item \code{hurdle}, \code{zeroinfl} (\pkg{pscl});
 \item \code{negbin}, \code{betabin} (class \code{glimML}, package \pkg{aod});
+\item \code{aodml}, \code{aodql} (\pkg{aods3});
+\item \code{betareg} (\pkg{betareg});
 \item \code{sarlm}, \code{spautolm} (\pkg{spdep});
 \item \code{spml}* (if fitted by \acronym{ML}, \pkg{splm});
 \item \code{coxph}, \code{survreg} (\pkg{survival});

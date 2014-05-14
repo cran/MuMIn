@@ -27,6 +27,26 @@
 }
 
 
+`model.frame.lme` <-
+function (formula, random = FALSE, ...) {
+	x <- formula
+	frm <- formula(x)
+	if(random) {
+		for(reStruct in x$modelStruct$reStruct)
+			frm[[3L]] <- call("+", frm[[3L]], attr(reStruct, "formula")[[2L]])
+	}
+	mfArgs <- list(formula = frm, data = x$data[rownames(x$fitted), ], drop.unused.levels = TRUE)
+	do.call("model.frame", mfArgs)
+	#droplevels(do.call("model.frame", mfArgs))
+}
+
+`model.matrix.lme` <-
+function (object, random = FALSE, ...) {
+	mf <- model.frame(object, random = random)
+	model.matrix(formula(terms(mf)), mf, contrasts.arg = object$contrasts)
+}
+
+
 # Classes 'coxme' and 'lmekin' from package 'coxme':
 
 
@@ -245,3 +265,20 @@ function (object, ...) object$family
 `formula.caic` <-
 function(x, ...) formula(x$mod)
 
+
+#XXX: this is for fixed effects only (should sparse be inclued too?)
+`formula.asreml` <- 
+function (x, ...)  as.formula(x$fixed.formula)
+
+
+`family.asreml` <- 
+function(object, ...) {
+	fam <- object$family
+	fam$linkfun <- fam$link
+	fam$link <- fam$family[2L]
+	fam$family <- fam$family[1L]
+	fam$linkinv <- fam$inverse
+	fam$inverse <- NULL
+	class(fam) <- "family"
+	fam
+}

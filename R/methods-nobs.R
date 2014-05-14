@@ -30,7 +30,8 @@ length(object$linear)
 
 
 # Extends: lme4
-`nobs.mer` <- function(object, nall = TRUE, ...) {
+`nobs.mer` <-
+function(object, nall = TRUE, ...) {
 	N <- object@dims[["n"]]
 	p <- object@dims[["p"]]
 	if (nall) return (N)
@@ -67,6 +68,7 @@ function(object, ...)
 `nobs.yagsResult` <-
 function (object, ...) length(object@residuals)
 
+`nobs.asreml` <- 
 `nobs.aodml` <-
 `nobs.splm` <- 
 function (object, ...) length(resid(object))
@@ -84,9 +86,22 @@ function (object, ...) object$results[['n']]
 `nobs.coxph` <- 
 `nobs.pgls` <-
 `nobs.logistf` <-
+`nobs.phylolm` <- 
 function (object, ...)
 object$n
 
 `nobs.caic` <-
 function (object, ...)
 nobs(object$mod)
+
+`nobs.aodql` <-
+function (object, ...) 
+nobs(object$fm)
+
+`nobs.cplm` <-
+function (object, ...) 
+sum(!is.na(resid(object)))
+
+`nobs.cpglmm` <-
+function (object, ...) 
+object@dims[['n']]

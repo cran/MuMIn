@@ -38,10 +38,9 @@ function (model) coef.model.selection(model)
 
 `getCall.model.selection`  <-
 function (x, i = NULL, ...) {
-	if(is.null(i))
-		return(attr(x, "call"))
-	if(length(i) == 1L) return(attr(x, "calls")[[i]])
-	return(attr(x, "calls")[i])
+	if(is.null(i)) return(attr(x, "call", exact = TRUE))
+	if(length(i) == 1L) return(attr(x, "model.calls", exact = TRUE)[[i]])
+	return(attr(x, "model.calls", exact = TRUE)[i])
 }
 
 `subset.model.selection` <-
@@ -49,7 +48,7 @@ function(x, subset, select, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 	if (missing(select)) {
 		if(missing(subset)) return(x)
 		e <- .substHas(.substFun4Fun(substitute(subset), "dc", function(e) {
-			e[[1]] <- call(":::", as.name("MuMIn"), as.name(".subset_vdc"))
+			e[[1]] <- call(":::", as.name(.packageName), as.name(".subset_vdc"))
 			for(i in 2L:length(e)) e[[i]] <- call("has", e[[i]])
 			e
 		}))
@@ -74,20 +73,19 @@ function(x, subset, select, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 function (x, i, j, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 	ret <- `[.data.frame`(x, i, j, ...)
 	if (missing(j)) {
-		s <- c("row.names", "calls", "coefTables", "random.terms", "order")
+		s <- c("row.names", "model.calls", "coefTables", "random.terms", "order")
 		k <- match(dimnames(ret)[[1L]], dimnames(x)[[1L]])
 		attrib <- attributes(x)
 		attrib[s] <- lapply(attrib[s], `[`, k)
 		attributes(ret) <- attrib
-		if(recalc.weights)
-			ret[, 'weight'] <- `[.data.frame`(ret, ,"weight") / sum(`[.data.frame`(ret, ,"weight"))
-		if(recalc.delta) {
-			delta <- `[.data.frame`(ret, ,"delta") 
-			ret[, 'delta'] <- delta - min(delta)
+		if(recalc.weights) {
+			ret[, 'weight'] <- Weights(`[.data.frame`(ret, , 
+				which(names(ret) == "delta") - 1L))
 		}
-			#ret$weight <- ret$weight / sum(ret$weight)
-			#ret[, 'weight'] <- ret[, 'weight'] / sum(ret[, 'weight'])
-
+		if(recalc.delta) {
+			ic <- `[.data.frame`(ret, , which(names(ret) == "delta") - 1L)
+            ret[, "delta"] <- ic - min(ic)
+		}
 		if(!is.null(warningList <- attr(ret, "warnings")))
 			attr(ret, "warnings") <- warningList[sapply(warningList, attr, "id") %in% rownames(ret)]
 	} else {
@@ -95,6 +93,91 @@ function (x, i, j, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 		class(ret) <- cls[cls != "model.selection"] # numeric or data.frame
 	}
 	return(ret)
+}
+
+getModelClass <-
+function(x) {
+	if(inherits(x, "model.selection")) {
+		if(!is.null(attr(x, "global"))) return(class(attr(x, "global"))[1L])
+		if("class" %in% colnames(x)) return(as.character(x[, "class"]))
+		if(!is.null(attr(x, "model.class"))) return(attr(x, "model.class"))
+	}
+	return(NULL)
+}
+
+# TODO: named arguments...
+`rbind.model.selection` <- 
+function (..., deparse.level = 1) {
+	allargs <- list(...)
+	n <- length(allargs) 
+	if(n == 1L) {
+		return(allargs[[1L]])
+	} else if(n > 1L) {		
+		idx <- seq(1L, n)
+		nm <- split(make.unique(unlist(lapply(allargs, row.names))),
+					rep(idx, sapply(allargs, nrow)))		
+		for(i in idx)
+			row.names(allargs[[i]]) <- nm[[i]]	
+		res <- allargs[[1L]]
+		for(i in seq(2L, n))
+			res <- merge(res, allargs[[i]], suffixes = NULL)
+		return(res)
+	} else return(NULL)
+}
+
+`merge.model.selection` <-
+function (x, y, suffixes = c(".x",".y"), ...)  {
+	
+	a1 <- attributes(x)
+	a2 <- attributes(y)
+	if(!identical(a1$rank.call, a2$rank.call))
+		stop("models not ranked by the same IC")
+	if(!identical(a1$nobs, a2$nobs))
+		stop("models fitted to different number of observations")
+	c1 <- c(a1$terms, a1$vCols)
+	c2 <- c(a2$terms, a2$vCols)
+	res <- cbind(rbindDataFrameList(list(x[, c1, drop = FALSE], y[, c2, drop = FALSE])),
+				 rbindDataFrameList(list(x[, !(colnames(x) %in% c1), drop = FALSE],
+										 y[, !(colnames(y) %in% c2), drop = FALSE])))
+	
+	if(!is.null(suffixes))
+		row.names(res) <- c(paste(row.names(x), suffixes[1L], sep = ""),
+			 paste(rownames(y), suffixes[2L], sep = ""))
+
+	nm <- rownames(res)
+	
+	newattr <- list()
+	for(i in c("model.calls", "coefTables"))
+		newattr[[i]] <- structure(c(a1[[i]], a2[[i]]), names = nm)
+	for(i in c("rank", "rank.call", "nobs", "class"))
+		newattr[[i]] <- a1[[i]]
+	for(i in c("terms", "vCols"))
+		newattr[[i]] <- unique(c(a1[[i]], a2[[i]]))
+	attr(newattr[["terms"]], "interceptLabel") <-
+		unique(c(attr(a1$terms,"interceptLabel"),
+				 attr(a2$terms,"interceptLabel")))
+		
+	mclsx <- getModelClass(x)
+	mclsy <- getModelClass(y)
+	if(length(mclsx) != 1L || !identical(mclsx, mclsy)) {
+		if(!("class" %in% colnames(res))) {
+			res[, "class"] <- NA_integer_
+			pos <- length(c(newattr$terms, newattr$vCols))
+			nc <- ncol(res)
+			res <- res[, c(1L:pos, nc, (pos + 1L):(nc - 1L))]
+		}
+		res[, "class"] <- as.factor(c(rep(mclsx, length.out = nrow(x)),
+							rep(mclsy, length.out = nrow(y))))
+	} else {
+		newattr[["model.class"]] <- mclsx
+	}
+	
+	for(i in names(newattr)) attr(res, i) <- newattr[[i]]
+	class(res) <- c("model.selection", "data.frame")
+		
+	o <- order(res[, which(colnames(res) == "delta") - 1L])
+	res <- res[o, recalc.delta = TRUE]
+	res
 }
 
 `print.model.selection` <-
@@ -226,3 +309,95 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 	if(name %in% attr(x, "terms")) class(ret) <- "data.frame"
 	ret
 }
+
+
+
+
+`row.names<-.model.selection` <- 
+function (x, value) {
+	x <- `row.names<-.data.frame`(x, value)
+	names(attr(x, "coefTables")) <-
+	names(attr(x, "model.calls")) <- value
+	x
+}
+
+`family.model.selection` <-
+function (object, ...) {
+	if(!is.null(attr(object, "global"))) {
+		model.calls <- attr(object, "model.calls")
+		if(!is.null(model.calls[[1L]][["family"]])) {
+			fam <- lapply(model.calls, "[[", "family")
+			fam1 <- unique(fam)
+			ret <- lapply(unique(fam), eval)[
+				as.integer(as.factor(vapply(fam, deparse, "", control = NULL)))
+				]
+			names(ret) <- rownames(object)
+			#index <- split(seq_along(fam), vapply(fam, deparse, "", control = NULL))
+			#for(i in seq_along(fam1)) fam1[[i]] <- list(family = eval(fam1[[i]]), index = index[[i]])
+			#fam <- family(dd1)
+			#index <- lapply(fam, "[[", "index")
+			#ret <- rep(lapply(fam, "[[", "family"), vapply(index, length, integer(1L)))[order(unlist(index))]
+			return(ret)
+		} else return(family(attr(object, "global")))
+	} else {
+		return(attr(object, "model.family"))
+	}
+}
+
+#### XXX
+.argTable <-
+function(cl, family = NULL, class = NULL,
+		 args.omit = NULL, different.only = FALSE) {
+	haveNoCall <-  vapply(cl, is.null, FALSE)
+	cl[haveNoCall] <- lapply(cl[haveNoCall], function(x) call("<unknown>", formula = NA))
+	arg <- lapply(cl, function(x) sapply(x, function(argval)
+		switch(mode(argval), character = , logical = argval,
+		numeric = signif(argval, 3L), deparse(argval, nlines = 1L))))
+	arg <- rbindDataFrameList(lapply(lapply(arg, t), as.data.frame))
+	if(!is.null(args.omit)) arg <- arg[, !(colnames(arg) %in% args.omit)]
+
+	arg[] <- lapply(arg, as.factor)
+	
+	if(!is.null(family)) {
+		.getFam <- function(x) unlist(x[c("family",	"link")])
+		fam <-  if(inherits(family, "family"))
+			matrix(.getFam(family), dimnames = list(c("family", "link"), NULL)) else
+			sapply(family, .getFam)
+		f <- fam[1L, ]
+		f[is.na(f)] <- ""
+		f <- vapply(strsplit(f, "(", fixed = TRUE), "[", "", 1L)
+		f[f == "Negative Binomial"] <- "negative.binomial"
+		fam[2L, fam[2L, ] == vapply(unique(f), function(x) if(is.na(x))
+									NA_character_ else formals(get(x))$link,
+									FUN.VALUE = "")[f]] <- NA_character_
+		j <- !is.na(fam[2L,])
+		famname <- fam[1L, j]
+		famname <- ifelse(substring(famname, nchar(famname)) != ")",
+			paste(famname, "(", sep = ""), paste(substring(famname, 1L, nchar(famname) - 1L),
+				", ", sep = ""))
+		fam[1L, j] <- paste(famname, fam[2L, j], ")", sep = "")
+		arg <- cbind(arg, t(fam))
+	}
+	if(!is.null(class)) arg[, "class"] <- rep(class, length.out = nrow(arg))
+
+	#arg <- as.matrix(arg)
+	#arg[is.na(arg) | arg == "NULL"] <- ""
+	colnames(arg)[1L] <- "FUN"
+	for (i in seq_len(ncol(arg))) {
+		v <- arg[, i]
+		if(any(j <- is.na(v) | v == "NULL" | v == "")) {
+			levels(v) <- c(levels(v), "")
+			v[j] <- ""
+			arg[, i] <- v
+		}
+	}
+	
+	if(different.only)
+		arg <- arg[, vapply(arg, nlevels, integer(1L)) != 1L, drop = FALSE]
+
+	#if(ncol(arg) != 0L) arg <- gsub("([\"'\\s]+|\\w+ *=)","", arg, perl = TRUE)
+	arg
+}
+
+
+

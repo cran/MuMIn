@@ -104,31 +104,40 @@ In addition, the object has following attributes:
 	results in much faster calculation, but has certain drawbacks, because the
 	fitted component model objects are not stored, and some methods (e.g.
 	\code{predict}, \code{fitted}, \code{model.matrix} or \code{vcov}) would not
-	be available with the returned object.
-	Otherwise, \code{get.models} is called prior to averaging, and \dots are
-	passed to it.
+	be available with the returned object. Otherwise, \code{get.models} is
+	called prior to averaging, and \dots are passed to it.
 
 For a list of model types that are accepted see \link[=MuMIn-models]{list of
-supported models}.
+	supported models}.
 
 
 \code{rank} is found by a call to \code{\link[base]{match.fun}} and typically is
-    specified as a function or a symbol (e.g. a back-quoted name) or a character
-    string specifying a function to be searched for from the environment of the
-    call to lapply. \code{rank} must be a function able to accept model as a
-    first argument and must always return a scalar.
+	specified as a function or a symbol (e.g. a back-quoted name) or a character
+	string specifying a function to be searched for from the environment of the
+	call to lapply. \code{rank} must be a function able to accept model as a
+	first argument and must always return a scalar.
 
 Several standard methods for fitted model objects exist for class
-\code{averaging}, including
-	\code{summary}, \code{\link[=predict.averaging]{predict}},
-	\code{coef}, \code{confint}, \code{\link{formula}},
-	%%\code{\link{residuals}},
-	\code{\link{vcov}}.
-The \code{coef} method a accepts argument \code{full}, if set to \code{TRUE} the
-	full model-averaged coefficients are returned, rather than subset-averaged
-	ones.
+	\code{averaging}, including \code{summary},
+	\code{\link[=predict.averaging]{predict}}, \code{coef}, \code{confint},
+	\code{\link{formula}}, and \code{\link{vcov}}.
+	
+\code{coef}, \code{vcov}, \code{confint} and \code{coefTable} accept argument
+	\code{full} that if set to \code{TRUE}, the full model-averaged coefficients
+	are returned, rather than subset-averaged ones (when \code{full = FALSE},
+	being the default).
+
+	
+%	\code{
+%	coef(object, full = FALSE, ...)
+%	confint(object, parm, level = 0.95, full = FALSE, ...) 
+%	vcov(object, full = FALSE, ...) 
+%	coefTable(model, full = FALSE, ...)
+%	}	
+	
+	
 \code{logLik} returns a list of \code{\link[stats]{logLik}} objects
-    for the component models.
+	for the component models.
 
 }
 
@@ -137,13 +146,14 @@ The \code{coef} method a accepts argument \code{full}, if set to \code{TRUE} the
 The \sQuote{subset} (or \sQuote{conditional}) average only averages over the
 	models where the parameter appears. An alternative, the \sQuote{full}
 	average assumes that a variable is included in every model, but in some
-	models the corresponding coefficient is set to zero. Unlike the
-	\sQuote{subset average}, it does not have a tendency of biasing the value
-	away from zero. It is, however, an unresolved issue how the variance of this
-	estimate should be calculated, therefore the standard errors and confidence
-	interval are returned only for the subset-averaged coefficients (as from
-	version >= 1.5.0 argument \code{method} is no longer accepted).
-
+	models the corresponding coefficient (and its respective variance) is set to
+	zero.
+	Unlike the \sQuote{subset average}, it does not have a tendency of
+	biasing the value away from zero. The \sQuote{full} average is a type of
+	shrinkage estimator and for variables with a weak relationship to the
+	response they are smaller than \sQuote{subset} estimators.
+	
+	
 Averaging models with different contrasts for the same factor would yield
 	nonsense results, currently no checking for contrast consistency is done.
 
@@ -155,9 +165,14 @@ From version 1.0.1, \code{print} method provides only a concise output
 }
 
 \references{
-Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
+Burnham, K. P. and Anderson, D. R. (2002) \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed. New York,
 Springer-Verlag.
+
+Lukacs, P. M., Burnham K. P. and Anderson, D. R. (2009) \emph{Model selection
+bias and Freedman’s paradox}. Annals of the Institute of Statistical Mathematics
+62(1): 117–125.
+
 }
 
 \author{Kamil Barto\enc{ń}{n}}

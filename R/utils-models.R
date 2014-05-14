@@ -131,6 +131,14 @@
 	structure(ox, order = ord)
 }
 
+getResponse <-
+function(f)
+	if((length(f) == 2L) || (is.call(f[[2L]]) && f[[2L]][[1L]] == "~"))
+		0 else f[[2L]]
+
+
+
+
 #Tries to find out whether the models are fitted to the same data
 .checkModels <- function(models, error = TRUE) {
 	#
@@ -139,12 +147,9 @@
 		else function(x) warning(simpleWarning(x, cl))
 	res <- TRUE
 
-	responses <- lapply(models, function(x) {
-	  f <- formula(x)
-	  if((length(f) == 2L) || (is.call(f[[2L]]) && f[[2L]][[1L]] == "~")) 0 else f[[2L]]
-	})
+	responses <- lapply(models, function(x) getResponse(formula(x)))
 
- 	if(!all(vapply(responses[-1L], "==", logical(1), responses[[1L]]))) {
+ 	if(!all(vapply(responses[-1L], "==", logical(1L), responses[[1L]]))) {
 		err("response differs between models")
 		res <- FALSE
 	}
@@ -155,15 +160,54 @@
 	nresid <- vapply(models, function(x) nobs(x), numeric(1L)) # , nall=TRUE
 
 	if(!all(datas[-1L] == datas[[1L]]) || !all(nresid[-1L] == nresid[[1L]])) {
+		# XXX: na.action checking here
 		err("models are not all fitted to the same data")
 		res <- FALSE
 	}
 	invisible(res)
 }
 
+
+.checkNaAction <-
+function(x, cl = getCall(x),
+		 naomi = c("na.omit", "na.exclude", "na.pass"), what = "model") {
+	naact <- NA_character_
+	msg <- NA_character_
+	if (!is.null(cl$na.action)) {
+		naact <- as.character(cl$na.action)
+		if (naact %in% naomi)
+			msg <- sprintf("%s uses 'na.action' = \"%s\"", what, naact)
+	} else {
+		naact <- formals(eval(cl[[1L]]))$na.action
+		if (missing(naact)) {
+			naact <- getOption("na.action")
+			if(is.function(naact)) {
+				statsNs <- getNamespace("stats")
+				for(i in naomi) if(identical(get(i, envir = statsNs), naact, ignore.environment = TRUE)) {
+					naact <- i
+					break
+					}
+			}
+			
+			if (is.character(naact) && (naact %in% naomi))
+				msg <- sprintf("%s's 'na.action' argument is not set and options('na.action') is \"%s\"", what, naact)
+		} else if (!is.null(naact)) {
+			naact <- as.character(naact)
+			if (naact %in% naomi)
+				msg <- sprintf("%s uses the default 'na.action' = \"%s\"", what, naact)
+		}
+	}
+	res <- is.na(msg)
+	attr(res, "na.action") <- naact
+	attr(res, "message") <- msg
+	res
+}
+
+
 #system.time(for(i in 1:1000) abbreviateTerms(x))
 
-`abbreviateTerms` <- function(x, minlength = 4, minwordlen = 1,
+`abbreviateTerms` <-
+function(x, minlength = 4, minwordlen = 1,
 	capwords = FALSE, deflate = FALSE) {
 	if(!length(x)) return(x)
 	if(deflate) dx <-
@@ -205,7 +249,8 @@
 	structure(unlist(s), names = x, variables = av[i])
 }
 
-`model.names` <- function(object, ..., labels = NULL, use.letters = FALSE) {
+`model.names` <-
+function(object, ..., labels = NULL, use.letters = FALSE) {
 	if (missing(object) && length(models <- list(...)) > 0L) {
 		object <- models[[1L]]
 	} else if (inherits(object, "list")) {
@@ -217,7 +262,8 @@
 	.modelNames(models = models, uqTerms = labels, use.letters = use.letters)
 }
 
-`.modelNames` <- function(models = NULL, allTerms, uqTerms, use.letters = FALSE, ...) {
+`.modelNames` <-
+function(models = NULL, allTerms, uqTerms, use.letters = FALSE, ...) {
 	if(missing(allTerms)) allTerms <- lapply(models, getAllTerms)
 	if(missing(uqTerms) || is.null(uqTerms))
 		uqTerms <- unique(unlist(allTerms, use.names = FALSE))
@@ -244,7 +290,8 @@
 	ret
 }
 
-`modelDescr` <- function(models, withModel = FALSE, withFamily = TRUE,
+`modelDescr` <-
+function(models, withModel = FALSE, withFamily = TRUE,
 	withArguments = TRUE, remove.cols = c("formula", "random", "fixed", "model",
 	"data", "family", "cluster", "model.parameters")) {
 
@@ -308,7 +355,19 @@
 		arg <- arg[, apply(arg, 2L, function(x) length(unique(x))) != 1L, drop = FALSE]
 		if(ncol(arg)) arg <- gsub("([\"'\\s]+|\\w+ *=)","", arg, perl = TRUE)
 	}
-	ret <- as.data.frame(cbind(model = abvtt, family = fam[1L, ], arg, deparse.level = 0L))
+	ret <- as.data.frame(cbind(model = abvtt, family = if(withFamily) fam[1L, ] else NULL,
+		arg, deparse.level = 0L))
 	attr(ret, "variables") <- variables
 	ret
+}
+
+
+family2char <-
+function(x, fam = x$family, link = x$link) {
+	if(nchar(fam) > 17L && (substr(fam, 1L, 17) == "Negative Binomial")) {
+		theta <- as.numeric(strsplit(fam, "[\\(\\)]")[[1L]][2L])
+		paste("negative.binomial", "(", theta, ",", link, ")", sep = "")
+	} else {
+		paste(fam, "(", link, ")", sep = "")
+	}
 }

@@ -2,6 +2,7 @@ if(length(find.package("coxme", quiet = TRUE)) == 2) {
 
 library(coxme)
 library(MuMIn)
+options(na.action = "na.fail")
 
 
 lung$temp <- with(lung, scale(cbind(age, wt.loss, meal.cal)))

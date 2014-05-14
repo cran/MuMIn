@@ -3,6 +3,8 @@
 require(MuMIn)
 .checkPkg <- function(package) length(find.package(package, quiet = TRUE)) != 0
 
+options(na.action = "na.fail")
+
 # TEST gls --------------------------------------------------------------------------------
 library(nlme)
 

@@ -3,6 +3,7 @@ if(length(find.package("unmarked", quiet = TRUE)) == 1L) {
 library(MuMIn)
 library(stats4)
 library(unmarked)
+options(na.action = "na.fail")
 
 # Simulate occupancy data
 

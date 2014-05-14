@@ -90,7 +90,7 @@ function (object, ...) {
 
 `logLik.MCMCglmm` <-
 function (object, ...)
-	structure(NA, df = sum(object$Fixed$nfl, object$Random$nfl,
+	structure(-0.5 * mean(object$Deviance), df = sum(object$Fixed$nfl, object$Random$nfl,
 		object$Residual$nfl), nobs = object$Residual$nrl, 
 		class = "logLik")
 
@@ -118,3 +118,46 @@ function (object, ...) {
 	class(res) <- "logLik"
 	res
 }
+
+`logLik.asreml` <- 
+function (object, ...) {
+	res <- object$loglik
+	## 'df' here is the number of fixed effect coefficients + number of variance
+	## parameters (non-fixed and non-constained). This gives comparable numbers
+	## to respective lmer models. Note however that 'Asreml-R manual' only the
+	## number of variance components is used as K for AIC calculation (page 15).
+	## Also logLik values are far different from those from lmer(REML = TRUE),
+	## even though coefficients are very similar.
+	mon <- object$monitor
+	attr(res, "nobs") <- nobs <- length(resid(object))
+	attr(res, "df") <-
+		(nobs - object$nedf) +
+		sum(!is.na(mon$constraint) & !(mon$constraint %in% c("Fixed", "Constrained")))
+		# sum(!(summ$varcomp$constraint %in% c("Fixed", "Constrained")))
+	class(res) <- "logLik"
+	res
+}
+
+
+`logLik.phylolm` <-
+function (object, ...) {
+	res <- object$logLik
+	attr(res, "df") <-  object$p
+	attr(res, "nobs") <-  object$n
+	class(res) <- "logLik"
+	res
+}
+
+`logLik.cplm` <-
+## based on stats:::logLik.glm
+function (object, ...) {
+	if (!missing(...)) warning("extra arguments discarded")
+    n <- sum(!is.na(resid(object)))
+	p <- n - object@df.residual
+	val <- p - object@aic / 2
+    attr(val, "nobs") <- sum(!is.na(resid(object)))
+    attr(val, "df") <- p
+    class(val) <- "logLik"
+    val
+}
+

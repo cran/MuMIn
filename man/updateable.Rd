@@ -51,7 +51,7 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
  \code{uGamm} sets also an appropriate class onto the result (\code{"gamm4"}
  and/or \code{"gamm"}), which is needed for some generics defined in \pkg{MuMIn}
  to work (note that unlike the functions created by \code{updateable} it has no
- formal arguments of the original function. As of version 1.9.2,
+ formal arguments of the original function). As of version 1.9.2,
  \code{MuMIn::gamm} is no longer available.
 
   \pkg{MuMIn} replaces the default method for \code{getCall} (defined originally in 
