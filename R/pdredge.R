@@ -72,10 +72,13 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	IC <- .getRank(rank, rankArgs)
 	ICName <- as.character(attr(IC, "call")[[1L]])
 
-	tryCatch(IC(global.model), error = function(e) {
+	if(length(tryCatch(IC(global.model), error = function(e) {
 		e$call <- do.call(substitute, list(attr(IC, "call"), list(x = as.name("global.model"))))
 		stop(e)
-	})
+	})) != 1L) {
+		.cry(NA, "result of '%s' is not of length 1", deparse(attr(IC,
+			"call"), control = NULL)[1L])
+	}
 
 	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,
 		data = eval(gmCall$data, envir = gmEnv))
@@ -128,9 +131,10 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			.cry(NA, paste("'fixed' should be either a character vector with",
 						   " names of variables or a one-sided formula"))
 		}
-		if (!all(fixed %in% allTerms)) {
-			.cry(NA, "not all terms in 'fixed' exist in 'global.model'", warn = TRUE)
-			fixed <- fixed[fixed %in% allTerms]
+		if (!all(i <- (fixed %in% allTerms))) {
+			.cry(NA, "some terms in 'fixed' do not exist in 'global.model': %s",
+				 prettyEnumStr(fixed[!i]), warn = TRUE)
+			fixed <- fixed[i]
 		}
 	}
 	fixed <- c(fixed, allTerms[allTerms %in% interceptLabel])
@@ -178,7 +182,6 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			extra[extra == "adjR^2"][[1L]] <-
 				function(x) attr(r.squaredLR(x, null = null.fit), "adj.r.squared")
 		}
-		extra <- sapply(extra, match.fun, simplify = FALSE)
 		applyExtras <- function(x) unlist(lapply(extra, function(f) f(x)))
 		extraResult <- applyExtras(global.model)
 		if(!is.numeric(extraResult))
@@ -195,7 +198,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	nov <- as.integer(n.vars - n.fixed)
 	ncomb <- (2L ^ nov) * nvariants
 
-	if(nov > 31L) .cry(NA, "number of predictors (%d) exceeds allowed maximum (31)", nov)
+	if(nov > 31L) .cry(NA, "number of predictors (%d) exceeds allowed maximum of 31", nov)
 	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
 	nmax <- ncomb * nvariants
 	if(evaluate) {
@@ -232,10 +235,19 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 				if(!all(unique(unlist(dn)) %in% allTerms))
 					warning("at least some dimnames of 'subset' matrix do not ",
 					"match term names in 'global.model'")
-				subset <- matrix(subset[match(allTerms, rownames(subset)),
+				
+				subset0 <- subset
+				subset <- matrix(subset[
+					match(allTerms, rownames(subset)),
 					match(allTerms, colnames(subset))],
 					dimnames = list(allTerms, allTerms),
 					nrow = n, ncol = n)
+				tsubset <- t(subset)
+				nas <- is.na(subset)
+				i <- lower.tri(subset) & is.na(subset) & !t(nas)
+				ti <- t(i)
+				subset[i] <- subset[ti]
+				subset[ti] <- NA
 			}
 			if(any(!is.na(subset[!lower.tri(subset)]))) {
 				warning("non-missing values exist outside the lower triangle of 'subset'")
@@ -262,7 +274,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
 	
 			
-			subsetExpr <- .substFun4Fun(subsetExpr, ".", function(x, fac, at, vName) {
+			subsetExpr <- .substFunc(subsetExpr, ".", function(x, fac, at, vName) {
 				if(length(x) != 2L) .cry(x, "exactly one argument needed, %d given.", length(x) - 1L)
 				if(length(x[[2L]]) == 2L && x[[2L]][[1L]] == "+") {
 					fun <- "all"
@@ -285,7 +297,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 
 			if(nvarying) {
 			ssValidNames <- c("cVar", "comb", "*nvar*")
-			subsetExpr <- .substFun4Fun(subsetExpr, "V", function(x, cVar, fn) {
+			subsetExpr <- .substFunc(subsetExpr, "V", function(x, cVar, fn) {
 					if(length(x) > 2L) .cry(x, "discarding extra arguments", warn = TRUE)
 				i <- which(fn == x[[2L]])[1L]
 					if(is.na(i)) .cry(x, "'%s' is not a valid name of 'varying' element",

@@ -82,7 +82,7 @@
         return(.findbars(term[[2L]]))
     if (!is.call(term))
         stop("term must be of class call")
-    if (term[[1]] == as.name("|"))
+    if (term[[1L]] == as.name("|"))
         return(term)
     if (length(term) == 2L)
         return(.findbars(term[[2L]]))

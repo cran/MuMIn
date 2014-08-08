@@ -70,23 +70,23 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 }
 
 # substitute function calls in 'e'. 'name' is replaced by 'fun.to'.
-`.substFun` <- function(e, name, fun.to, ignore.I = TRUE) {
-	if(is.expression(e)) e <- e[[1L]]
-	n <- length(e)
-	if(n == 1L && !is.call(e)) return(e)
-	if(ignore.I && e[[1L]] == "I") return(e)
-	if(n != 1L) for(i in 2L:n) e[[i]] <- .substFun(e[[i]], name, fun.to, ignore.I = ignore.I)
-	if(e[[1L]] == name) e[[1L]] <- as.name(fun.to)
-	return(e)
-}
+#`.substFun` <- function(e, name, fun.to, ignore.I = TRUE) {
+#	if(is.expression(e)) e <- e[[1L]]
+#	n <- length(e)
+#	if(n == 1L && !is.call(e)) return(e)
+#	if(ignore.I && e[[1L]] == "I") return(e)
+#	if(n != 1L) for(i in 2L:n) e[[i]] <- .substFun(e[[i]], name, fun.to, ignore.I = ignore.I)
+#	if(e[[1L]] == name) e[[1L]] <- as.name(fun.to)
+#	return(e)
+#}
 
 # substitute function calls in 'e'. 'func' must take care of the substitution job.
-`.substFun4Fun` <- function(e, name, func = identity, ...) {
+`.substFunc` <- function(e, name, func = identity, ...) {
 	if(is.expression(e)) e <- e[[1L]]
 	n <- length(e)
 	if(n == 0L) return(e) else if (n == 1L) {
 		if (!is.call(e)) return(e)
-	} else for(i in 2L:n) e[i] <- list(.substFun4Fun(e[[i]], name, func, ...))
+	} else for(i in 2L:n) e[i] <- list(.substFunc(e[[i]], name, func, ...))
 	if(e[[1L]] == name) e <- func(e, ...)
 	return(e)
 }
@@ -308,5 +308,33 @@ function(extra, r2nullfit = FALSE) {
 	}
 	sapply(extra, match.fun, simplify = FALSE)
 }
+
+## matrix multiplication with option of calculating the diagonal only
+matmult <-
+function(x, y, diag.only = FALSE) {
+	if(ncol(x) != nrow(y)) stop('non-conformable arguments')
+	n1 <- nrow(x)
+	n2 <- ncol(y)
+	if(diag.only) {
+		if(n1 != n2) stop('non-conformable arguments')
+		## >2x faster:
+		return(rowSums(x * t(y)))
+		#res <- numeric(n1)
+		#for(i in seq.int(n1)) res[i] <- sum(x[i, ] * y[, i])
+	} else {
+		res <- matrix(nrow = n1, ncol = n2)
+		for(i in seq.int(n1)) for(j in seq.int(n2)) res[i, j] <- sum(x[i, ] * y[, j])
+		return(res)
+	}
+}
+
+## matmultdiag(x, ty = y) == diag(x %*% t(y))
+matmultdiag <-
+function(x, y, ty = t(y)) {
+	if(ncol(x) != ncol(ty)) stop('non-conformable arguments')
+	if(nrow(x) != nrow(ty)) stop('result is not a square matrix')
+	return(rowSums(x * ty))
+}
+
 
 	

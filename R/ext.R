@@ -114,7 +114,9 @@ function (object, newdata, se.fit = FALSE, na.action = na.fail, ...) {
     cf <- coef(object)
     val <- c(X[, names(cf), drop = FALSE] %*% cf)
 	if(se.fit) {
-		se <- sqrt(diag(X %*% vcov(object) %*% t(X)))
+		# se <- sqrt(diag(X %*% vcov(object) %*% t(X)))
+		# se <- sqrt(rowSums((X %*% vcov(object)) * X))
+		se <- sqrt(matmultdiag(X %*% vcov(object), ty = X))
 		val <- list(fit = val, se.fit = unname(se))
 	}
 	attr(val, "label") <- "Predicted values"
@@ -143,7 +145,9 @@ function (object, newdata, level, asList = FALSE,
 			X <- model.matrix(tt, data = newdata, contrasts.arg =
 							  object$contrasts, xlev = xlev)
 		}
-		se <- sqrt(diag(X %*% vcov(object) %*% t(X)))
+		se <- sqrt(matmultdiag(X %*% vcov(object), ty = X))
+		# se <- sqrt(rowSums((X %*% vcov(object)) * X))
+		# se <- sqrt(diag(X %*% vcov(object) %*% t(X))) ## TODO: use matmult
 		names(se) <- names(res)
 		list(fit = c(res), se.fit = se)
 	} else res
@@ -193,7 +197,9 @@ function (object, newdata, level, asList = FALSE,
     fam <- family(object)
     if (se.fit) {
         covmat <- as.matrix(vcov(object))
-        se <- sqrt(diag(X %*% covmat %*% t(X)))
+		se <- sqrt(matmultdiag(X %*% covmat, ty = X))
+		# se <- sqrt(rowSums((X %*% covmat) * X))
+        # se <- sqrt(diag(X %*% covmat %*% t(X)))
         if (type == "response" && inherits(fam, "family")) 
             list(fit = fam$linkinv(y), se.fit = se * abs(fam$mu.eta(y)))
         else list(fit = y, se.fit = se)

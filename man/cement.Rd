@@ -12,7 +12,7 @@ data(Cement)
 }
 
 \format{
-\code{Cement} is a data frame with 5 variables. x1-x4 are four predictor
+\code{Cement} is a data frame with 5 variables. \var{x1}-\var{x4} are four predictor
 variables expressed as a percentage of weight.
 
 \describe{

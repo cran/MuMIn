@@ -47,7 +47,7 @@ function (x, i = NULL, ...) {
 function(x, subset, select, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 	if (missing(select)) {
 		if(missing(subset)) return(x)
-		e <- .substHas(.substFun4Fun(substitute(subset), "dc", function(e) {
+		e <- .substHas(.substFunc(substitute(subset), "dc", function(e) {
 			e[[1]] <- call(":::", as.name(.packageName), as.name(".subset_vdc"))
 			for(i in 2L:length(e)) e[[i]] <- call("has", e[[i]])
 			e
@@ -220,7 +220,7 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 			vlen <- nchar(vCols)
 			vLegend <- vector(length(vCols), mode = "list")
 			names(vLegend) <- vCols
-			## i <- "family"
+
 			if(!is.null(vCols)) {
 				for(i in vCols) {
 					lev <- levels(x[, i])
@@ -309,9 +309,6 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 	if(name %in% attr(x, "terms")) class(ret) <- "data.frame"
 	ret
 }
-
-
-
 
 `row.names<-.model.selection` <- 
 function (x, value) {

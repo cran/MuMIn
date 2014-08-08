@@ -10,6 +10,7 @@ model selection and carry out model averaging based on the information criteria.
 }
 
 \details{
+
 The collection of functions includes:
 \describe{
 	\item{\code{\link{dredge}}}{performs automated model selection with

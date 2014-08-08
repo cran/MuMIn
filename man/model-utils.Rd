@@ -31,7 +31,7 @@ These functions extract or calculate various values from provided fitted model
 	associated degrees of freedom when possible;
 
 \code{model.names} generates shorthand (alpha)numeric names for one or several fitted
-models;
+models.
 
 
 }

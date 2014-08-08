@@ -37,7 +37,7 @@ functions include those returned by:
 \item \code{crunch}*, \code{pgls} (\pkg{caper});
 \item functions from package \pkg{unmarked} (within the class \code{unmarkedFit});
 \item \code{mark} and related functions (class \code{mark} from package
-	\pkg{RMark}). Note currently \code{dredge} can only manipulate \code{formula}
+	\pkg{RMark}). Currently \code{dredge} can only manipulate \code{formula}
 	element of the argument \code{model.parameters}, keeping its other elements
 	intact.
 }

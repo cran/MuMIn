@@ -11,8 +11,10 @@ function(x) {
 	z <- !is.na(z[, !apply(apply(z, 2L, is.na), 2, all) & !(tt %in% attr(tt, "interceptLabel")),
 		drop = FALSE])
 	wt <- x[, "weight"]
-	res <- sort(apply(z, 2L, function(y) sum(wt[y])), decreasing = TRUE)
-	attr(res, "n.models") <- colSums(z)
+	res <- apply(z, 2L, function(y) sum(wt[y]))
+	o <- order(res, decreasing = TRUE)
+	res <- res[o]
+	attr(res, "n.models") <- colSums(z)[o]
 	class(res) <- c("importance", "numeric") 
 	return(res)
 }
@@ -27,8 +29,6 @@ function(x, ...) {
 		justify = "r"), quote = FALSE)
 	invisible(x)
 }
-
-
 
 #function(x) return(apply(x[, attr(x, "terms")], 2L,
 #	function(z) sum(x[, "weight"][!is.na(z)])))

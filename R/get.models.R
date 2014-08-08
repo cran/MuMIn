@@ -1,5 +1,5 @@
 `get.models` <-
-function(object, subset, ...) {
+function(object, subset, cluster = NA, ...) {
     if (!inherits(object, "model.selection"))
 		stop("'object' must be a 'model.selection' object")
 
@@ -7,18 +7,30 @@ function(object, subset, ...) {
 	if(is.null(calls)) stop("'object' has no 'model.calls' attribute")
 
 	if(!missing(subset)) {
-	    r <- eval(substitute(subset), object, parent.frame())
-		if(is.character(r)) r <- match(r, dimnames(object)[[1L]])
-		calls <- calls[r]
+	    r <- eval(substitute(subset), envir = object, enclos = parent.frame())
+		if(!isTRUE(r) && !is.na(r)) {
+			if(is.character(r)) r <- match(r, dimnames(object)[[1L]])
+			calls <- calls[r]
+		}
+	} else {
+		stop("'subset' is missing (use subset=TRUE to evaluate all models)")
 	}
 
 	newargs <- match.call()
 	newargs[[1L]] <- NULL
-	newargs[c('object', 'subset')] <- NULL
+	newargs[c('object', 'subset', 'cluster')] <- NULL
 
 	naNames <- names(newargs)
 	if(length(newargs))  for(i in seq_along(calls)) calls[[i]][naNames] <- newargs
 
+	doParallel <- inherits(cluster, "cluster")
+	if(doParallel) {
+		.parallelPkgCheck()
+		# all this is to trick the R-check
+		clusterCall <- get("clusterCall")
+		clusterApply <- get("clusterApply")
+		models <- clusterApply(cluster, calls, "eval", envir = .GlobalEnv)
+	} else {
 	glo <- attr(object, "global")
 	if(is.null(glo)) {
 		models <- lapply(attr(object, "model.calls"), function(cl) {
@@ -29,6 +41,7 @@ function(object, subset, ...) {
 			".Environment")
 		models <- lapply(calls, eval, envir = env)
 	}
+	}
 
 	attr(models, "rank.call") <- attr(object, "rank.call")
 	attr(models, "rank") <- attr(object, "rank")
@@ -38,46 +51,6 @@ function(object, subset, ...) {
 
 `pget.models` <-
 function(object, cluster = NA, subset, ...) {
-	if (!inherits(object, "model.selection"))
-		stop("'object' must be a 'model.selection' object")
-
-	calls <- attr(object, "model.calls")
-	if(is.null(calls)) stop("object has no 'calls' attribute")
-
-	if(!missing(subset)) {
-	    r <- eval(substitute(subset), object, parent.frame())
-		if(is.character(r)) r <- match(r, dimnames(object)[[1L]])
-		calls <- calls[r]
-	}
-	newargs <- match.call()
-	newargs[[1L]] <- NULL
-	newargs[c('object', 'subset', 'cluster')] <- NULL
-
-	naNames <- names(newargs)
-	if(length(newargs)) for(i in seq_along(calls)) calls[[i]][naNames] <- newargs
-
-	doParallel <- inherits(cluster, "cluster")
-	if(doParallel) {
-		.parallelPkgCheck()
-		# all this is to trick the R-check
-		clusterCall <- get("clusterCall")
-		clusterApply <- get("clusterApply")
-		models <- clusterApply(cluster, calls, "eval", envir = .GlobalEnv)
-	} else {
-		glo <- attr(object, "global")
-		if(is.null(glo)) {
-			models <- lapply(attr(object, "model.calls"), function(cl) {
-				eval(cl, envir = environment(formula(cl)))
-			})
-		} else {
-			env <- attr(tryCatch(terms(glo), error = function(...) terms(formula(glo))),
-				".Environment")
-			models <- lapply(calls, eval, envir = env)
-		}
-	}
-
-	attr(models, "rank.call") <- attr(object, "rank.call")
-	attr(models, "rank") <- attr(object, "rank")
-
-	return(models)
+	.Deprecated("get.models")
+	get.models(object, subset, cluster, ...)
 }

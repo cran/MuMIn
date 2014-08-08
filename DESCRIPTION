@@ -1,8 +1,8 @@
 Package: MuMIn
 Type: Package
 Title: Multi-model inference
-Version: 1.10.0
-Date: 2014-05-02
+Version: 1.10.5
+Date: 2014-08-08
 Encoding: UTF-8
 Author: Kamil Bartoń
 Maintainer: Kamil Bartoń <kamil.barton@go2.pl>
@@ -16,7 +16,10 @@ Suggests: stats4, nlme, mgcv (>= 1.7.5), lme4 (>= 0.999375-16), gamm4,
 Enhances: aod, coxme, glmmML, MCMCglmm, pscl, spdep, unmarked, ordinal,
         gee, splm, logistf, caper, betareg, aods3, cplm
 LazyLoad: yes
-Packaged: 2014-05-13 21:07:22 UTC; kb
-NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2014-05-14 02:44:24
+Repository/R-Forge/Project: mumin
+Repository/R-Forge/Revision: 288
+Repository/R-Forge/DateTimeStamp: 2014-08-11 16:18:07
+Date/Publication: 2014-08-12 06:29:38
+Packaged: 2014-08-11 18:15:07 UTC; rforge
+NeedsCompilation: no

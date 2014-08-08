@@ -48,7 +48,7 @@ attr(pdd2, "warnings") <- NULL
 
 # Compare with the model selection table from unmarked
 # the statistics should be identical:
-models <- pget.models(pdd2, clust, delta < 2 | df == min(df))
+models <- get.models(pdd2, delta < 2 | df == min(df), cluster = clust)
 
 
 modSel(fitList(fits = structure(models, names = model.names(models,

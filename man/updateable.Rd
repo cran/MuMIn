@@ -29,7 +29,7 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 }
 
 \details{
-	Most model fitting functions in \R returns an object that can be updated or
+	Most model fitting functions in \R return an object that can be updated or
 	re-fitted via \code{\link{update}}. This is thanks to the \code{call} stored
 	in the object, which can be used (possibly modified) later on. It is also
 	utilised by \code{dredge} to generate sub-models.

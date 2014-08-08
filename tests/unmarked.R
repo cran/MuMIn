@@ -30,6 +30,30 @@ fm2oc <- occu(~veght+habitat ~veght*habitat, umfOccu)
 fm3oc <- occu(~habitat ~veght+habitat, umfOccu)
 fm4oc <- occu(~veght ~veght+habitat, umfOccu)
 
+data(linetran)
+ltUMF <- with(linetran, {
+   unmarkedFrameDS(y = cbind(dc1, dc2, dc3, dc4),
+   siteCovs = data.frame(Length, area, habitat),
+   dist.breaks = c(0, 5, 10, 15, 20),
+   tlength = linetran$Length * 1000, survey = "line", unitsIn = "m")
+   })
+
+fm2 <- distsamp(~area + habitat ~ habitat, ltUMF)
+dredge(fm2, fixed = ~p(sigmaarea))
+
+# Bring in Data
+library(unmarked)
+data(frogs)
+pferUMF <- unmarkedFrameOccu(pfer.bin)
+siteCovs(pferUMF) <- data.frame(sitevar1 = rnorm(numSites(pferUMF)),sitevar2 = rnorm(numSites(pferUMF)))
+
+global <- occu(~ sitevar1 + I(sitevar1^2) + sitevar2 ~ 1, pferUMF)
+dd1 <- dredge(global) # <- has models containing quadratic 'I(sitecar1^2)' without corresponding 'sitevar1' (not what I want)
+
+getAllTerms(global)
+
+msubset <- expression(`p(sitevar1)` || `p(I(sitevar1^2))`)
+dd2 <- dredge(global, subset = msubset)
 
 #str(fm4oc)
 #showMethods("backTransform")
@@ -54,7 +78,7 @@ stopifnot(!any(is.na(dd2[, "p(habitat)"]) & !is.na(dd2[, "p(veght)"])))
 
 
 model.sel(dd, rank = "AIC")
-models <- get.models(dd[1:3])
+models <- get.models(dd, subset = 1:3)
 
 summary(ma1 <- model.avg(models))
 summary(ma2 <- model.avg(dd[1:3]))
@@ -75,6 +99,7 @@ summary(model.avg(dd, delta <= 4))
 
 # Model selection
 print(mod.sel(fm1oc, fm2oc, fm3oc))
+
 
 #models <- list(fm1oc, fm2oc, fm3oc)
 #traceback()

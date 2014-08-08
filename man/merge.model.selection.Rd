@@ -27,15 +27,15 @@ A \code{model.selection} object containing the selected models (rows).
 }
 
 \note{
-both \emph{delta IC} values and \emph{IC-weights} are recalculated in the 
-	resulting tables.
+Both \ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC} values and 
+\emph{Akaike weights} are recalculated in the resulting tables.
 
 Models in the combined model selection tables must be comparable, i.e. fitted to
 	the same data, however only very basic checking is done to verify that. The 
 	models must also be ranked by the same information criterion.
 	
-Unlike the \code{merge} method for \code{data.frame}, this method simply appends
-	second table to the first.
+Unlike the \code{merge} method for \code{data.frame}, this method appends
+	second table to the first (similarly to \code{rbind}).
 }
 
 \author{Kamil Barto\enc{ń}{n}}

@@ -155,11 +155,13 @@ function(f)
 	}
 
 	datas <- lapply(models, function(x) .getCall(x)$data)
-	# when using only 'nobs' - seems to be evaluated first outside of MuMIn namespace
-	# which e.g. gives an error in glmmML - the glmmML::nobs method is faulty.
+	# XXX: when using only 'nobs' - seems to be evaluated first outside of MuMIn
+	# namespace which e.g. gives an error in glmmML - the glmmML::nobs method 
+	# is faulty.
 	nresid <- vapply(models, function(x) nobs(x), numeric(1L)) # , nall=TRUE
-
-	if(!all(datas[-1L] == datas[[1L]]) || !all(nresid[-1L] == nresid[[1L]])) {
+	
+	if(!all(sapply(datas[-1L], identical, datas[[1L]])) ||
+		!all(nresid[-1L] == nresid[[1L]])) {
 		# XXX: na.action checking here
 		err("models are not all fitted to the same data")
 		res <- FALSE
@@ -170,7 +172,7 @@ function(f)
 
 .checkNaAction <-
 function(x, cl = getCall(x),
-		 naomi = c("na.omit", "na.exclude", "na.pass"), what = "model") {
+		 naomi = c("na.omit", "na.exclude"), what = "model") {
 	naact <- NA_character_
 	msg <- NA_character_
 	if (!is.null(cl$na.action)) {
@@ -183,14 +185,16 @@ function(x, cl = getCall(x),
 			naact <- getOption("na.action")
 			if(is.function(naact)) {
 				statsNs <- getNamespace("stats")
-				for(i in naomi) if(identical(get(i, envir = statsNs), naact, ignore.environment = TRUE)) {
+				for(i in naomi) if(identical(get(i, envir = statsNs), naact, 
+					ignore.environment = TRUE)) {
 					naact <- i
 					break
 					}
 			}
 			
 			if (is.character(naact) && (naact %in% naomi))
-				msg <- sprintf("%s's 'na.action' argument is not set and options('na.action') is \"%s\"", what, naact)
+				msg <- sprintf("%s's 'na.action' argument is not set and options('na.action') is \"%s\"", 
+					what, naact)
 		} else if (!is.null(naact)) {
 			naact <- as.character(naact)
 			if (naact %in% naomi)
@@ -337,7 +341,7 @@ function(models, withModel = FALSE, withFamily = TRUE,
 		cl[haveNoCall] <- lapply(cl[haveNoCall], function(x) call("none", formula = NA))
  		arg <- lapply(cl, function(x) sapply(x[-1L], function(argval)
 			switch(mode(argval), character = , logical = argval,
-			numeric = signif(argval, 3L), deparse(argval, nlines = 1L))))
+			numeric = signif(argval, 3L), deparse(argval, control = NULL, nlines = 1L))))
 		arg <- rbindDataFrameList(lapply(lapply(arg, t), as.data.frame))
 		arg <- cbind(class = as.factor(sapply(lapply(models, class), "[", 1L)),
 			arg[, !(colnames(arg) %in% remove.cols), drop = FALSE])
