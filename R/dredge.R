@@ -118,9 +118,10 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			.cry(NA, paste("'fixed' should be either a character vector with",
 						   " names of variables or a one-sided formula"))
 		}
-		if (!all(fixed %in% allTerms)) {
-			.cry(NA, "not all terms in 'fixed' exist in 'global.model'", warn = TRUE)
-			fixed <- fixed[fixed %in% allTerms]
+		if (!all(i <- (fixed %in% allTerms))) {
+			.cry(NA, "some terms in 'fixed' do not exist in 'global.model': %s",
+				 prettyEnumStr(fixed[!i]), warn = TRUE)
+			fixed <- fixed[i]
 		}
 	}
 	fixed <- c(fixed, allTerms[allTerms %in% interceptLabel])
@@ -257,7 +258,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
 	
 			
-			subsetExpr <- .substFun4Fun(subsetExpr, ".", function(x, fac, at, vName) {
+			subsetExpr <- .substFunc(subsetExpr, ".", function(x, fac, at, vName) {
 				if(length(x) != 2L) .cry(x, "exactly one argument needed, %d given.", length(x) - 1L)
 				if(length(x[[2L]]) == 2L && x[[2L]][[1L]] == "+") {
 					fun <- "all"
@@ -280,7 +281,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			
 			if(nvarying) {
 				ssValidNames <- c("cVar", "comb", "*nvar*")
-				subsetExpr <- .substFun4Fun(subsetExpr, "V", function(x, cVar, fn) {
+				subsetExpr <- .substFunc(subsetExpr, "V", function(x, cVar, fn) {
 					if(length(x) > 2L) .cry(x, "discarding extra arguments", warn = TRUE)
 					i <- which(fn == x[[2L]])[1L]
 					if(is.na(i)) .cry(x, "'%s' is not a valid name of 'varying' element",
@@ -368,11 +369,13 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 				isok <- FALSE
 				next;
 			}
+			
+						
 			newArgs <- makeArgs(global.model, allTerms[comb], comb, argsOptions)
 			formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs else
 				attr(newArgs, "formulaList")
 
-			
+				
 			if(!all(vapply(formulaList, formulaMargChk, logical(1L), marg.ex)))  {
 				isok <- FALSE; next;
 			}

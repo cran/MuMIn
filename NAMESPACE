@@ -76,6 +76,8 @@ S3method(importance, averaging)
 S3method(importance, model.selection)
 S3method(importance, default)
 
+S3method(print, importance)
+
 S3method(Weights, model.selection)
 S3method(Weights, averaging)
 S3method(Weights, data.frame)
@@ -176,6 +178,7 @@ S3method(makeArgs, unmarkedFitDS)
 S3method(makeArgs, coxph)
 S3method(makeArgs, clmm)
 S3method(makeArgs, merMod)
+S3method(makeArgs, glmmadmb)
 
 S3method(family, default)
 S3method(family, gls)

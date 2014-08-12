@@ -23,8 +23,9 @@
   \item{recalc.weights}{logical value specyfying whether Akaike weights
 		should be normalized across the new set of models to sum to one.
 	}
-	\item{recalc.delta}{logical value specyfying whether \eqn{delta[IC]}{delta-IC} 
-		should be calculated for the new set of models (this is not done by default).
+	\item{recalc.delta}{logical value specyfying whether 
+		\ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC}
+		should be calculated for the new set of models (not done by default).
 	}
   \item{\dots}{further arguments passed to  \code{\link{[.data.frame}}. }
 }

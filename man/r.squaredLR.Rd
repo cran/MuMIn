@@ -1,12 +1,15 @@
 \name{r.squaredLR}
 \alias{r.squaredLR}
 \alias{null.fit}
+\encoding{utf-8}
+
+\newcommand{\Rsqx}{\ifelse{latex}{\eqn{R_{#1}^{2}}{R_#1^2}}{\ifelse{html}{\enc{R_#1²}{R_#1^2}}{R_#1^2}}}
+\newcommand{\Rsq}{\ifelse{latex}{\eqn{R^{2}}{R^2}}{\ifelse{html}{\enc{R²}{R^2}}{R^2}}}
 
 \title{Likelihood-ratio based pseudo-R-squared}
 \description{
 Calculate a coefficient of determination based on the likelihood-ratio test
-(\ifelse{latex}{\eqn{R_{LR}^{2}}}{R_LR-squared}).
-
+(\Rsqx{LR}).
 }
 
 \usage{
@@ -32,7 +35,7 @@ null.fit(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL)
 }
 
 \value{
-	\code{r.squaredLR} returns a value of \eqn{R_{LR}^{2}}{R_LR^2}, and the
+	\code{r.squaredLR} returns a value of \Rsqx{LR}, and the
 	attribute \code{"adj.r.squared"} gives the Nagelkerke's modified statistic.
 	Note that this is not the same as nor equivalent to the classical 
 	\sQuote{adjusted R squared}.
@@ -44,7 +47,7 @@ null.fit(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL)
 
 \details{
 
-This statistic is is one of the several proposed pseudo-R-squared's for
+This statistic is is one of the several proposed pseudo-\Rsq's for
 nonlinear regression models. It is based on an improvement from \emph{null}
 (intercept only) model to the fitted model, and calculated as
 \deqn{
@@ -60,10 +63,10 @@ fitted by \acronym{RE}stricted \acronym{ML} (by calling \code{logLik} with argum
 factors of the original model, in which case the statistic represents the 
 \sQuote{variance explained} by fixed effects.
 
-For \acronym{OLS} models the value is consistent with classical
-\eqn{R^{2}}{R-squared}. In some cases (e.g. in logistic regression), the maximum
-\eqn{R_{LR}^{2}}{R_LR^2} is less than one. The modification proposed by
-Nagelkerke (1991) adjusts the \eqn{R_{LR}^{2}}{R^2} to achieve 1 at its maximum:
+For \acronym{OLS} models the value is consistent with classical \Rsq. In some 
+cases (e.g. in logistic regression), the maximum \Rsqx{LR} is less than one. 
+The modification proposed by Nagelkerke (1991) adjusts the \Rsqx{LR} to achieve 
+1 at its maximum:
 \eqn{
 	\bar{R}^{2} = R_{LR}^{2} / \max(R_{LR}^{2})
 }{
@@ -84,7 +87,7 @@ an error for an unrecognized class.
 }
 
 \note{
-R\eqn{^{2}}{^2} is a useful goodness-of-fit measure as it has the interpretation
+\Rsq is a useful goodness-of-fit measure as it has the interpretation
 of the proportion of the variance \sQuote{explained}, but it performs poorly in
 model selection, and is not suitable for use in the same way as the information
 criterions.
@@ -96,7 +99,7 @@ criterions.
 Cox, D. R. and Snell, E. J. (1989) \emph{The analysis of binary data}, 2nd ed.
 London, Chapman and Hall
 
-Magee, L. (1990) R\eqn{^{2}}{^2} measures based on Wald and likelihood ratio joint
+Magee, L. (1990) \Rsq measures based on Wald and likelihood ratio joint
 significance tests. \emph{Amer. Stat.} 44: 250-253
 
 Nagelkerke, N. J. D. (1991) A note on a general definition of the coefficient of

@@ -1,17 +1,42 @@
 MuMIn package news:
 
+Version: 1.10.5 (2014-08-08)
+get.models: can now use parallel computation if a valid 'cluster' is provided.
+	It takes over the functionality of 'pget.models', which is now deprecated. 
+	Also, the argument 'subset' must be now explicitely provided (so all models 
+	are no longer fitted by default).
+
+Version: 1.10.4 (2014-08-02)
+(fixed) importance, model.avg: wrong order of 'N containing models' attribute
+	(bug reported by Alba Estrada)
+r.squaredGLMM: should be considerably faster and memory efficient due to 
+	improved calculation of random effects variance (slow performance with large 
+	datasets reported by Daniel Ezra Johnson).
+
+Version: 1.10.3 (2014-06-27)
+(fixed) dredge: no longer drops random term in 'glmmadmb' models (spotted by 
+	Carlos León)
+
+Version: 1.10.2
+mystery update
+	
+Version: 1.10.1 (2014-05-19)
+dredge: more meaningful warning message about misspecified 'fixed' argument
+pdredge: synchronized code with 'dredge'
+documentation: improved formatting
+
 Version: 1.10.0 (2014-05-02)
 r.squaredGLMM: throws an error if contrasts that have been used for random 
 	factors in the "merMod" model do not match the ones in model matrix. This 
 	happens if there are factors in random slope formula and user has changed 
 	relevant 'options(contrasts)' since the model was fitted.
-dredge: na.action checking now allows "option(na.action)" to be a function and 
+dredge: 'na.action' checking now allows "option(na.action)" to be a function and 
 	not only character string.
 
 Version: 1.9.26 (2014-03-16)
 (fixed) dredge: when columns/rows in a subset matrix were in different order 
 	than model terms, the values became wrongly rearranged (spotted by 
-	a certain 'Frank' on Stackoverflow).
+	a certain Frank on Stackoverflow).
 
 Version: 1.9.25 (2014-03-13)
 (added) methods for 'cpglm' and 'cpglmm' (from package 'cplm') (suggested by 

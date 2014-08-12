@@ -20,7 +20,7 @@ varying <- list(
 
 dd <- dredge(fm1Dial.gls, m.max = 2, m.min = 1, fixed=~pressure, varying = varying, extra = "R^2")
 
-models <- get.models(dd, 1:4)
+models <- get.models(dd, subset = 1:4)
 
 predict(fm1Dial.gls, se.fit = TRUE, newdata = Dialyzer[1:5, ])
 
@@ -70,7 +70,7 @@ dispersion <- function(object) {
 }
 
 dd <- dredge(fm1, extra = alist(dispersion))
-gm <- get.models(dd, 1:4)
+gm <- get.models(dd, subset = 1:4)
 ma <- model.avg(gm, revised=F)
 
 vcov(ma)
@@ -93,7 +93,7 @@ nseq <- function(x, len=length(x)) seq(min(x, na.rm=TRUE), max(x, na.rm=TRUE),
 fm1 <- glm(y ~ (X1+X2+X3)^2, data = Cement)
 
 dd <- dredge(fm1)
-gm <- get.models(dd, 1:10)
+gm <- get.models(dd, subset = 1:10)
 
 summary(ma <- model.avg(gm))
 #summary(ma1<-model.avg(dd, 1:10))
@@ -125,7 +125,7 @@ nseq <- function(x, len=length(x)) seq(min(x, na.rm=TRUE), max(x, na.rm=TRUE),
 
 fm1 <- rlm(y ~X1+X2*X3+X4, data = Cement)
 dd <- dredge(fm1, trace=T)
-gm <- get.models(dd, 1:10)
+gm <- get.models(dd, subset = 1:10)
 ma <- model.avg(gm)
 stopifnot(all(predict(ma) == predict(ma, Cement)))
 predict(ma, lapply(Cement, nseq, len=30), se.fit=TRUE)
@@ -152,7 +152,7 @@ bwt.mu <- multinom(low ~ ., data = bwt)
 dd <- dredge(bwt.mu, trace=T)
 
 summary(model.avg(dd[1:5]))
-gm <- get.models(dd, 1:5)
+gm <- get.models(dd, subset = 1:5)
 ma <- model.avg(gm)
 
 summary(ma)
@@ -257,7 +257,7 @@ quine.nb1 <- glm.nb(Days ~ 0 + Sex/(Age + Eth*Lrn), data = quine)
 
 ms <- dredge(quine.nb1, marg.ex = "Sex")
 
-models <- get.models(ms )
+models <- get.models(ms, subset = NA)
 summary(model.avg(models))
 
 #dredge(quine.nb1, marg.ex = NULL) # OK
@@ -298,7 +298,7 @@ r.squaredGLMM(budworm.lg)
 
 dd <- dredge(budworm.lg, rank = "QAIC", chat = summary(budworm.lg)$dispersion)
 #dd <- dredge(budworm.lg) # should be the same
-mod <- get.models(dd, seq(nrow(dd)))
+mod <- get.models(dd, subset = NA)
 
 # Note: this works:
 # ma <- model.avg(mod)

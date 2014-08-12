@@ -21,6 +21,7 @@ function (object, rank = NULL, rank.args = NULL, ..., beta = FALSE, extra) {
 			cl <- match.call()
 			cl[[1L]] <- as.name("model.sel.default")
 			cl$object <- call("get.models", cl$object)
+			if(is.null(cl$subset)) cl$subset <- NA
 			ret <- eval(cl, parent.frame())
 		} else {
 			oldRankCol <- as.character(attr(attr(object, "rank"), "call")[[1L]])

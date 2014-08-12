@@ -61,7 +61,8 @@ function(object, ...) {
 	# yags/yags.cc: p140 of Hardin and Hilbe
 	if(fam == "gaussian") ql <- (n * log(-2 * ql / n)) / -2
 	AIinv <- solve(vbeta.naiv.i)
-	tr <- sum(diag(AIinv %*% vbeta))
+	tr <- sum(matmult(AIinv, vbeta, diag.only = TRUE)) ## TODO: use matmult
+	## tr <- sum(diag(AIinv %*% vbeta)) ## TODO: use matmult
 	px <- length(mu)
 	## When all modelling specifications in GEE are correct tr = px.
 	c(2 * (c(QIC = tr, QICu = px) - ql), n = n)
@@ -79,7 +80,8 @@ function(x, typeR = FALSE) .NotYetImplemented()
 `getQIC.coxph` <- function(x, ...) {
 	warning("QIC for coxph is experimental")
 	naive.var <- x[[ if (is.null(x$naive.var)) "var" else "naive.var" ]]
-	tr <- sum(diag(solve(naive.var) %*% x$var))
+	# tr <- sum(diag(solve(naive.var) %*% x$var)) ## TODO: use matmult
+	tr <- sum(matmultdiag(solve(naive.var), x$var)) ## TODO: use matmult
 	ll <- x$loglik[2L]
 	px <- x$n
 	c(2 * (c(QIC = tr, QICu = px) - ll), n = px)

@@ -65,8 +65,9 @@ model.avg(object, ..., revised.var = TRUE)
 
 An object of class \code{averaging} is a list with components:
 
-\item{summary}{ a \code{data.frame} with log-likelihood, IC, Delta(IC) and
-	Akaike weights for the component models. }
+\item{summary}{ a \code{data.frame} with log-likelihood, \emph{IC}, 
+\ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC} and
+	\sQuote{Akaike weights} for the component models. }
 \item{coef.shrinkage}{ a vector of full model-averaged coefficients, see
 	\sQuote{Note}. }
 \item{coefArray}{ an \code{array} of component models' coefficients, their

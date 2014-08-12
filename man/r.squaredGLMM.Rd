@@ -1,10 +1,16 @@
 \name{r.squaredGLMM}
 \alias{r.squaredGLMM}
 
+\encoding{utf-8}
+
+\newcommand{\Rsqx}{\ifelse{latex}{\eqn{R_{#1}^{2}}{R_#1^2}}{\ifelse{html}{\enc{R_#1²}{R_#1^2}}{R_#1^2}}}
+\newcommand{\Rsq}{\ifelse{latex}{\eqn{R^{2}}{R^2}}{\ifelse{html}{\enc{R²}{R^2}}{R^2}}}
+
+
 \title{Pseudo-R-squared for Generalized Mixed-Effect models}
 \description{
 Calculate a conditional and marginal coefficient of determination for 
-Generalized mixed-effect models (R\eqn{_{GLMM}^{2}}{_GLMM^2}).
+Generalized mixed-effect models (\Rsqx{GLMM}).
 
 }
 
@@ -18,12 +24,12 @@ r.squaredGLMM(x)
 
 \value{
 	\code{r.squaredGLMM} returns a numeric vector with two values for marginal
-	and conditional R\eqn{_{GLMM}^{2}}{_GLMM^2}.
+	and conditional \Rsqx{GLMM}.
 }
 
 \details{
-For mixed-effects models, R\eqn{^{2}}{^2} can be categorized into two types. 
-\bold{Marginal R\eqn{^{2}}{^2}} represents the variance explained by fixed 
+For mixed-effects models, \Rsq can be categorized into two types. 
+\bold{Marginal \Rsqx{GLMM}} represents the variance explained by fixed 
 factors, and is defined as:
 
 \deqn{
@@ -34,7 +40,7 @@ R_GLMM(m)^2 = (\sigma_f^2) / (\sigma_f^2 + sum(\sigma_l^2) + \sigma_e^2 +
 \sigma_d^2
 }
 
-\bold{Conditional R\eqn{^{2}}{^2}} is interpreted as variance explained by both
+\bold{Conditional \Rsqx{GLMM}} is interpreted as variance explained by both
 fixed and random factors (i.e. the entire model), and is calculated according
 to the equation:
 
@@ -55,19 +61,21 @@ is the distribution-specific variance.
 
 
 \note{
-R\eqn{_{GLMM}^{2}}{_GLMM^2} can be calculated also for fixed-effect models. In
+\Rsqx{GLMM} can be calculated also for fixed-effect models. In
 the simpliest case of \acronym{OLS} it reduces to \code{var(fitted) /
-(var(fitted) + deviance / 2)}. Unlike likelihood-ratio based
-R\eqn{^{2}}{^2} for \acronym{OLS}, value of this statistic differs from that of
-the classical R\eqn{^{2}}{^2}.
+(var(fitted) + deviance / 2)}. Unlike likelihood-ratio based \Rsq for 
+\acronym{OLS}, value of this statistic differs from that of
+the classical \Rsq.
 
 Currently methods exist for classes: \code{mer}(\code{Mod}), \code{lme},
 \code{glmmML} and (\code{g})\code{lm}.
 
-See note in \code{\link{r.squaredLR}} help page for comment on using
-R\eqn{^{2}}{^2} in model selection. 
+See note in \code{\link{r.squaredLR}} help page for comment on using \Rsq in 
+model selection. 
 
-\bold{This function is in experimental stage and should be used with caution.} 
+\bold{This function is still in experimental stage and should be used with 
+caution.} 
+
 }
 
 \author{
@@ -78,8 +86,11 @@ Nakagawa & Schielzeth (2012), and its extension by Paul Johnson.
 \references{
 
 Nakagawa, S, Schielzeth, H. (2012). A general and simple method for obtaining
-R\eqn{^{2}}{^2} from Generalized Linear Mixed-effects Models. \emph{Methods in
+\Rsq from Generalized Linear Mixed-effects Models. \emph{Methods in
 Ecology and Evolution}: (online) doi:10.1111/j.2041-210x.2012.00261.x
+
+Johnson, P. (in press). Generalization of Nakagawa & Schielzeth’s \Rsqx{GLMM} to 
+all random effects specifications. \emph{Methods in Ecology and Evolution}
 
 }
 
@@ -89,7 +100,7 @@ Ecology and Evolution}: (online) doi:10.1111/j.2041-210x.2012.00261.x
 
 \examples{
 
-if(require(nlme)) { 
+\dontshow{ if(require(nlme)) \{   }
 data(Orthodont, package = "nlme")
 
 fm1 <- lme(distance ~ Sex * age, ~ 1 | Subject, data = Orthodont)
@@ -97,7 +108,7 @@ fm1 <- lme(distance ~ Sex * age, ~ 1 | Subject, data = Orthodont)
 r.squaredGLMM(fm1)
 r.squaredLR(fm1)
 r.squaredLR(fm1, null.RE = TRUE)
-}
+\dontshow{  \}  }
 }
 
 \keyword{models}

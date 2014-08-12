@@ -26,12 +26,12 @@ function (object, ..., REML = NULL) {
         switch(type, vcov = {
             mat <- covmat
         }, r = {
-            cov <- diag(diag(1/covmat), nrow = nrow(covmat), ncol = ncol(covmat))
+            cov <- diag(diag(1 / covmat), nrow = nrow(covmat), ncol = ncol(covmat))
             mat <- sqrt(cov) %*% covmat %*% sqrt(cov)
         }, cv = {
             coefs <- coef(x)
             ncoef <- length(coefs)
-            coefmat <- diag(1/coefs, nrow = ncoef, ncol = ncoef)
+            coefmat <- diag(1 / coefs, nrow = ncoef, ncol = ncoef)
             mat <- coefmat %*% covmat %*% coefmat
         })
         as.vector(-2 * c(ll) + k * log(sum(diag(mat)) / k) - log(det(mat)))

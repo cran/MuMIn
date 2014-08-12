@@ -7,9 +7,10 @@ require(geepack)
 require(gee)
 require(yags)
 
+options(na.action = na.pass)
+
 data(dietox, package = 'geepack')
 dietox$Cu <- as.factor(dietox$Cu)
-
 
 # Compare GEE fits from alternative implementations:
 
@@ -55,7 +56,7 @@ model.avg(dd.gee.n)
 model.avg(dd.gee)
 
 # the same result, but re-fitting the models
-models <- get.models(dd.gee)
+models <- get.models(dd.gee, subset = NA)
 summary(mavg <- model.avg(models, rank = QIC, ct.args = list(type = "naive")))
 summary(mavg <- model.avg(models, rank = QIC, ct.args = list(type = "robust")))
 

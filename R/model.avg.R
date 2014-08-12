@@ -42,6 +42,8 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 		arg1 <- names(cl)[-(1L:2L)] %in% names(formals("model.avg.default"))
 		cl1 <- cl[c(TRUE, TRUE, !arg1)]
 		cl1[[1L]] <- as.name("get.models")
+		if(is.null(cl1$subset)) cl1$subset <- NA
+		
 		cl2 <- cl[c(TRUE, TRUE, arg1)]
 		cl2[[2L]] <- cl1
 		cl2[[1L]] <- as.name("model.avg")
@@ -207,8 +209,9 @@ function(object, ..., beta = FALSE,
 
 	importance <- apply(weight * vpresent, 2L, sum)
 	names(importance) <- all.terms
-	importance <- sort(importance, decreasing = TRUE)
-	attr(importance, "n.models") <- structure(colSums(vpresent), names = all.terms)
+	o <- order(importance, decreasing = TRUE)
+	importance <- importance[o]
+	attr(importance, "n.models") <- structure(colSums(vpresent)[o], names = all.terms)
 	class(importance) <- c("importance", "numeric") 
 
 	#global.mm <- model.matrix(fit)
@@ -327,7 +330,7 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 		#if (se.fit) {
 		#	scale <- 1
 		#	covmx <- solve(t(X) %*% X)
-		#	se <- sqrt(diag(Xnew %*% covmx %*% t(Xnew))) * sqrt(scale)
+		#	se <- sqrt(diag(Xnew %*% covmx %*% t(Xnew))) * sqrt(scale) ## TODO: use matmult
 		#	return(list(fit = y, se.fit = se))
 		#}
 	} else {
@@ -483,7 +486,8 @@ function (x, digits = max(3L, getOption("digits") - 3L),
 
 	hasPval <- TRUE
     printCoefmat(x$coefmat, P.values = hasPval, has.Pvalue = hasPval,
-		digits = digits, signif.stars = FALSE)
+		digits = digits, signif.stars = signif.stars,
+		signif.legend =  FALSE)
 
 	cat("\nFull model-averaged coefficients (with shrinkage):", "\n")
     printCoefmat(x$coefmat.full, P.values = hasPval, has.Pvalue = hasPval,

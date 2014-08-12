@@ -22,14 +22,12 @@ makeArgs <- function(obj, termNames, comb, opt, ...) UseMethod("makeArgs", obj)
 #	)
 
 
-
-
-
 .getCoefNames <- 
 function(formula, data, contrasts, envir = parent.frame()) {
 	colnames(eval(call("model.matrix.default",
 		object = formula, data = data, contrasts.arg = contrasts), envir = envir))
 }
+
 
 makeArgs.default <- 
 function(obj, termNames, comb, opt, ...) {
@@ -69,6 +67,8 @@ function(obj, termNames, comb, opt, ...) {
 	ret
 }
 
+
+`makeArgs.glmmadmb` <- 
 `makeArgs.clmm` <- 		## Class 'clmm'  from package 'ordinal':
 `makeArgs.merMod` <-    ## since lme4-0.99999911-0
 `makeArgs.mer` <- 
@@ -163,8 +163,6 @@ function(obj, termNames, comb, opt, ...) {
 	attr(ret, "formulaList") <- zarg
 	ret
 }
-
-
 
 `makeArgs.hurdle` <- 
 `makeArgs.zeroinfl` <-
