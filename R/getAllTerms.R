@@ -23,7 +23,7 @@ function(x, offset = TRUE, intercept = FALSE, ...) {
 	ret <- attr(x, "term.labels")
 
 	# Get term names, with higher order term components arranged alphabetically
-	if (length(ret) > 0) {
+	if (length(ret) > 0L) {
 		factors <- attr(x, "factors")
 		factors <- factors[order(rownames(factors)), , drop = FALSE]
 		v <- rownames(factors)
@@ -40,11 +40,17 @@ function(x, offset = TRUE, intercept = FALSE, ...) {
 	ret <- ret[ifx] # ifx - indexes of fixed terms
 	#retUnsorted <- ret
 
-	# finally, sort by order and then alphabetically
+	# finally, sort by term order and then alphabetically
 	#ret <- unname(ret[order(attr(x, "order")[ifx], ret)])
 	ord <- order(attr(x, "order")[ifx], gsub("I\\((.*)\\)", "\\1", ret))
 	ret <- unname(ret[ord])
 
+	deps <- if (length(ret) > 0L) termdepmat(reformulate(ret)) else
+		matrix(FALSE, 0L, 0L)
+		
+	dimnames(deps) <- list(ret, ret)
+	diag(deps) <- NA
+	
 	if(intercept && attr(x, "intercept")) {
 		ret <- c(interceptLabel, ret)
 		ord <- c(1, ord + 1L)
@@ -59,11 +65,11 @@ function(x, offset = TRUE, intercept = FALSE, ...) {
 	}
 	attr(ret, "intercept") <- attr(x, "intercept")
 	attr(ret, "interceptLabel") <- interceptLabel
+	
 
 	if (length(ran) > 0L) {
 		attr(ret, "random.terms") <- ran
-		f.random <- reformulate(c(".", paste("(", ran, ")",
-			sep = "")), response = ".")
+		f.random <- reformulate(c(".", paste0("(", ran, ")")), response = ".")
 		environment(f.random) <- environment(x)
 		attr(ret, "random") <- f.random
 	}
@@ -72,6 +78,8 @@ function(x, offset = TRUE, intercept = FALSE, ...) {
 	response <- if(response == 0L) NULL else variables[[response]]
 	attr(ret, "response") <- response
 	attr(ret, "order") <- order(ord)
+	attr(ret, "deps") <- deps
+
 
 	return(ret)
 }
@@ -146,6 +154,8 @@ function(x, intercept = FALSE, ...) {
 	fs <- lapply(lapply(c(f1, f2), terms.formula, data = eval(x$call$data)),
 		formula)
 	z <- lapply(fs, getAllTerms, intercept = TRUE)
+	
+	deps <- termdepmat_combine(lapply(z, attr, "deps"))
 
 	ord <- unlist(lapply(z, attr, "order"))
 	n <- sapply(z, length)
@@ -153,16 +163,21 @@ function(x, intercept = FALSE, ...) {
 	zz <- unlist(z)
 	Ints <- which(zz == "(Intercept)")
 	#zz[Ints] <- "1"
-	#zz <- paste(rep(c("count", "zero")[seq_along(z)], sapply(z, length)),
-		#"(", zz, ")", sep = "")
-	zz <- paste(rep(c("count", "zero")[seq_along(z)], sapply(z, length)),
-		"_", zz, sep = "")
+	#zz <- paste0(rep(c("count", "zero")[seq_along(z)], sapply(z, length)),
+		#"(", zz, ")")
+	zz <- paste0(rep(c("count", "zero")[seq_along(z)], sapply(z, length)),
+				 "_", zz)
+	
+	dimnames(deps) <- list(zz[-Ints], zz[-Ints])
+	
 	ret <- if(!intercept) zz[-Ints] else zz
 	attr(ret, "intercept") <- pmin(Ints, 1)
 	attr(ret, "interceptLabel") <- zz[Ints]
 	attr(ret, "response") <- attr(z[[1L]], "response")
 	attr(ret, "order") <- if(!intercept) order(ord[-Ints]) else ord
+	attr(ret, "deps") <- deps
 	ret
+	
 }
 
 `getAllTerms.glimML` <- function(x, intercept = FALSE, ...) {
@@ -190,21 +205,27 @@ function(x, ...)  {
 	f <- formula(x)
 	ret <- list()
 	while(is.call(f) && f[[1L]] == "~") {
-		ret <- c(ret, f[c(1L, length(f))])
+		ret <- c(ret, as.formula(f[c(1L, length(f))]))
 		f <- f[[2L]]
 	}
 	ret <- lapply(ret, `environment<-`, NULL)
 	names(ret) <- sapply(x@estimates@estimates, slot, "short.name")[seq_along(ret)]
-	#ret <- lapply(ret, function(z) getAllTerms(call("~", z), intercept=FALSE))
 	ret <- lapply(ret, getAllTerms.formula, intercept = FALSE)
+	
+	deps <- termdepmat_combine(lapply(ret, attr, "deps"))
+
 	attrInt <- sapply(ret, attr, "intercept")
 	#ret <- unlist(lapply(names(ret), function(i) sprintf("%s(%s)", i, ret[[i]])))
-	ret <- unlist(lapply(names(ret), function(i) if(length(ret[[i]])) paste(i, "(", ret[[i]], ")",
-		sep = "") else character(0L)))
-	Ints <- paste(names(attrInt[attrInt != 0L]), "(Int)", sep = "")
+	ret <- unlist(lapply(names(ret), function(i) if(length(ret[[i]]))
+						 paste0(i, "(", ret[[i]], ")") else character(0L)))
+
+	dimnames(deps) <- list(ret, ret)
+
+	Ints <- paste0(names(attrInt[attrInt != 0L]), "(Int)")
 	if(intercept) ret <- c(Ints, ret)
 	attr(ret, "intercept") <- attrInt
-	attr(ret, "interceptLabel") <-  Ints
+	attr(ret, "interceptLabel") <- Ints
+	attr(ret, "deps") <- deps
 	return(ret)
 }
 
@@ -217,6 +238,10 @@ function(x, ...)  {
 	if(intercept) ret <- c(intLab, ret)
 	mostattributes(ret) <- attributes(tt)
 	attr(ret, "interceptLabel") <- intLab
+	deps <- attr(ret, "deps")
+	dn <- gsub("^p\\(", "p(sigma", rownames(deps))
+	dimnames(deps) <- list(dn, dn)
+	attr(ret, "deps") <- deps
 	ret
 }
 
@@ -231,44 +256,38 @@ function (x, ...) {
 `getAllTerms.gamm` <-
 function (x, ...) getAllTerms(x$gam, ...)
 
+
 `getAllTerms.mark` <- 
 function (x, intercept = FALSE, ...) {
 	
 	f <- formula(x, expand = FALSE)[[2L]]
-	ret <- list()
+	formlist <- list()
 	while(length(f) == 3L && f[[1L]] == "+") {
-		ret <- append(f[[3L]], ret)
+		formlist <- c(f[[3L]], formlist)
 		f <- f[[2L]]
 	}
-	ret <- append(f, ret)
-	res <- lapply(ret, function(x) {
+	formlist <- append(f, formlist)
+	
+	wrapfunc <- function(x, func) if(length(x) == 0L) x else paste0(func, "(", x, ")")
+
+	alltermlist <- lapply(formlist, function(x, intercept) {
 		func <- deparse(x[[1L]], control = NULL)
-		tt <- terms(eval(call("~", x[[2L]])))
-		tlab <- attr(tt, "term.labels")
-		torder <- attr(tt, "order")
-		if(attr(tt, "intercept")) {
-			tlab <- append("(Intercept)", tlab)
-			torder <- c(0L, torder)
-		}
-		res1 <- lapply(fixCoefNames(tlab), function(z) paste(func, "(", z, ")", sep = ""))
-		attr(res1, "order") <- torder
-		res1
-	})
+		at <- getAllTerms(terms(eval(call("~", x[[2L]]))), intercept = intercept)
+		at[] <- wrapfunc(at, func)
+		dn <- wrapfunc(rownames(attr(at, "deps")), func)
+		attr(at, "interceptLabel") <- wrapfunc(attr(at, "interceptLabel"), func)
+		dimnames(attr(at, "deps")) <- list(dn, dn)
+		at
+	}, intercept)
 	
-	ord <- order(rep(seq_along(res), sapply(res, length)),
-		unlist(lapply(res, attr, "order")))
-	res <- unlist(res, recursive = TRUE)[ord]
-	ints <- grep("((Intercept))", res, fixed = TRUE)
-	attr(res, "intercept") <- as.numeric(ints != 0L)
-	attr(res, "interceptLabel") <- res[ints]
-	if(!intercept) {
-		res <- do.call("structure", c(list(res[-ints]), attributes(res)))
-		attr(res, "order") <- order(ord[-ints])
-	} else {
-		attr(res, "order") <- order(ord)
+	retval <- unlist(alltermlist, recursive = TRUE)
+	for(a in c("intercept", "interceptLabel")) {
+		attr(retval, a) <-	unlist(sapply(alltermlist, attr, a))
 	}
-	
-	res
+	attr(retval, "order") <- order(rep(seq_along(alltermlist), vapply(alltermlist, length, 1L)),
+		unlist(lapply(alltermlist, attr, "order")))
+	attr(retval, "deps") <- termdepmat_combine(lapply(alltermlist, attr, "deps"))
+	retval
 }
 
 `getAllTerms.betareg` <-
@@ -284,7 +303,9 @@ function(x, intercept = FALSE, ...) {
 	fs <- lapply(lapply(c(f1, f2), terms.formula, data = model.frame(x)),
 		formula)
 	z <- lapply(fs, getAllTerms, intercept = TRUE)
-
+	
+	deps <- termdepmat_combine(lapply(z, attr, "deps"))
+	
 	ord <- unlist(lapply(z, attr, "order"))
 	n <- sapply(z, length)
 	if(length(z) > 1L) ord[-j] <- ord[-(j <- seq_len(n[1L]))] + n[1L]
@@ -296,10 +317,14 @@ function(x, intercept = FALSE, ...) {
 		zz[i.phi] <- paste("(phi)", zz[i.phi], sep = "_")
 	}
 	ret <- if(!intercept) zz[-Ints] else zz
+	dimnames(deps) <- list(zz[-Ints], zz[-Ints])
+
 	attr(ret, "intercept") <- pmin(Ints, 1)
 	attr(ret, "interceptLabel") <- zz[Ints]
 	attr(ret, "response") <- attr(z[[1L]], "response")
 	attr(ret, "order") <- if(!intercept) order(ord[-Ints]) else ord
+	
+	attr(ret, "deps") <- deps
 	ret
 }
 
@@ -317,13 +342,14 @@ getAllTerms(x@formula, intercept = intercept)
 function(x, ...)
 UseMethod("getAllTerms")
 
+# TODO: return object of class 'allTerms'
 print.allTerms <-
 function(x, ...) {
 	cat("Model terms: \n")
 	if(!length(x)) {
-		cat("<None>\n")
+		cat("<None> \n")
 	} else {
-	print.default(as.vector(x),quote = TRUE)
+		print.default(as.vector(x), quote = TRUE)
 	}
 	ints <- attr(x, "interceptLabel")
 	if(!is.null(ints)) {

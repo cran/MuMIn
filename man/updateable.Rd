@@ -8,13 +8,12 @@
 
 \title{Make a function return updateable result}
 \description{
-Creates a function wrapper that stores a call in the values returned by its
+Creates a function wrapper that stores a call in the object returned by its
 argument \code{FUN}.
 }
 
 \usage{
-updateable(FUN)
-updateable2(FUN, Class)
+updateable(FUN, eval.args = NULL, Class)
 
 # updateable wrapper for mgcv::gamm and gamm4::gamm4
 uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
@@ -22,6 +21,9 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 
 \arguments{
     \item{FUN}{function to be modified, found via \code{\link{match.fun}}. }
+	\item{eval.args}{optionally a character vector of function arguments names
+	      to be evaluated in the stored call. See \sQuote{Details}. }
+	
 	\item{Class}{optional character vector naming class(es) to be set onto the
 		result of \code{FUN} (not possible with formal S4 objects). }
 	\item{formula, random, \dots}{arguments to be passed to \code{gamm} or \code{gamm4}}
@@ -38,6 +40,15 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 	result with the \code{call} element. In this case \code{updateable} can be
 	used on that function to add it. The resulting wrapper should be used in
 	exactly the same way as the original function.
+	
+	Argument \code{eval.args} specifies names of function arguments that should
+	be evaluated in the stored call. This is useful when, for example, the model
+	object does not have \code{formula} element. The default \code{formula} 
+	method tries to retrieve formula from the stored \code{call},
+	which works unless the formula has been given as a variable and value of
+	that variable changed since the model was fitted (the last \sQuote{example}
+	demonstrates this).
+	
 }
 
 \value{
@@ -92,9 +103,8 @@ update(ct2, method = "pearson")
 update(ct2, alternative = "two.sided")
 
 
-
 ## predefined wrapper for 'gamm':
-if(require(mgcv)) {
+\dontshow{ if(require(mgcv)) \{ }
 set.seed(0)
 dat <- gamSim(6, n = 100, scale = 5, dist = "normal")
 
@@ -103,9 +113,8 @@ fmm1 <- uGamm(y ~s(x0)+ s(x3) + s(x2), family = gaussian, data = dat,
 
 getCall(fmm1)
 class(fmm1)
-}
+\dontshow{ \} }
 ###
-
 
 \dontrun{
 library(caper)
@@ -124,6 +133,24 @@ update(fm2) # Error with 'fm1'
 dredge(fm2)
 }
 
+###
+\dontrun{
+# "lmekin" does not store "formula" element 
+library(coxme)
+uLmekin <- updateable(lmekin, eval.args = "formula")
+
+f <- effort ~ Type + (1|Subject)
+fm1 <- lmekin(f, data = ergoStool)
+fm2 <- uLmekin(f, data = ergoStool)
+
+f <- wrong ~ formula # reassigning "f"
+
+getCall(fm1) # formula is "f"
+getCall(fm2) 
+
+formula(fm1) # returns the current value of "f" 
+formula(fm2)
+}
 }
 
 \keyword{utils}

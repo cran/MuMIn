@@ -5,7 +5,7 @@
 
 \encoding{utf-8}
 \title{Combine model selection tables}
-\description{Combine two or more model selection tables. }
+\description{Combine two model selection tables. }
 
 \usage{
 \method{merge}{model.selection}(x, y, suffixes = c(".x", ".y"), ...)
@@ -15,15 +15,15 @@
 \arguments{
   \item{x, y}{\code{model.selection} objects to be combined.}
   \item{suffixes}{a character vector with two elements that are appended
-	respectively to row names of the combined tables}
-  \item{\dots}{ignored}
+	respectively to row names of the combined tables.}
+  \item{\dots}{ignored. }
 % \item{\dots}{\code{model.selection} objects for \code{rbind}, ignored in 
-% \code{merge}}
+% \code{merge}.}
 %  \item{deparse.level}{currently ignored.}
 }
 
 \value{
-A \code{model.selection} object containing the selected models (rows).
+A \code{model.selection} object containing models from both model selection tables.
 }
 
 \note{
@@ -47,9 +47,7 @@ Unlike the \code{merge} method for \code{data.frame}, this method appends
 
 \examples{
 \dontrun{
-
 require(mgcv)
-data(Beetle)
 
 ms1 <- dredge(glm(Prop ~ dose + I(dose^2) + log(dose) + I(log(dose)^2),
     data = Beetle, family = binomial, na.action = na.fail))

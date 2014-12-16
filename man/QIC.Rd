@@ -61,8 +61,8 @@ Methods exist for
 \keyword{models}
 
 \examples{
+\dontshow{ if(require(geepack)) \{ }
 
-if(require(geepack)) {
 data(ohio)
 
 fm1 <- geeglm(resp ~ age * smoke, id = id, data = ohio,
@@ -78,6 +78,6 @@ model.sel(fm1, fm2, fm3, rank = QIC)
     corstr = list("exchangeable", "unstructured", "ar1")
     ))      
 }
-}
+\dontshow{ \} }
 
 }

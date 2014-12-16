@@ -30,21 +30,15 @@ Weights(x)
 \code{\link{importance}}
 
 \code{\link{weights}}, which extracts fitting weights from model objects.
-
 }
 
 \examples{
-
-data(Beetle)
-
-fm1 <- glm(Prop ~ dose, data=Beetle, family=binomial)
+fm1 <- glm(Prop ~ dose, data = Beetle, family = binomial)
 fm2 <- update(fm1, . ~ . + I(dose^2))
 fm3 <- update(fm1, . ~ log(dose))
 fm4 <- update(fm3, . ~ . + I(log(dose)^2))
 
 round(Weights(AICc(fm1, fm2, fm3, fm4)), 3)
-
-
 }
 
 \keyword{models}

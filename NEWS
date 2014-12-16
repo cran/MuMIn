@@ -1,5 +1,53 @@
 MuMIn package news:
 
+Version: 1.12.1 (2014-12-16)
+minor corrections to the documentation
+
+Version: 1.12.0 (2014-12-16)
+(added) exprApply: new function to manipulate expressions (with example of use
+	with 'dredge' to manipulate terms inside formula).
+(p)dredge, subset.model.selection: curly braces can be used to indicate complex 
+	terms (e.g. {I(x)} or {s(x,k=2}) instead of backtick quotes. Spacing in 
+	these expressions is irrelevant (as both whitespace and backticks seem to be 
+	a problem for some users).
+
+Version: 1.11.3 (2014-12-10)
+(added) stdize: new function for standardizing data
+(fixed) smarter sorting of interaction terms in coefficient names
+print.model.selection: rank function call is added to the output
+
+Version: 1.11.2 (2014-12-01)
+(fixed) r.squaredGLMM: in "binomial" family models the residual variance is 
+	used for additive dispersion (thanks to Paul Johnson). 
+	There are still problems with 'lmer' when 'subset' argument is given, 
+	observation-level random term has to be specified manually in this case.
+(fixed) some formula-decomposition related functions (that sometimes caused 
+	problems with 'r.squaredGLMM' for 'lmer', reported by Yevgen Matusevych)
+dredge: warns about potentially misspecified arguments 
+(added) predict method for 'gamm' class
+
+Version: 1.11.1 (2014-11-19)
+dredge: more efficient checking for marginality in model terms (~10x faster in 
+	case of 4-way interaction). The argument 'marg.ex' is removed (exceptions 
+	to marginality rule are inferred from the global model). 
+getAllTerms: result has a new attribute 'deps' with a "term dependency matrix". 
+nested: new function listing nested models (suggested by Giacomo Assandri).
+updateable: added new argument 'eval.args'
+
+Version: 1.10.8 (2014-11-14)
+dredge, subset.model.selection: improved interpretation of 'subset' expressions. 
+	"Term(x)" notation can be used instead of backtick quotes for complex term 
+	names.
+
+Version: 1.10.7 (2014-09-24)
+(fixed) coef.multinom: gave a wrong order of coefficients for multiple level 
+	responses (thanks to Alistair Senior who spotted this)
+
+Version: 1.10.6 (2014-08-17)
+(added) methods for 'maxlike' (from package with the same name)
+lazy loading of datasets
+plot.model.selection: improved and documented 
+
 Version: 1.10.5 (2014-08-08)
 get.models: can now use parallel computation if a valid 'cluster' is provided.
 	It takes over the functionality of 'pget.models', which is now deprecated. 

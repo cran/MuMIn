@@ -215,8 +215,6 @@ function(obj, termNames, comb, opt, ...) {
 	ret
 }
 
-
-
 `makeArgs.mark` <- 
 function(obj, termNames, comb, opt, ...) {
 	interceptLabel <- "(Intercept)"

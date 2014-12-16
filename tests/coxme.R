@@ -1,4 +1,4 @@
-if(length(find.package("coxme", quiet = TRUE)) == 2) {
+if(length(find.package(c("survival", "coxme"), quiet = TRUE)) == 2) {
 
 library(coxme)
 library(MuMIn)
@@ -11,9 +11,11 @@ lung1 <- na.omit(lung)
 rfit0 <- coxme(Surv(time, status) ~ ph.ecog * ph.karno + (age | 1) + (wt.loss | 1),
 	data = lung1)
 
+getAllTerms(rfit0)
+	
 stopifnot(is.numeric(coeffs(rfit0)))
 
-dd <- dredge(rfit0, eval = T, trace = T)
+dd <- dredge(rfit0, eval = TRUE, trace = TRUE)
 coeffs(dd)
 model.sel(dd, rank = AIC)
 summary(ma <- model.avg(dd))
@@ -32,8 +34,8 @@ model.sel(fm0, fm1, fme, fme1, fme2)
 #fit1 <- lme(effort ~ Type, data=ergoStool, random= ~1|Subject/ran1, method="ML")
 
 if(exists("lmekin", mode = "function", envir = asNamespace("coxme"))) {
-	fit2 <- lmekin(effort ~ Type + (1|Subject), data=ergoStool)
-	dd <- dredge(fit2, trace = T)
+	fit2 <- lmekin(effort ~ Type + (1|Subject), data = ergoStool)
+	dd <- dredge(fit2, trace = TRUE)
 	summary(ma <- model.avg(dd))
 }
 

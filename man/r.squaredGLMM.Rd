@@ -84,14 +84,12 @@ Nakagawa & Schielzeth (2012), and its extension by Paul Johnson.
 }
 
 \references{
-
-Nakagawa, S, Schielzeth, H. (2012). A general and simple method for obtaining
+Nakagawa, S, Schielzeth, H. (2013). A general and simple method for obtaining
 \Rsq from Generalized Linear Mixed-effects Models. \emph{Methods in
-Ecology and Evolution}: (online) doi:10.1111/j.2041-210x.2012.00261.x
+Ecology and Evolution} 4: 133–142
 
-Johnson, P. (in press). Generalization of Nakagawa & Schielzeth’s \Rsqx{GLMM} to 
-all random effects specifications. \emph{Methods in Ecology and Evolution}
-
+Johnson, P.C.D. (2014) Extension Nakagawa & Schielzeth’s \Rsqx{GLMM} to random 
+slopes models. \emph{Methods in Ecology and Evolution} 5: 44-946.
 }
 
 \seealso{

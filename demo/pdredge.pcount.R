@@ -38,7 +38,7 @@ invisible(clusterCall(clust, "library", "stats4", character.only = TRUE))
 system.time(pdd2 <-
 	pdredge(ufm.mallard, clust,
     subset = (`p(date)` || !`p(I(date^2))`),
-	rank = AIC, extra = "adjR^2", eval = T))
+	rank = AIC, extra = "adjR^2", eval = TRUE))
 
 # select the top models and null model
 subset(pdd2, delta < 2 | df == min(df))

@@ -2,8 +2,8 @@ if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) {
 	clusterType <- if(length(find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
 	clust <- try(makeCluster(getOption("cl.cores", 2), type = clusterType))
 	if(inherits(clust, "cluster")) {
-		library(MuMIn)
 	
+		library(MuMIn)
 		library(nlme)
 		data(Orthodont, package = "nlme")
 
@@ -25,18 +25,15 @@ if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) {
 		print(dd1)
 		
 		#print(all.equal(pddc, dd1))
-
-
 		ma1 <- model.avg(pdd1, beta = FALSE)
 		ma0 <- model.avg(pddc)
 
 		stopifnot(isTRUE(all.equal(ma1$avg.model, ma0$avg.model)))
 		stopifnot(isTRUE(all.equal(ma1$summary, ma0$summary)))
 
-		stopCluster(clust)
-
 		stopifnot(identical(c(pddc), c(pdd1)) && identical(c(pdd1), c(dd1)))
 
+		stopCluster(clust)
 
 	# suppressPackageStartupMessages(library(spdep))
 	# suppressMessages(example(NY_data, echo = FALSE))

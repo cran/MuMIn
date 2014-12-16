@@ -1,35 +1,69 @@
 `plot.model.selection` <-
-function(x, col = c("SlateGray", "SlateGray3"),
-	ylab=expression("Cumulative Akaike weight" ~~ (omega)),
-	xlab=NA, col.bias=3, col2="white", ...) {
+function(x,
+	ylab = NULL, xlab = NULL,
+	labels = attr(x, "terms"), labAsExpr = FALSE,
+	col = c("SlateGray", "SlateGray2"), col2 = "white",
+	border = par("col"),
+	par.lab = NULL, par.vlab = NULL,
+	axes = TRUE, ann = TRUE,
+	...) {
+	
+	if (is.null(xlab)) xlab <- NA  
+	if (is.null(ylab)) ylab <- expression("Cumulative Akaike weight" ~~
+										  (omega))
+
+	op <- par(..., no.readonly = TRUE)
+	on.exit(par(op))
+	
 	cumw <- cumsum(x$weight)
 	n <- nrow(x)
-	v <- attr(x, "terms")
-	m <- length(v)
-	plot(c(0, m), c(0, 1), type="n", axes=F, ann=F,
-		ylim = c(1, 0),...)
-	#col <- rep(col, length.out=m)
-	#colp <- colorRamp(c("SlateGrey","black"))
+	m <- length(attr(x, "terms"))
+	plot.new()
+	plot.window(xlim = c(0, m), ylim = c(1, 0), xaxs = "i", yaxs = "i")
 
-	pal <- lapply(col, function(x) colorRamp(c(col2, x, x), bias=col.bias))
-	npal <- length(col)
-
-	for(i in 1:m) {
+	stdwt <- x$weight / max(x$weight)
+	pal <- if(is.na(col2)) rbind(col) else 
+		vapply(col, function(x) rgb(colorRamp(c(col2, x))(stdwt),
+			maxColorValue = 255), character(n))
+	npal <- ncol(pal)
+		
+	for(i in 1L:m)
 		rect(i - 1, c(0, cumw), i, c(cumw, 1),
-			#col=ifelse(is.na(x[,i]), "white", col[i])
-			col=ifelse(is.na(x[,i]), "white",
-			rgb(pal[[1L + ((i - 1L) %% npal)]](x$weight)/255))
-		)
+			col = ifelse(is.na(x[, i]), NA, pal[, 1L + ((i - 1L) %% npal)]),
+			border = border)
+
+	if(ann) {
+		labCommonArg <- list(col = par("col.axis"), font = par("font.axis"), cex = par("cex.axis"))
+		if(labAsExpr) {
+			labels <- gsub(":", "%*%", labels, perl = TRUE)
+				labels <- gsub("\\B_?(\\d+)(?![\\w\\._])", "[\\1]", labels, perl = TRUE)
+			labels <- parse(text = labels)
+		}	
+		arg <- c(list(side = 3L, padj = 0.5, line = 1, las = 2), labCommonArg)
+		for(i in names(par.lab)) arg[i] <- par.lab[i]
+		
+		if(is.expression(labels)) {
+			if(length(labels) != m) stop("length of 'labels' is not equal to number of terms")
+			for(i in 1L:m) do.call("mtext", c(list(text = as.expression(labels[[i]]), at = i - 0.5), arg))
+		} else if (!is.null(labels) && !is.na(labels)) {
+			if(length(labels) != m) stop("length of 'labels' is not equal to number of terms")
+			do.call("mtext", c(list(text = labels, at = 1L:m - 0.5), arg))
+		}
+	   
+		arg <- c(list(side = 4, las = 2, line = 1, adj = 1), labCommonArg)
+		for(i in names(par.vlab)) arg[i] <- par.vlab[i]
+		ss <- x$weight > -(1.2 * strheight("I", cex = arg$cex))
+		arg[['at']] <- (c(0, cumw[-n]) + cumw)[ss] / 2
+		arg[['text']] <- rownames(x)[ss]
+		arg$line <- arg$line + max(strwidth(arg[['text']], cex = arg$cex,
+			units = "in")) / par("mai")[4L] * par("mar")[4L]
+		do.call(mtext, arg)
+
+		title(ylab = ylab, xlab = xlab)
 	}
-	#mtext(side=3, at=1:m - 0.5, v)
-	lapply(1:m, function(i)	mtext(parse(text=v[[i]]), side=3, at=i- 0.5,
-		padj=0.5, line=1))
-
-	axis(2)
-	ss <- x$weight > -strheight("I")
-	mtext(side=4, at=(c(0, cumw[-n]) + cumw)[ss]/2, rownames(x)[ss],
-		las=1, line=1.25, adj=1)
-	title(ylab=ylab, xlab=xlab)
+	if(axes) {
+		axis(2L, col = border, col.ticks = border)
+		box(col = border)
+	}
+	invisible(x)
 }
-
-#plot(dd12, col = c("SlateGray", "SlateGray3"))

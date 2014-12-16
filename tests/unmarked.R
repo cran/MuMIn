@@ -30,6 +30,7 @@ fm2oc <- occu(~veght+habitat ~veght*habitat, umfOccu)
 fm3oc <- occu(~habitat ~veght+habitat, umfOccu)
 fm4oc <- occu(~veght ~veght+habitat, umfOccu)
 
+
 data(linetran)
 ltUMF <- with(linetran, {
    unmarkedFrameDS(y = cbind(dc1, dc2, dc3, dc4),
@@ -38,7 +39,10 @@ ltUMF <- with(linetran, {
    tlength = linetran$Length * 1000, survey = "line", unitsIn = "m")
    })
 
-fm2 <- distsamp(~area + habitat ~ habitat, ltUMF)
+fm2 <- distsamp(~area * habitat ~ habitat, ltUMF)
+
+#getAllTerms(fm2)
+
 dredge(fm2, fixed = ~p(sigmaarea))
 
 # Bring in Data

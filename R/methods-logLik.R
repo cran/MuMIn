@@ -161,3 +161,11 @@ function (object, ...) {
     val
 }
 
+logLik.maxlikeFit <-
+function (object, ...) {
+	ll <- -object$optim$value
+	attr(ll, "nobs") <- nrow(object[['points.retained']])
+	attr(ll, "df") <- nrow(object$Est)
+	class(ll) <- "logLik"
+	ll
+}

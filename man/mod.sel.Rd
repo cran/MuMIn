@@ -22,16 +22,16 @@ model.sel(object, ...)
 }
 
 \arguments{
-	\item{object}{A fitted model object, a list of such objects, or a
+	\item{object}{a fitted model object, a list of such objects, or a
 	\code{"model.selection"} object.}
 
-    \item{\dots}{ More fitted model objects. }
+    \item{\dots}{ more fitted model objects. }
 	
-    \item{rank}{Optional, custom rank function (information criterion) to use
+    \item{rank}{optional, custom rank function (information criterion) to use
         instead of \code{AICc}, e.g. \code{QAIC} or \code{BIC}, may be omitted
         if \code{object} is a model list returned by \code{get.models}. }
 
-    \item{rank.args}{Optional \code{list} of arguments for the \code{rank}
+    \item{rank.args}{optional \code{list} of arguments for the \code{rank}
         function. If one is an expression, an \code{x} within it is substituted
         with a current model. }
 	
@@ -67,7 +67,6 @@ Possible alternatives: \code{\link[bbmle]{ICtab}} (in package \pkg{bbmle}), or
 
 \examples{
 
-data(Cement)
 Cement$X1 <- cut(Cement$X1, 3)
 Cement$X2 <- cut(Cement$X2, 2)
 

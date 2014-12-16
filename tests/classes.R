@@ -255,17 +255,17 @@ require(MASS)
 quine.nb1 <- glm.nb(Days ~ 0 + Sex/(Age + Eth*Lrn), data = quine)
 #quine.nb1 <- glm.nb(Days ~ Sex/(Age + Eth*Lrn), data = quine)
 
-ms <- dredge(quine.nb1, marg.ex = "Sex")
+ms <- dredge(quine.nb1)
 
 models <- get.models(ms, subset = NA)
 summary(model.avg(models))
 
-#dredge(quine.nb1, marg.ex = NULL) # OK
-#dredge(quine.nb1, marg.ex = NA) # OK
-#dredge(quine.nb1, marg.ex = "Sex") # OK
+#dredge(quine.nb1) # OK
+#dredge(quine.nb1x = NA) # OK
+#dredge(quine.nb1) # OK
 dredge(quine.nb1) # OK
-#dredge(quine.nb1, marg.ex = "Sex") # Right, should be the same as above
-ma <- model.avg(dredge(quine.nb1, marg.ex = "Sex"), subset = cumsum(weight)<=.9999)
+#dredge(quine.nb1) # Right, should be the same as above
+ma <- model.avg(dredge(quine.nb1), subset = cumsum(weight)<=.9999)
 
 # Cannot predict with this 'averaging'
 #pred <- predict(ma, se=TRUE)

@@ -23,7 +23,7 @@ function (model) coef.model.selection(model)
 
 `coefArray` <- function(object) {
 	coefNames <- fixCoefNames(unique(unlist(lapply(object, rownames),
-		use.names = FALSE)), sort = TRUE)
+		use.names = FALSE)))
 	nCoef <- length(coefNames)
 	nModels <- length(object)
 	ret <- array(NA_real_, dim = c(nModels, 3L, nCoef),
@@ -45,21 +45,30 @@ function (x, i = NULL, ...) {
 
 `subset.model.selection` <-
 function(x, subset, select, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
+	expr.sub.expand <- expression(
+		.substFunc(.substFunc(.substFunc(
+			substitute(subset),
+			"dc", .sub_dc_has, as.name(".subset_vdc")),
+			c("{", "Term"), .sub_Term),
+			"has", .sub_has))
+					
+	subst <- function(cl, ...) eval(call("substitute", cl, list(...)))
+
 	if (missing(select)) {
 		if(missing(subset)) return(x)
-		e <- .substHas(.substFunc(substitute(subset), "dc", function(e) {
-			e[[1]] <- call(":::", as.name(.packageName), as.name(".subset_vdc"))
-			for(i in 2L:length(e)) e[[i]] <- call("has", e[[i]])
-			e
-		}))
-		
+		e <- eval(expr.sub.expand)
+		e <- subst(e, . = x)
+		DebugPrint(e)
 		i <- eval(e, x, parent.frame())
 		return(`[.model.selection`(x, i, recalc.weights = recalc.weights, 
 			recalc.delta = recalc.delta, ...))
 	} else {
 		cl <- match.call(expand.dots = FALSE)
+		if(!missing(subset)) cl$subset <- 
+			subst(eval(expr.sub.expand), . = substitute(x))
 	    cl <- cl[c(1L, match(names(formals("subset.data.frame")), names(cl), 0L))]
 	    cl[[1L]] <- as.name("subset.data.frame")
+		DebugPrint(cl)
 		ret <- eval(cl, parent.frame())
 		if(recalc.weights && ("weight" %in% colnames(ret)))
 			ret[, 'weight'] <- ret[, 'weight'] / sum(ret[, 'weight'])
@@ -141,8 +150,8 @@ function (x, y, suffixes = c(".x",".y"), ...)  {
 										 y[, !(colnames(y) %in% c2), drop = FALSE])))
 	
 	if(!is.null(suffixes))
-		row.names(res) <- c(paste(row.names(x), suffixes[1L], sep = ""),
-			 paste(rownames(y), suffixes[2L], sep = ""))
+		row.names(res) <- c(paste0(row.names(x), suffixes[1L]),
+			 paste0(rownames(y), suffixes[2L]))
 
 	nm <- rownames(res)
 	
@@ -199,7 +208,6 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 			random.terms <- attr(getAllTerms(attr(x, "global")), "random.terms")
 			if(!is.null(random.terms)) random.terms <- list(random.terms)
 		} else random.terms <- attr(x, "random.terms")
-
 		cat("Model selection table \n")
 		dig <- c(AnyIC = 1L, "R^2" = 4L, df = 0L, logLik = 3L,
 			delta = 2L,	weight = 3L)
@@ -252,10 +260,12 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 			cat("Abbreviations:", sep = "\n")
 			for(i in names(vLegend)) {
 				cat(vLegend[[i]], sep = ", ", fill = TRUE, labels =
-					c(paste(i, ":", sep = ""), rep(paste(rep(" ", nchar(i) + 1L),
+					c(paste0(i, ":"), rep(paste(rep(" ", nchar(i) + 1L),
 					collapse = ""), length(vLegend[[i]]) - 1L)))
 			}
 		}
+		
+		cat("Models ranked by", deparse(attr(attr(x, 'rank'), "call"), control = NULL), "\n")
 
 		if(!is.null(random.terms)) {
 			if(addrandcol) {
@@ -333,7 +343,7 @@ function (object, ...) {
 			#for(i in seq_along(fam1)) fam1[[i]] <- list(family = eval(fam1[[i]]), index = index[[i]])
 			#fam <- family(dd1)
 			#index <- lapply(fam, "[[", "index")
-			#ret <- rep(lapply(fam, "[[", "family"), vapply(index, length, integer(1L)))[order(unlist(index))]
+			#ret <- rep(lapply(fam, "[[", "family"), vapply(index, length, 1L))[order(unlist(index))]
 			return(ret)
 		} else return(family(attr(object, "global")))
 	} else {
@@ -370,9 +380,9 @@ function(cl, family = NULL, class = NULL,
 		j <- !is.na(fam[2L,])
 		famname <- fam[1L, j]
 		famname <- ifelse(substring(famname, nchar(famname)) != ")",
-			paste(famname, "(", sep = ""), paste(substring(famname, 1L, nchar(famname) - 1L),
-				", ", sep = ""))
-		fam[1L, j] <- paste(famname, fam[2L, j], ")", sep = "")
+			paste0(famname, "("), paste0(substring(famname, 1L, nchar(famname) - 1L),
+				", "))
+		fam[1L, j] <- paste0(famname, fam[2L, j], ")")
 		arg <- cbind(arg, t(fam))
 	}
 	if(!is.null(class)) arg[, "class"] <- rep(class, length.out = nrow(arg))
@@ -390,7 +400,7 @@ function(cl, family = NULL, class = NULL,
 	}
 	
 	if(different.only)
-		arg <- arg[, vapply(arg, nlevels, integer(1L)) != 1L, drop = FALSE]
+		arg <- arg[, vapply(arg, nlevels, 1L) != 1L, drop = FALSE]
 
 	#if(ncol(arg) != 0L) arg <- gsub("([\"'\\s]+|\\w+ *=)","", arg, perl = TRUE)
 	arg

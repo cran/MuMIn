@@ -89,7 +89,6 @@
     c(.findbars(term[[2L]]), .findbars(term[[3L]]))
 }
 
-
 `.nullREForm` <-
 function(formula) {
 	re <- lapply(.findbars(formula), function(x) call("(", x))
@@ -115,3 +114,4 @@ function(x, null = NULL, null.RE = FALSE) {
 	attr(ret, "adj.r.squared") <- ret / max.r2
 	ret
 }
+

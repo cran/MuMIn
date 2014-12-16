@@ -6,7 +6,6 @@ library(MuMIn)
 require(geepack)
 require(gee)
 require(yags)
-
 options(na.action = na.pass)
 
 data(dietox, package = 'geepack')
@@ -26,8 +25,8 @@ fygs <- yags(Weight ~ Cu * (Time + I(Time^2)), id = Pig, data = dietox,
 
 model.sel(fggm, fgee, fygs, rank = QIC)
 
-QIC(fggm, fgee, fygs, typeR = T)
-QIC(fggm, fgee, fygs, typeR = F)
+QIC(fggm, fgee, fygs, typeR = TRUE)
+QIC(fggm, fgee, fygs, typeR = FALSE)
 
 system.time(dd.ggm <- dredge(fggm, rank = QIC, ct.args = list(type = "robust"),
 	   fixed = ~Cu))
@@ -59,8 +58,3 @@ model.avg(dd.gee)
 models <- get.models(dd.gee, subset = NA)
 summary(mavg <- model.avg(models, rank = QIC, ct.args = list(type = "naive")))
 summary(mavg <- model.avg(models, rank = QIC, ct.args = list(type = "robust")))
-
-
-
-
-

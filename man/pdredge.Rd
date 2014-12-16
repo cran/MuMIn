@@ -9,7 +9,7 @@ Parallelized version of \code{dredge}.
 
 \usage{
 pdredge(global.model, cluster = NA, beta = FALSE, evaluate = TRUE, rank = "AICc", 
-    fixed = NULL, m.max = NA, m.min = 0, subset, marg.ex = NULL, trace = FALSE, 
+    fixed = NULL, m.max = NA, m.min = 0, subset, trace = FALSE, 
     varying, extra, ct.args = NULL, check = FALSE, ...)
 
 }
@@ -17,7 +17,7 @@ pdredge(global.model, cluster = NA, beta = FALSE, evaluate = TRUE, rank = "AICc"
 \arguments{
     \item{global.model, beta, evaluate, rank}{
         see \code{\link{dredge}}. }
-    \item{fixed, m.max, m.min, subset, marg.ex, varying, extra, ct.args, ...}{
+    \item{fixed, m.max, m.min, subset, varying, extra, ct.args, ...}{
         see \code{\link{dredge}}. }
     \item{trace}{ displays the generated calls, but may not work as expected
         since the models are evaluated in batches rather than one by one. }
@@ -75,7 +75,6 @@ if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) \{
 \dontrun{require(parallel) || require(snow)}
 
 # From example(Beetle)
-data(Beetle)
 
 Beetle100 <- Beetle[sample(nrow(Beetle), 100, replace = TRUE),]
 

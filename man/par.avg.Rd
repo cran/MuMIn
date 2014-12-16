@@ -17,7 +17,7 @@ par.avg(x, se, weight, df = NULL, level = 1 - alpha, alpha = 0.05,
   \item{x}{vector of parameters. }
   \item{se}{vector of standard errors. }
   \item{weight}{vector of weights. }
-  \item{df}{(optional) vector of degrees of freedom. }
+  \item{df}{optional vector of degrees of freedom. }
   \item{alpha, level}{significance level for calculating confidence intervals. }
   \item{revised.var}{logical, should the revised formula for standard errors be
 	used? See \sQuote{Details}. }
