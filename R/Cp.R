@@ -15,7 +15,7 @@ function (object, ..., dispersion = NULL) {
 		rss + 2 * scale  * (nobs(x) - df.r)
 	}
     if (length(list(...))) {
-        cps <- vapply(list(object, ...), .cp, numeric(1L), disp = dispersion)
+        cps <- vapply(list(object, ...), .cp, 1L, disp = dispersion)
         val <- data.frame(Cp = cps)
         Call <- match.call()
         row.names(val) <- as.character(Call[-1L])

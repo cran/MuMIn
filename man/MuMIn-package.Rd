@@ -63,15 +63,18 @@ model selection by AIC.
 
 \examples{
 
-data(Cement)
-
 options(na.action = "na.fail") #  change the default "na.omit" to prevent models 
                                #  from being fitted to different datasets in 
                                #  case of missing values.
 
 fm1 <- lm(y ~ ., data = Cement)
 ms1 <- dredge(fm1)
-plot(ms1)
+
+# Visualize the model selection table:
+\dontshow{ if(require(graphics)) \{ }
+par(mar = c(3,5,6,4))
+plot(ms1, labAsExpr = TRUE)
+\dontshow{ \} }
 
 model.avg(ms1, subset = delta < 4)
 

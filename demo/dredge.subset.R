@@ -3,10 +3,10 @@
 ###
 
 library(MuMIn)
-data(Cement)
+options(na.action = na.fail)
 
 # Fit the 'global model'
-fm <- lm(y ~ (X1 + X2 + X3 + X4)^2, data = Cement, na.action = na.pass)
+fm <- lm(y ~ (X1 + X2 + X3 + X4)^2, data = Cement)
 
 # Suppose we want to have set of models that exclude combinations of colinear
 # variables, that are significantly (p < 0.05) correlated, with Pearson

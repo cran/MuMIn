@@ -1,3 +1,5 @@
+if(length(find.package(c("lme4", "nlme"), quiet = TRUE)) == 2) {
+
 library(lme4)
 library(nlme)
 library(MuMIn) ## needs  version >= 1.9.22
@@ -40,7 +42,6 @@ function(model, ovdVarName) {
 
 
 ### tests:
-
 orangemod.ri <- lmer(circumference ~ age +(1 | Tree), data = Orange)
 orangemod.rs <- lmer(circumference ~ age +(age | Tree), data = Orange)
 
@@ -58,9 +59,9 @@ all.equal(r.squaredGLMM(orangemod.rs), R2PJ(orangemod.rs))
 set.seed(1)
 Orange$rand <- rnorm(nrow(Orange))
 subs <- 2:31
-
 model1 <- lmer(circumference ~ scale(age) + (I(rand + 1) | Tree), data = Orange, subset = subs, REML = TRUE)
 model1a <- lme(circumference ~ scale(age), ~ I(rand + 1) | Tree, data = Orange, subset = subs, method = "REML")
+model1b <- lme(circumference ~ scale(age), list(~ I(rand + 1) | Tree), data = Orange, subset = subs, method = "REML")
 rm(subs)
 
 stopifnot(
@@ -75,24 +76,44 @@ model.matrix(model1a, TRUE)
 
 ###########################
 
-if(
-   require(glmmML)
-   ) {
+if(require(glmmML)) {
 
-## tests models evaluated in a strange environment
-with(env <- new.env(), {
-	id <- factor(rep(1:20, rep(5, 20)))
-	y <- rbinom(100, prob = rep(runif(20), rep(5, 20)), size = 1)
-	x <- rnorm(100)
-	dat <- data.frame(y = y, x = x, id = id)
-	subs <- 1:60
-	model2 <- glmmML(y ~ x, data = dat, cluster = id, subset = subs, x = TRUE)
-	model2a <- glmer(y ~ x + (1 | id), data = dat, subset = subs, family = family(model2))
-})
+### tests models evaluated in a strange environment
+#with(env <- new.env(), {
+#
+#	n <- 200
+#	id <- factor(rep(1:20, rep(5, 20)))
+#	y <- rbinom(n, prob = rep(runif(20), rep(5, 20)), size = 1)
+#	x <- rnorm(n)
+#	dat <- data.frame(y = y, x = x, id = id)
+#	
+#	subs <- 1:110
+#	model2 <- glmmML(y ~ x, data = dat, cluster = id, subset = subs, x = TRUE)
+#	model2a <- glmer(y ~ x + (1 | id), data = dat, subset = subs, family = family(model2))
+#
+#	model2b <- glmer(y ~ x + (1 | id), data = dat, subset = subs, family = binomial("logit"))
+#	
+#	
+#	dat$..obslev <- gl(200, 1)
+#	
+#	x <- glmer(formula = y ~ x + (1 | id) + (1 | ..obslev), data = dat, family = binomial("logit"))
+#	
+#	model2b <- glmer(y ~ x + (1 | id) + (1 | gl(n, 1)), data = dat,  family = binomial("logit"),
+#					 subset = subs)
+#	
+#	
+#	model2b <- glmer(y ~ x + (1 | id) + (gl(200, 1), data = dat,  family = binomial("logit"))
+#
+#	x <- model2b
+#
+#})
+#
+#r.squaredGLMM(env$model2a)
+#r.squaredGLMM(model2)
 
-stopifnot(
-all.equal(r.squaredGLMM(env$model2), r.squaredGLMM(env$model2a), tolerance = 0.005)
-)
+#stopifnot(
+#all.equal(r.squaredGLMM(env$model2), r.squaredGLMM(env$model2a), tolerance = 0.005)
+#)
 
 } ## if(require(glmmML))
 ### Poisson:
@@ -104,10 +125,10 @@ grouseticks <- merge(grouseticks, aggregate(
 grouseticks$DUMMY <- as.integer(grouseticks$TICKS > grouseticks$medianTicks)
 grouseticks$medianTicks <- NULL
 
-tickmod.ri  <- glmer(TICKS~HEIGHT+DUMMY+YEAR + (1|INDEX) + (1|BROOD) + (1|LOCATION),
+tickmod.ri  <- glmer(TICKS ~ HEIGHT + DUMMY+YEAR + (1|INDEX) + (1|BROOD) + (1|LOCATION),
 	family = poisson, data = grouseticks)
-
-tickmod.ri0  <- glmer(TICKS~HEIGHT+DUMMY+YEAR + (1|BROOD) + (1|LOCATION),
+	
+tickmod.ri0  <- glmer(update(formula(tickmod.ri), .~. -(1|INDEX)),
 	family = poisson, data = grouseticks)
 
 #x1  <- glm(TICKS ~ HEIGHT+DUMMY+YEAR, family = quasipoisson, data = grouseticks)
@@ -128,9 +149,9 @@ tickmod.ri0  <- glmer(TICKS~HEIGHT+DUMMY+YEAR + (1|BROOD) + (1|LOCATION),
 #tickmod.ri0q
 
 
-
 print(R2PJpois(tickmod.ri, 'INDEX'))
 print(r.squaredGLMM(tickmod.ri))
+#print(r.squaredGLMM(tickmod.ri0))
 
 stopifnot(all.equal(R2PJpois(tickmod.ri, 'INDEX'), r.squaredGLMM(tickmod.ri)))
 
@@ -154,3 +175,4 @@ stopifnot(all.equal(R2PJpois(tickmod.rs, 'INDEX'), r.squaredGLMM(tickmod.rs)))
 #r.squaredGLMM(tickmod3)
 #r.squaredGLMM(tickmod3a)
 #r.squaredGLMM(tickmod.rs0)
+}

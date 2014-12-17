@@ -1,9 +1,14 @@
+## TODO: chunk size for evaluate = FALSE
+
+
 `pdredge` <-
 function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
-	rank = "AICc", fixed = NULL, m.max = NA, m.min = 0, subset, marg.ex = NULL,
+	rank = "AICc", fixed = NULL, m.max = NA, m.min = 0, subset,
 	trace = FALSE, varying, extra, ct.args = NULL, check = FALSE, ...) {
+
 #FIXME: m.max cannot be 0 - e.g. for intercept only model
 
+###PAR
 	qlen <- 25L
 	# Imports: clusterCall, clusterApply
 	doParallel <- inherits(cluster, "cluster")
@@ -18,6 +23,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		clusterCall <- function(...) NULL
 		message("Not using cluster.")
 	}
+###PAR
 
 	gmEnv <- parent.frame()
 	gmCall <- .getCall(global.model)
@@ -26,30 +32,32 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	if (is.null(gmCall)) {
 		gmCall <- substitute(global.model)
 		if(!is.call(gmCall)) {
-			stop("need a 'global.model' with call component. Consider using ", 
-			if(inherits(global.model, c("gamm", "gamm4")))
+			stop("need a 'global.model' with a call component. Consider using ", 
+				if(inherits(global.model, c("gamm", "gamm4")))
 					"'uGamm'" else "'updateable'")
 		}
 		#"For objects without a 'call' component the call to the fitting function \n",
 		#" must be used directly as an argument to 'dredge'.")
-		# NB: this is unlikely to happen:
+		# NB: this is unlikely to happen
 		if(!is.function(eval(gmCall[[1L]], parent.frame())))
-			gettext('could not find function "%s"', deparse(gmCall[[1L]], 
-				control = NULL), domain = "R")
+			.cry(NA, "could not find function '%s'", deparse(gmCall[[1L]],
+				control = NULL))
 	} else {
-		# if 'update' method does not expand dots, we have a problem
-		# with expressions like ..1, ..2 in the call.
-		# So, try to replace them with respective arguments in the original call
+		# if 'update' method does not expand dots, we have a problem with
+		# expressions like ..1, ..2 in the call. So try to replace them with
+		# respective arguments in the original call
 		is.dotted <- grep("^\\.\\.", sapply(as.list(gmCall), deparse))
 		if(length(is.dotted) > 0L) {
 			substGmCall <- substitute(global.model)
 			if(is.name(substGmCall)) {
-				.cry(NA, "call to 'global.model' contains '...' arguments and cannot be updated: %s", deparse(gmCall, control = NULL))
+				.cry(NA, "call to 'global.model' contains unexpanded dots and cannot be updated: \n%s",
+					 deparse(gmCall, control = NULL))
 			} else gmCall[is.dotted] <-
 				substitute(global.model)[names(gmCall[is.dotted])]
 		}
 		
-		## object from 'run.mark.model' has $call of 'make.mark.model' - fixing it here:
+		# object from 'run.mark.model' has $call of 'make.mark.model' - fixing
+		# it here:
 		if(inherits(global.model, "mark") && gmCall[[1L]] == "make.mark.model") {
 			gmCall <- call("run.mark.model", model = gmCall, invisible = TRUE)
 		}
@@ -69,11 +77,30 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	}
 	
 	rankArgs <- list(...)
+
+	if(any(wrongarg <- names(rankArgs) == "marg.ex")) {
+		.cry(NA, "argument \"marg.ex\" is defunct and has been ignored",
+			 warn = TRUE)
+		rankArgs <- rankArgs[!wrongarg]
+	}
+	if(any(names(rankArgs) == "na.action"))
+		.cry("RTFM", "argument \"na.action\" is really inappropriate here",
+			 warn = FALSE)
+	
 	IC <- .getRank(rank, rankArgs)
+	
+	if(any(wrongarg <- is.na(match(names(rankArgs),
+		c(names(formals(get("rank", environment(IC))))[-1L], names(formals()))))))
+		.cry("RTFM", ngettext(sum(wrongarg),
+			"argument %s is not a name of formal argument of 'pdredge' or 'rank'",
+			"arguments %s are not names of formal arguments of 'pdredge' or 'rank'"),
+			prettyEnumStr(names(rankArgs[wrongarg])), warn = TRUE)
+	
 	ICName <- as.character(attr(IC, "call")[[1L]])
 
 	if(length(tryCatch(IC(global.model), error = function(e) {
-		e$call <- do.call(substitute, list(attr(IC, "call"), list(x = as.name("global.model"))))
+		e$call <- do.call(substitute, list(attr(IC, "call"), 
+			list(x = as.name("global.model"))))
 		stop(e)
 	})) != 1L) {
 		.cry(NA, "result of '%s' is not of length 1", deparse(attr(IC,
@@ -88,9 +115,10 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	if(is.null(interceptLabel)) interceptLabel <- "(Intercept)"
 	nInts <- sum(attr(allTerms, "intercept"))
 
-
+###PAR
 	# parallel: check whether the models would be identical:
 	if(doParallel && check) testUpdatedObj(cluster, global.model, gmCall, level = check)
+###PAR
 
 	# Check for na.omit
 	if(!(gmNA.action <- .checkNaAction(cl = gmCall, what = "'global.model'")))
@@ -137,10 +165,20 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			fixed <- fixed[i]
 		}
 	}
+	
+	deps <- attr(allTerms0, "deps")
+	fixed <- union(fixed, rownames(deps)[rowSums(deps, na.rm = TRUE) == ncol(deps)])
 	fixed <- c(fixed, allTerms[allTerms %in% interceptLabel])
 	n.fixed <- length(fixed)
+	if(n.fixed > 0L) message(sprintf(ngettext(n.fixed, "Fixed term is %s", "Fixed terms are %s"),
+		prettyEnumStr(fixed)))
+	
 	termsOrder <- order(allTerms %in% fixed)
 	allTerms <- allTerms[termsOrder]
+	
+	di <- match(allTerms, rownames(deps))
+	deps <- deps[di, di]	
+	
 	gmFormulaEnv <- environment(as.formula(formula(global.model), env = gmEnv))
 	# TODO: gmEnv <- gmFormulaEnv ???
 
@@ -168,19 +206,16 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 
 	## BEGIN Manage 'extra'
 	## @param:	extra, global.model, gmFormulaEnv, 
-	## @value:	extra, nextra, extraNames, null.fit
+	## @value:	extra, nextra, extraNames, nullfit_
 	if(!missing(extra) && length(extra) != 0L) {
-		extraNames <- sapply(extra, function(x) switch(mode(x),
-			call = deparse(x[[1L]]), name = deparse(x), character = , x))
-		if(!is.null(names(extra)))
-			extraNames <- ifelse(names(extra) != "", names(extra), extraNames)
-		extra <- structure(as.list(unique(extra)), names = extraNames)
-
-		if(any(c("adjR^2", "R^2") %in% extra)) {
-			null.fit <- null.fit(global.model, evaluate = TRUE, envir = gmFormulaEnv)
-			extra[extra == "R^2"][[1L]] <- function(x) r.squaredLR(x, null = null.fit)
-			extra[extra == "adjR^2"][[1L]] <-
-				function(x) attr(r.squaredLR(x, null = null.fit), "adj.r.squared")
+		# a cumbersome way of evaluating a non-exported function in a parent frame:
+		extra <- eval(as.call(list(call("get", ".get.extras", envir = call("asNamespace",
+															 .packageName), inherits = FALSE),
+					 substitute(extra), r2nullfit = TRUE)), parent.frame())
+		
+		#extra <- eval(call(".get.extras", substitute(extra), r2nullfit = TRUE), parent.frame())
+		if(any(c("adjR^2", "R^2") %in% names(extra))) {
+			nullfit_ <- null.fit(global.model, evaluate = TRUE, envir = gmFormulaEnv)
 		}
 		applyExtras <- function(x) unlist(lapply(extra, function(f) f(x)))
 		extraResult <- applyExtras(global.model)
@@ -273,37 +308,16 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			
 			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
 	
-			
-			subsetExpr <- .substFunc(subsetExpr, ".", function(x, fac, at, vName) {
-				if(length(x) != 2L) .cry(x, "exactly one argument needed, %d given.", length(x) - 1L)
-				if(length(x[[2L]]) == 2L && x[[2L]][[1L]] == "+") {
-					fun <- "all"
-					sx <- as.character(x[[2L]][[2L]])
-				} else {
-					fun <- "any"
-					sx <- as.character(x[[2L]])
-				}
-				#print(sx)
-				dn <- dimnames(fac)
-				#print(dn)
-				#browser()
-				if(!(sx %in% dn[[2L]])) .cry(x, "unknown variable name '%s'", sx)
-				as.call(c(as.name(fun), call("[", vName, as.call(c(as.name("c"), 
-					match(dn[[1L]][fac[, sx]], at))))))
-			}, gloFactorTable, allTerms, as.name("comb"))
-			
+			subsetExpr <- .substFunc(subsetExpr, ".", .sub_dot, gloFactorTable, 
+				allTerms, as.name("comb"))
+			subsetExpr <- .substFunc(subsetExpr, c("{", "Term"), .sub_Term)
 			subsetExpr <- .subst4Vec(subsetExpr, allTerms, as.name("comb"))
 			
 
 			if(nvarying) {
 			ssValidNames <- c("cVar", "comb", "*nvar*")
-			subsetExpr <- .substFunc(subsetExpr, "V", function(x, cVar, fn) {
-					if(length(x) > 2L) .cry(x, "discarding extra arguments", warn = TRUE)
-				i <- which(fn == x[[2L]])[1L]
-					if(is.na(i)) .cry(x, "'%s' is not a valid name of 'varying' element",
-									  as.character(x[[2L]]), warn = TRUE)
-				call("[[", cVar, i)
-			}, as.name("cVar"), varying.names)
+				subsetExpr <- .substFunc(subsetExpr, "V", .sub_V, 
+					as.name("cVar"), varying.names)
 			if(!all(all.vars(subsetExpr) %in% ssValidNames))
 					subsetExpr <- .subst4Vec(subsetExpr, varying.names,
 											 as.name("cVar"), fun = "[[")
@@ -346,20 +360,6 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		)
 	
 	
-	# TODO: allow for 'marg.ex' per formula in multi-formula models
-	if(missing(marg.ex) || (!is.null(marg.ex) && is.na(marg.ex))) {
-		newArgs <- makeArgs(global.model, allTerms, rep(TRUE, length(allTerms)),
-							argsOptions)
-		formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs else
-			attr(newArgs, "formulaList")
-
-		marg.ex <- unique(unlist(lapply(sapply(formulaList, formulaMargChk,
-			simplify = FALSE), attr, "marg.ex")))
-		if(!length(marg.ex)) marg.ex <- NULL else
-			cat("Marginality exceptions:", sQuote(marg.ex), "\n")
-	}
-	###
-
 	# BEGIN parallel
 	qi <- 0L
 	queued <- vector(qlen, mode = "list")
@@ -407,7 +407,9 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 			
 			
 			# !!! POSITIVE condition for 'pdredge', NEGATIVE for 'dredge':
-			if((nvar >= m.min && nvar <= m.max) && switch(hasSubset,
+			if((nvar >= m.min && nvar <= m.max) && 
+				formula_margin_check(comb, deps) &&
+				switch(hasSubset,
 					# 1 - no subset, 2 - matrix, 3 - expression
 					TRUE,                                    # 1 
 					all(subset[comb, comb], na.rm = TRUE),   # 2
@@ -420,15 +422,14 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 				newArgs <- makeArgs(global.model, allTerms[comb], comb, argsOptions)
 				formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs else
 					attr(newArgs, "formulaList")
-				if(all(vapply(formulaList, formulaMargChk, logical(1L), marg.ex))) {
-					if(!is.null(attr(newArgs, "problems"))) {
-						print.warnings(structure(vector(mode = "list",
-							length = length(attr(newArgs, "problems"))),
-								names = attr(newArgs, "problems")))
-					} # end if <problems>
-					cl <- gmCall
-					cl[names(newArgs)] <- newArgs
-				} else isok <- FALSE # end if <formulaMargChk>
+			
+				if(!is.null(attr(newArgs, "problems"))) {
+					print.warnings(structure(vector(mode = "list",
+						length = length(attr(newArgs, "problems"))),
+							names = attr(newArgs, "problems")))
+				} # end if <problems>
+				cl <- gmCall
+				cl[names(newArgs)] <- newArgs
 			} else isok <- FALSE # end if <subset, m.max >= nvar >= m.min>
 		} #  end if(jComb != prevJComb)
 
@@ -555,7 +556,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 
 	if(nvarying) {
 		variant.names <- vapply(flat.variant.Vvals, function(x) if(is.character(x)) x else
-			deparse(x, control = NULL, width.cutoff = 20L)[1L], character(1L))
+			deparse(x, control = NULL, width.cutoff = 20L)[1L], "")
 		vnum <- split(seq_len(sum(vlen)), rep(seq_len(nvarying), vlen))
 		names(vnum) <- varying.names
 		for (i in varying.names) ret[, i] <-

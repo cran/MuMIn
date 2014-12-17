@@ -194,8 +194,7 @@ averaging.
 \examples{
 
 # Example from Burnham and Anderson (2002), page 100:
-data(Cement)
-fm1 <- lm(y ~ ., data = Cement)
+fm1 <- lm(y ~ ., data = Cement, na.action = na.fail)
 (ms1 <- dredge(fm1))
 
 #models with delta.aicc < 4

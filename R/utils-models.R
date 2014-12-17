@@ -1,9 +1,4 @@
-
-
-
 # Hidden functions
-# `.getLogLik` <- function() logLik
-
 `.getLogLik` <- function()
 	if(isGeneric("logLik")) .xget("stats4", "logLik") else
 		.xget("stats", "logLik")
@@ -81,12 +76,12 @@
 	row
 }
 
-
 # sorts alphabetically interaction components in model term names
 # if 'peel', tries to remove coefficients wrapped into function-like syntax
 # (this is meant mainly for 'unmarkedFit' models with names such as "psi(a:b:c)")
 # TODO: this function is ugly, do something with it.
-`fixCoefNames` <- function(x, sort = FALSE, peel = TRUE) {
+`fixCoefNames` <-
+function(x, peel = TRUE) {
 	if(!length(x)) return(x)
 	ox <- x
 	ia <- grep(":", x, fixed = TRUE)
@@ -103,8 +98,9 @@
 			k <- grepl("^\\w+\\(.+\\)$", x, perl = TRUE)
 			fname <- substring(x[k], 1L, attr(regexpr("^\\w+(?=\\()", x[k],
 				perl = TRUE),"match.length"))
-			# exclude common transformations
-			k[k] <- !(fname %in% c("log", "I", "exp", "s", "te"))
+			
+			# do not peel off if a function
+			k[k] <- !vapply(fname, exists, FALSE, mode = "function", envir = .GlobalEnv)
 			if(any(k)) {
 				pos <- vapply(x[k], function(z) {
 					parens <- lapply(lapply(c("(", ")"),
@@ -112,31 +108,78 @@
 							function(y) y[y > 0L])
 					parseq <- unlist(parens, use.names = FALSE)
 					p <- cumsum(rep(c(1L, -1L), sapply(parens, length))[order(parseq)])
-					if(any(p[-length(p)] == 0L)) -1 else parseq[1L]
-				}, numeric(1L), USE.NAMES = FALSE)
-				k[k] <- pos != -1
+					if(any(p[-length(p)] == 0L)) -1L else parseq[1L]
+				}, 1L, USE.NAMES = FALSE)
+				k[k] <- pos != -1L
 				pos <- pos[pos != -1]
 				if(any(k)) ret[k] <- substring(x[k], pos + 1L, nchar(x[k]) - 1L)
 			}
 			suffix <- ")"
 		}
 	} else	k <- FALSE
-	ret <- vapply(lapply(spl <- strsplit(ret, ":"), base::sort), paste, "",
-		collapse = ":")
+	
+	## prepare = replace multiple ':' to avoid splitting by '::' and ':::'
+	spl <- expr.split(ret, ":", prepare = function(x) gsub("((?<=:):|:(?=:))", "_", x, perl = TRUE))
+	ret <- vapply(lapply(spl, base::sort), paste0, "", collapse = ":")
 	if(peel && any(k))
-		ret[k] <- paste(substring(x[k], 1L, pos), ret[k], suffix, sep = "")
+		ret[k] <- paste0(substring(x[k], 1L, pos), ret[k], suffix)
 	ox[ia] <- ret
 	ord <- rep.int(1, length(ox))
 	ord[ia] <- sapply(spl, length)
 	structure(ox, order = ord)
 }
 
-getResponse <-
+## like 'strsplit', but ignores split characters within quotes and matched
+## parentheses 
+expr.split <-
+function(x, split = ":",
+	paren.open = c("(", "[", "{"), paren.close = c(")", "]", "}"),
+	quotes = c("\"", "'", "`"), esc = "\\",
+	prepare = NULL) {
+	
+	## error checking:
+	#if(length(paren.open) != length(paren.close))
+	#	stop("'paren.open' and 'paren.close' are not of the same length")
+	#if(any(test <- vapply(c('paren.open', 'paren.close', 'quotes', 'esc', 'split'), function(x, frame) {
+	#	any(nchar(get(x, frame, inherits = FALSE)) != 1L)
+	#}, FALSE, frame = sys.frame()))) {
+	#	stop(sprintf(ngettext(sum(test), "argument %s is not single character",
+	#		"arguments %s are not single character") , prettyEnumStr(names(test)[test])),
+	#		 domain = "R-MuMIn")
+	#}
+	
+	x0 <- x
+	if(is.function(prepare)) x <- prepare(x)
+	m <- length(x)
+	n <- nchar(x)
+	res <- vector("list", m)
+	for(k in 1L:m) {
+		pos <- integer(0L)
+		inquote <- ch <- ""
+		inparen <- integer(3L)
+		for(i in seq.int(n[k])) {
+			chprv <- ch
+			ch <- substr(x[k], i, i)
+			if(inquote != "") { # in quotes
+				if(chprv == esc && ch == esc) ch <- " " else
+					if(chprv != esc && ch == inquote)	inquote <- ""
+			} else {
+				inparen[j] <- inparen[j <- (inparen != 0L) & (ch == paren.close)] - 1L 
+				if(ch %in% quotes)
+					inquote <- ch else if (any(j <- (ch == paren.open)))
+					inparen[j] <- inparen[j] + 1L else if (all(inparen == 0L) && ch == split)
+					pos <- c(pos, i)
+			}
+		}
+		res[[k]] <- substring(x0[k], c(1L, pos + 1L), c(pos - 1L, n[k]))
+	}
+	res
+}
+
+getResponseFormula <-
 function(f)
 	if((length(f) == 2L) || (is.call(f[[2L]]) && f[[2L]][[1L]] == "~"))
 		0 else f[[2L]]
-
-
 
 
 #Tries to find out whether the models are fitted to the same data
@@ -147,7 +190,7 @@ function(f)
 		else function(x) warning(simpleWarning(x, cl))
 	res <- TRUE
 
-	responses <- lapply(models, function(x) getResponse(formula(x)))
+	responses <- lapply(models, function(x) getResponseFormula(formula(x)))
 
  	if(!all(vapply(responses[-1L], "==", logical(1L), responses[[1L]]))) {
 		err("response differs between models")
@@ -158,7 +201,7 @@ function(f)
 	# XXX: when using only 'nobs' - seems to be evaluated first outside of MuMIn
 	# namespace which e.g. gives an error in glmmML - the glmmML::nobs method 
 	# is faulty.
-	nresid <- vapply(models, function(x) nobs(x), numeric(1L)) # , nall=TRUE
+	nresid <- vapply(models, function(x) nobs(x), 1) # , nall=TRUE
 	
 	if(!all(sapply(datas[-1L], identical, datas[[1L]])) ||
 		!all(nresid[-1L] == nresid[[1L]])) {
@@ -207,9 +250,6 @@ function(x, cl = getCall(x),
 	res
 }
 
-
-#system.time(for(i in 1:1000) abbreviateTerms(x))
-
 `abbreviateTerms` <-
 function(x, minlength = 4, minwordlen = 1,
 	capwords = FALSE, deflate = FALSE) {
@@ -245,15 +285,15 @@ function(x, minlength = 4, minwordlen = 1,
 			for(j in seq_along(repl1)) av[av == names(repl1)[j]] <- repl1[j]
 		}
 		av[i] <- abbreviate(av[i], max(n, minwordlen))
-		if(capwords) av[i] <- paste(toupper(substring(av[i], 1L, 1L)),
-				tolower(substring(av[i], 2L)), sep = "")
+		if(capwords) av[i] <- paste0(toupper(substring(av[i], 1L, 1L)),
+				tolower(substring(av[i], 2L)))
 	}
 	for(j in seq_along(s)) s[[j]] <- paste(av[match(s[[j]], v)], collapse = "")
 	names(av) <- v
 	structure(unlist(s), names = x, variables = av[i])
 }
 
-`model.names` <-
+model.names <-
 function(object, ..., labels = NULL, use.letters = FALSE) {
 	if (missing(object) && length(models <- list(...)) > 0L) {
 		object <- models[[1L]]
@@ -266,7 +306,7 @@ function(object, ..., labels = NULL, use.letters = FALSE) {
 	.modelNames(models = models, uqTerms = labels, use.letters = use.letters)
 }
 
-`.modelNames` <-
+.modelNames <-
 function(models = NULL, allTerms, uqTerms, use.letters = FALSE, ...) {
 	if(missing(allTerms)) allTerms <- lapply(models, getAllTerms)
 	if(missing(uqTerms) || is.null(uqTerms))
@@ -286,8 +326,8 @@ function(models = NULL, allTerms, uqTerms, use.letters = FALSE, ...) {
 
 	if(length(dup) > 0L) {
 		idup <- which(ret %in% names(dup))
-		ret[idup] <- sapply(idup, function(i) paste(ret[i],
-			letters[sum(ret[seq.int(i)] == ret[i])], sep = ""))
+		ret[idup] <- sapply(idup, function(i) paste0(ret[i],
+			letters[sum(ret[seq.int(i)] == ret[i])]))
 	}
 	ret[ret == ""] <- "(Null)"
 	attr(ret, "variables") <- structure(seq_along(uqTerms), names = uqTerms)
@@ -303,7 +343,7 @@ function(models, withModel = FALSE, withFamily = TRUE,
 		allTermsList <- lapply(models, function(x) {
 			tt <- getAllTerms(x)
 			rtt <- attr(tt, "random.terms")
-			c(tt, if(!is.null(rtt)) paste("(", rtt, ")", sep = "") else NULL)
+			c(tt, if(!is.null(rtt)) paste0("(", rtt, ")") else NULL)
 		})
 		allTerms <- unique(unlist(allTermsList))
 		abvtt <- abbreviateTerms(allTerms)
@@ -330,9 +370,9 @@ function(models, withModel = FALSE, withFamily = TRUE,
 		j <- !is.na(fam[2L,])
 		fnm <- fam[1L, j]
 		fnm <- ifelse(substring(fnm, nchar(fnm)) != ")",
-			paste(fnm, "(", sep = ""), paste(substring(fnm, 1, nchar(fnm) - 1),
-				", ", sep = ""))
-		fam[1L, j] <- paste(fnm, fam[2L, j], ")", sep = "")
+			paste0(fnm, "("), paste0(substring(fnm, 1, nchar(fnm) - 1),
+				", "))
+		fam[1L, j] <- paste0(fnm, fam[2L, j], ")")
 	}
 
 	if(withArguments) {
@@ -370,8 +410,8 @@ family2char <-
 function(x, fam = x$family, link = x$link) {
 	if(nchar(fam) > 17L && (substr(fam, 1L, 17) == "Negative Binomial")) {
 		theta <- as.numeric(strsplit(fam, "[\\(\\)]")[[1L]][2L])
-		paste("negative.binomial", "(", theta, ",", link, ")", sep = "")
+		paste0("negative.binomial", "(", theta, ",", link, ")")
 	} else {
-		paste(fam, "(", link, ")", sep = "")
+		paste0(fam, "(", link, ")")
 	}
 }

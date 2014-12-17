@@ -62,7 +62,8 @@ Other implementations:
 
 #Model-averaging mixed models
 
-if(require(nlme)) {
+\dontshow{ if(require(nlme)) \{ }
+
 data(Orthodont, package = "nlme")
 
 # Fit model by REML
@@ -79,13 +80,13 @@ ms2 <- dredge(fm2, trace = TRUE, rank = "AICc", REML = FALSE)
 # Get the models (fitted by REML, as in the global model)
 fmList <- get.models(ms2, 1:4)
 
-# Because the models originate from 'dredge(..., rank=AICc, REML=FALSE)',
+# Because the models originate from 'dredge(..., rank = AICc, REML = FALSE)',
 # the default weights in 'model.avg' are ML based:
 summary(model.avg(fmList))
 
 # same result
 #model.avg(fmList, rank = "AICc", rank.args = list(REML=FALSE))
-}
+\dontshow{ \} }
 
 }
 

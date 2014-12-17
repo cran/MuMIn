@@ -105,3 +105,8 @@ sum(!is.na(resid(object)))
 `nobs.cpglmm` <-
 function (object, ...) 
 object@dims[['n']]
+
+`nobs.maxlikeFit` <-
+function (object, ...)
+nrow(object[['points.retained']])
+

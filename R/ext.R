@@ -68,7 +68,6 @@ function(x, ...) eval(x$call$formula, parent.frame())
 `family.zeroinfl` <-
 function(object, ...) binomial(link = object$link)
 
-
 #_______________________________________________________________________________
 
 `formula.glimML` <- function(x, ...) x@formula
@@ -166,7 +165,7 @@ function (object, newdata, level, asList = FALSE,
     ...)
 .predict_glm(object, newdata, type, se.fit,
 		trms = delete.response(terms(formula(object, fixed.only = TRUE))),
-		coeff = fixef(object),
+		coeff = lme4::fixef(object),
 		offset = lme4::getME(object, "offset"),
 		...)
 
@@ -196,20 +195,24 @@ function (object, newdata, level, asList = FALSE,
         y <- y + offset
     fam <- family(object)
     if (se.fit) {
-        covmat <- as.matrix(vcov(object))
-		se <- sqrt(matmultdiag(X %*% covmat, ty = X))
+        # covmat <- as.matrix(vcov(object))
+		se <- sqrt(matmultdiag(X %*% as.matrix(vcov(object)), ty = X))
 		# se <- sqrt(rowSums((X %*% covmat) * X))
         # se <- sqrt(diag(X %*% covmat %*% t(X)))
         if (type == "response" && inherits(fam, "family")) 
             list(fit = fam$linkinv(y), se.fit = se * abs(fam$mu.eta(y)))
         else list(fit = y, se.fit = se)
-    }
-    else {
+    } else {
         if (type == "response" && inherits(fam, "family")) 
             fam$linkinv(y)
         else y
     }
 }
+
+`predict.gamm` <- 
+function (object, ...) mgcv::predict.gam(object[['gam']], ...)
+
+
 
 # support for unmarked
 
@@ -288,3 +291,8 @@ function(object, ...) {
 	class(fam) <- "family"
 	fam
 }
+
+
+formula.maxlikeFit <-
+function (x, ...) 
+as.formula(.getCall(x)$formula, env = parent.frame())

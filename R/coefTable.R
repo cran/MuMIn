@@ -62,13 +62,13 @@ function(model, adjustSigma = TRUE, ...) {
 	se <- sqrt(diag(as.matrix(model$varFix)))
 	if (adjustSigma && model$method == "ML")
 		se <- se * sqrt(model$dims$N / (model$dims$N - length(se)))
-	.makeCoefTable(fixef(model), se, model$fixDF[["X"]])
+	.makeCoefTable(nlme::fixef(model), se, model$fixDF[["X"]])
 }
 
 `coefTable.mer` <-
 function(model, ...)
 	#sm <- eval(expression(summary), asNamespace("lme4"))
-	.makeCoefTable(fixef(model), vcov(model, ...)@factors$correlation@sd)
+	.makeCoefTable(lme4::fixef(model), vcov(model, ...)@factors$correlation@sd)
 
 `coefTable.multinom` <- 
 function (model, ...) {
@@ -111,8 +111,7 @@ function(model, ...)
 function(model, ...) {
 	cts <- summary(model)$coefficients
 	ct <- do.call("rbind", unname(cts))
-	cfnames <- paste(rep(names(cts), vapply(cts, nrow, 1L)), "_", rownames(ct),
-		sep = "")
+	cfnames <- paste0(rep(names(cts), vapply(cts, nrow, 1L)), "_", rownames(ct))
 	.makeCoefTable(ct[, 1L], ct[, 2L], coefNames = cfnames)
 	#.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))))
 }
@@ -212,3 +211,8 @@ function (model, ...)
 `coefTable.cpglmm` <-
 function (model, ...) 
 .makeCoefTable(coeffs(model), sqrt(diag(vcov(model))))
+
+`coefTable.maxlikeFit` <-
+function (model, ...)
+.makeCoefTable(model$Est[, 1L], model$Est[, 2L])
+

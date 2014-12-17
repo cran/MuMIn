@@ -2,7 +2,6 @@
 # Varying model formulations (other than formulas). Using and subsetting the
 # 'varying' variables.
 ###
-
 library(nlme)
 library(MuMIn)
 

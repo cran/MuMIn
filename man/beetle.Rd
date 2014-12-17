@@ -9,7 +9,7 @@ carbon disulfide CS\eqn{_{2}}{2}, from Bliss (1935).
 }
 
 \usage{
-data(Beetle)
+Beetle
 }
 
 \format{
@@ -39,18 +39,17 @@ Springer-Verlag.
 # "Logistic regression example"
 # from Burnham & Anderson (2002) chapter 4.11
 
-data(Beetle)
-
 # Fit a global model with all the considered variables
 globmod <- glm(Prop ~ dose + I(dose^2) + log(dose) + I(log(dose)^2),
-    data = Beetle, family = binomial)
+    data = Beetle, family = binomial, na.action = na.fail)
 
 
 # A logical expression defining the subset of models to use:
 # * either log(dose) or dose
 # * the quadratic terms can appear only together with linear terms
-msubset <- expression(xor(dose,`log(dose)`) & (dose | !`I(dose^2)`)
-    & (`log(dose)` | !`I(log(dose)^2)`))
+msubset <- expression(xor(dose, `log(dose)`) &
+    dc(dose, `I(dose^2)`) &
+    dc(`log(dose)`, `I(log(dose)^2)`))
 
 
 # Table 4.6
@@ -85,8 +84,6 @@ logit.ci <- function(p, se, quantile = 2) {
 
 mavg3 <- model.avg(mod3, revised.var = FALSE)
 
-pred <- sapply(mod3, predict, newdata = list(dose = 40), se.fit = TRUE,
-    type = "response")
 
 # get predictions both from component and averaged models
 pred <- lapply(c(component = mod3, list(averaged = mavg3)), predict,
@@ -115,6 +112,7 @@ avpred <- predict(mavg3, newdata, se.fit = TRUE, type = "response")
 
 avci <- matrix(logit.ci(avpred$fit, avpred$se.fit, quantile = 2), ncol = 2)
 
+\dontshow{ if(require(graphics)) \{ }
 matplot(newdata$dose, sapply(mod3, predict, newdata, type = "response"),
     type = "l", xlab = quote(list("Dose of" ~ CS[2],(mg/L))),
     ylab = "Mortality", col = 2:4, lty = 3, lwd = 1
@@ -124,6 +122,7 @@ matplot(newdata$dose, cbind(avpred$fit, avci), type = "l", add = TRUE,
 
 legend("topleft", NULL, c(as.character(ms3$family), expression(`averaged`
     \%+-\% CI)), lty = c(3, 3, 3, 1), col = c(2:4, 1))
+\dontshow{ \} }
 
 }
 

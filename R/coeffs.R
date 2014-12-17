@@ -19,7 +19,7 @@ function(model) model$coefficients$fixed
 function(model) model@fixef
 
 `coeffs.merMod` <-
-function (model) fixef(model)
+function (model) lme4::fixef(model)
 
 `coeffs.coxme` <-
 `coeffs.lmekin` <-
@@ -38,7 +38,7 @@ function(model) {
 		vapply(ret, length, 1L))
 	ret <- unlist(unname(ret))
 	Ints <- which(names(ret) == "Int")
-	names(ret) <- paste(pfx, "(", names(ret), ")", sep = "")
+	names(ret) <- paste0(pfx, "(", names(ret), ")")
 	attr(ret, "Intercept") <- Ints
 	ret
 }
@@ -66,23 +66,17 @@ function (model) coef(model$gam)
 	cf
 }
 
+
 `coeffs.multinom` <- 
 function (model) {
-	coefs <- coef(model)
-	if (is.vector(coefs)) {
-      	coefs <- t(as.matrix(coefs))
-    	}
-    	coefdim <- dim(coefs)
-	Names <- dimnames(coefs)
-	if (is.null(Names[[1L]])) 
-      	Names <- Names[[2L]]
-    	else Names <- as.vector(outer(Names[[2L]], Names[[1L]], function(name2, 
-      	name1) paste(name1, name2, sep = ":")))
-	res <- as.vector(coefs)
-	names(res) <- Names
-	res
+	cf <- coef(model)
+	if (!is.vector(cf)) {
+		cf <- t(as.matrix(cf))
+    	cfnames <- expand.grid(dimnames(cf), stringsAsFactors = FALSE)
+		cfnames <- sprintf("%s(%s)", cfnames[,2L], cfnames[,1L])
+		structure(as.vector(cf), names = cfnames)
+	} else cf
 }
-
 
 `coeffs.aodml` <-
 function (model) {

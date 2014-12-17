@@ -26,15 +26,15 @@
 `formula.mark` <- function (x, expand = TRUE, ...) {
 	param <- if(is.null(x$model.parameters)) x$parameters else  x$model.parameters
 	f <- lapply(param, "[[", 'formula')
-	f <- f[!vapply(f, is.null, logical(1L))]
+	f <- f[!vapply(f, is.null, FALSE)]
 	
 	npty <- length(f)
 	z <- vector(npty, mode = "list")
 	pty <- names(f)
 	
 	if(expand) {
-		for(i in seq_len(npty)) z[[i]] <- paste(pty[i], "(",
-				getAllTerms(f[[i]], intercept = TRUE), ")", sep = "")
+		for(i in seq_len(npty)) z[[i]] <- paste0(pty[i], "(",
+				getAllTerms(f[[i]], intercept = TRUE), ")")
 		res <- reformulate(gsub("((Intercept))", "(1)", unlist(z), fixed = TRUE))
 	} else {
 		for(i in seq_len(npty)) z[[i]] <- call(pty[i], f[[i]][[2L]])

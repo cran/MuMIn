@@ -13,17 +13,17 @@ Model-averaged predictions with optional standard errors.
 }
 
 \arguments{
-    \item{object}{An object returned by \code{model.avg}. }
-    \item{newdata}{ An optional data frame in which to look for variables with
+    \item{object}{an object returned by \code{model.avg}. }
+    \item{newdata}{ optional \code{data.frame} in which to look for variables with
         which to predict. If omitted, the fitted values are used. }
     \item{se.fit}{logical, indicates if standard errors should be returned.
         This has any effect only if the \code{predict} methods for each of the
         component models support it. }
-    \item{interval}{Currently not used. }
-	\item{type}{The type of predictions to return (see documentation for
+    \item{interval}{currently not used. }
+	\item{type}{the type of predictions to return (see documentation for
 		\code{predict} appropriate for the class of used component models). If
 		omitted, the default type is used. See \sQuote{Details}. }
-    \item{backtransform}{If \code{TRUE}, the averaged predictions are
+    \item{backtransform}{if \code{TRUE}, the averaged predictions are
 		back-transformed from link scale to response scale. This makes sense
 		provided that all component models use the same \code{family}, and the
 		prediction from each of the component models is calculated on the link 
@@ -31,10 +31,10 @@ Model-averaged predictions with optional standard errors.
 		"link"}).
 		See \sQuote{Details}.
 		}
-	\item{full}{ If \code{TRUE}, the full model averaged coefficients are used
+	\item{full}{ if \code{TRUE}, the full model averaged coefficients are used
 		(only if \code{se.fit = FALSE} and the component objects are a result of
 		\code{lm}). }
-    \item{\dots}{Arguments to be passed to respective \code{predict}
+    \item{\dots}{arguments to be passed to respective \code{predict}
         method (e.g. \code{level} for \code{\link[nlme]{lme}} model). }
 
 }
@@ -104,10 +104,9 @@ on the outermost level (equivalent to \code{level = 0} in
 
 \examples{
 
-if(require(graphics)) {
+\dontshow{ if(require(graphics)) \{ }
 
 # Example from Burnham and Anderson (2002), page 100:
-data(Cement)
 fm1 <- lm(y ~ X1 + X2 + X3 + X4, data = Cement)
 
 ms1 <- dredge(fm1)
@@ -151,7 +150,7 @@ legend("topleft",
 
 palette(opal)
 
-}
+\dontshow{ \} }
 
 }
 

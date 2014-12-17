@@ -13,7 +13,7 @@ importance(x)
 }
 
 \arguments{
-    \item{x}{Either a list of fitted model objects, or a \code{"model.selection"}
+    \item{x}{either a list of fitted model objects, or a \code{"model.selection"}
     or \code{"averaging"} object. }
 
 }
@@ -35,7 +35,6 @@ importance(x)
 \examples{
 
 # Generate some models
-data(Cement)
 fm1 <- lm(y ~ ., data = Cement)
 ms1 <- dredge(fm1)
 

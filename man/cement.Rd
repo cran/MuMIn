@@ -4,11 +4,11 @@
 \docType{data}
 \title{Cement hardening data}
 \description{
-Cement hardening data from Woods et al (1939).
+Cement hardening data from Woods et al (1932).
 }
 
 \usage{
-data(Cement)
+Cement
 }
 
 \format{

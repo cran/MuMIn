@@ -10,36 +10,13 @@ export(
 	beta.weights, model.names,
 	simplify.formula, expand.formula,
 	updateable, updateable2,
-	uGamm
+	uGamm, nested, stdize,
+	exprApply
 )
 
 importFrom(stats, family)
-
-# XXX: compatibility with R < 2.13.0
-if (getRversion() >= "2.13.0") {
-if (getRversion() >= "2.14.0") {
-	importFrom(stats, nobs, getCall)
-	S3method(getCall, yagsResult)
-}
-} else {
-# I couldn't find a way to make version-dependent documentation, so can't
-# export nobs here...
-#export(nobs)
-S3method(nobs, default)
-S3method(nobs, glm)
-}
-
-# including the lines below makes this package dependent on 'lme4'
-# so, until I figure out how to deal with it, no imports is used....
-
-#importFrom(stats, AIC, as.formula, coef, delete.response, deviance, fitted,
-#	formula, logLik, model.frame, model.matrix, na.omit, predict, qnorm, qt,
-#	reformulate, residuals, sd, terms, update, weighted.mean)
-
-#importFrom(stats, logLik, terms)
-#importMethodsFrom(stats, logLik, terms)
-#importFrom(methods, slot, slotNames)
-#importFrom(lme4, lmer, logLik, terms)
+importFrom(stats, nobs, getCall)
+S3method(getCall, yagsResult)
 
 S3method("$<-", model.selection)
 
@@ -136,8 +113,6 @@ S3method(predict, gls)
 S3method(model.frame, lme)
 S3method(model.matrix, lme)
 
-
-
 S3method(getAllTerms, mer)
 S3method(coeffs, mer)
 S3method(coefTable, mer)
@@ -146,7 +121,9 @@ S3method(predict, mer)
 S3method(family, mer)
 
 S3method(coeffs, merMod)
+
 S3method(coefTable, multinom)
+S3method(coeffs, multinom)
 S3method(nobs, multinom)
 
 S3method(coeffs, gls)
@@ -168,6 +145,7 @@ S3method(nobs, gamm)
 S3method(coeffs, gamm)
 S3method(getAllTerms, gamm)
 S3method(coefTable, gamm)
+S3method(predict, gamm)
 
 S3method(makeArgs, default)
 S3method(makeArgs, gls)
@@ -281,7 +259,6 @@ S3method(makeArgs, aodml)
 S3method(nobs, aodql)
 S3method(coefTable, aodql)
 
-
 S3method(getAllTerms, betareg)
 S3method(makeArgs, betareg)
 S3method(coefTable, betareg)
@@ -312,6 +289,19 @@ S3method(nobs, cpglmm)
 S3method(logLik, cplm)
 S3method(coeffs, cpglmm)
 S3method(getAllTerms, cpglmm)
+
+S3method(logLik, maxlikeFit)
+S3method(nobs, maxlikeFit)
+S3method(formula, maxlikeFit)
+S3method(coefTable, maxlikeFit)
+
+S3method(stdize, default)
+S3method(stdize, numeric)
+S3method(stdize, logical)
+S3method(stdize, factor)
+S3method(stdize, data.frame)
+S3method(stdize, formula)
+S3method(stdize, matrix)
 
 
 

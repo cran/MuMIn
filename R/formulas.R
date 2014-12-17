@@ -72,9 +72,11 @@ function(frm, except = NULL) {
 
 `expand.formula` <- function(x) {
 	x <- formula(x)
+	env <- environment(x)
 	tt <- terms(x)
 	x[[length(x)]] <- reformulate(attr(tt, "term.labels"),
 		intercept = attr(tt,"intercept"))[[2L]]
+	environment(x) <- env
 	x
 }
 
