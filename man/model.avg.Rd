@@ -24,17 +24,17 @@ model.avg(object, ..., revised.var = TRUE)
 
 \arguments{
 	\item{object}{ a fitted model object or a list of such objects, or a
-		\code{model.selection} object. See \sQuote{Details}. }
+		\code{"model.selection"} object. See \sQuote{Details}. }
 
     \item{\dots}{ for default method, more fitted model objects. Otherwise,
 		arguments that are passed to the default method. }
 
     \item{beta}{ logical, should standardized coefficients be returned? }
 
-	\item{rank}{ optionally, a custom rank function (information criterion) to
+	\item{rank}{ optionally, a rank function (returning an information criterion) to
 		use instead of \code{AICc}, e.g. \code{BIC} or \code{QAIC}, may be
 		omitted if \code{object} is a model list returned by \code{get.models}
-		or a \code{model.selection} object. See \sQuote{Details}. }
+		or a \code{"model.selection"} object. See \sQuote{Details}. }
 
     \item{rank.args}{ optional \code{list} of arguments for the \code{rank}
         function. If one is an expression, an \code{x} within it is substituted
@@ -51,7 +51,7 @@ model.avg(object, ..., revised.var = TRUE)
 	     \code{\link{coefTable}} (besides \code{dispersion}). }
 		 
 	\item{subset}{ see \code{\link[=subset.model.selection]{subset}} method for
-		\code{model.selection} object. }
+		\code{"model.selection"} object. }
 
 	\item{fit}{ if \code{TRUE}, the component models are fitted using
 		\code{get.models}. See \sQuote{Details}.
@@ -63,36 +63,41 @@ model.avg(object, ..., revised.var = TRUE)
 
 \value{
 
-An object of class \code{averaging} is a list with components:
+An object of class \code{"averaging"} is a list with components:
 
-\item{summary}{ a \code{data.frame} with log-likelihood, \emph{IC}, 
+\item{msTable}{ 
+a \code{data.frame} with log-likelihood, \emph{IC}, 
 \ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC} and
-	\sQuote{Akaike weights} for the component models. }
-\item{coef.shrinkage}{ a vector of full model-averaged coefficients, see
+	\sQuote{Akaike weights} for the component models.
+	"df", "logLik", "AICc", "delta", "weight". Its attribute \code{"term.codes"}
+	is a named vector with numerical representation of the terms in 
+	the row names of \code{msTable}. 
+}
+\item{avg.model}{the model averaged parameters. A \code{matrix} with rows for
+	model terms, columns for averaged coefficient, unconditional standard error,
+	adjusted SE (\code{NA} if \emph{df}s are not available), \emph{z}-test 
+	statistic and associated \emph{p}-value. }
+\item{coef.shrinkage}{a vector of \dQuote{full} model-averaged coefficients, see
 	\sQuote{Note}. }
-\item{coefArray}{ an \code{array} of component models' coefficients, their
-	standard errors, and degrees of freedom. }
-\item{term.codes}{ names of the terms with numerical codes used in
-	the \code{summary}. }
-\item{avg.model}{ the model averaged parameters. A \code{data.frame} containing
-    averaged coefficients, unconditional standard error, adjusted SE (if
-	\emph{df}s are available) and z-values (coefficient and SE) and
-	significance (assuming a normal error distribution). }
-\item{importance}{ relative importance of the predictor variables (including
-	interactions), calculated as a sum of the \emph{Akaike weights} over all of
-	the models in which the parameter of interest appears. }
-\item{term.names}{ character vector giving names of all terms in the model. }
-\item{x, formula}{ the model matrix and formula corresponding to the one that
-	would be used in a single model. \code{formula} contains only the averaged
-	coefficients. }
-%%\item{residuals}{ model averaged residuals (response minus fitted values). }
+\item{coefArray}{ a 3-dimensional \code{array} of component models' coefficients,
+	their standard errors and degrees of freedom. }
+\item{importance}{ object of class \code{importance} containing relative 
+	importance values of each term (including interactions), calculated as a sum
+	of the \emph{Akaike weights} over all of the models in which the term
+	appears.
+}
+\item{formula}{ a formula corresponding to the one that would be used in a 
+	single model. The formula contains only the averaged (fixed) coefficients.
+	}
 \item{call}{ the matched call. }
 
-In addition, the object has following attributes:
-\item{modelList}{ a list of component model objects. }
-\item{beta}{ logical, were standardized coefficients used? }
-\item{revised.var}{ if \code{TRUE}, the standard errors were calculated with the
-	revised formula (See \code{\link{par.avg}}). }
+The object has following attributes:
+\item{rank}{the rank function used. }
+\item{modelList}{ a list of all component model objects. }
+\item{beta}{ Corresponds to the function argument. }
+\item{nobs}{number of observations. }
+\item{revised.var}{ Corresponds to the function argument. }
+
 }
 
 \details{
@@ -113,10 +118,10 @@ For a list of model types that are accepted see \link[=MuMIn-models]{list of
 
 
 \code{rank} is found by a call to \code{\link[base]{match.fun}} and typically is
-	specified as a function or a symbol (e.g. a back-quoted name) or a character
-	string specifying a function to be searched for from the environment of the
-	call to lapply. \code{rank} must be a function able to accept model as a
-	first argument and must always return a scalar.
+	specified as a function or a symbol or a character string specifying a 
+	function to be searched for from the environment of the call to lapply. 
+	\code{rank} must be a function able to accept model as a first argument and 
+	must always return a numeric scalar.
 
 Several standard methods for fitted model objects exist for class
 	\code{averaging}, including \code{summary},
@@ -154,14 +159,12 @@ The \sQuote{subset} (or \sQuote{conditional}) average only averages over the
 	shrinkage estimator and for variables with a weak relationship to the
 	response they are smaller than \sQuote{subset} estimators.
 	
-	
-Averaging models with different contrasts for the same factor would yield
+	Averaging models with different contrasts for the same factor would yield
 	nonsense results, currently no checking for contrast consistency is done.
-
-From version 1.0.1, \code{print} method provides only a concise output
-	(similarly as for \code{lm}). To print a full summary of the results use
-	\code{summary} function. Confidence intervals can be obtained with
-	\code{\link{confint}}.
+	
+	\code{print} method provides a concise output (similarly as for \code{lm}). 
+	To print more details use \code{summary} function, and \code{\link{confint}}
+	to get confidence intervals.
 
 }
 

@@ -1,6 +1,6 @@
 `DIC` <-
 function (object, ...) {
-	if (length(list(...))) {
+	if (!missing(...)) {
 		lls <- sapply(list(object, ...), function(x) {
 			c(extractDIC(x), attr(logLik(x), "df"))
 		})

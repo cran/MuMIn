@@ -42,7 +42,7 @@ function(obj, termNames, comb, opt, ...) {
 			opt$gmCall$contrasts, envir = opt$gmEnv))
 		idx <- match(coefNames, opt$gmCoefNames)
 		if(any(is.na(idx))) reportProblems <-
-			append(reportProblems, "cannot subset 'start' argument. Coefficients in generated model do not exist in the global model")
+			append(reportProblems, "cannot subset 'start' argument. Coefficients in model do not exist in global.model")
 		else ret$start <- substitute(start[idx], list(start = opt$gmCall$start,
 			idx = idx))
 	}
@@ -74,11 +74,10 @@ function(obj, termNames, comb, opt, ...) {
 `makeArgs.mer` <- 
 function(obj, termNames, comb, opt, ...) {
 	ret <- makeArgs.default(obj, termNames, comb, opt)
-	#if(isTRUE(opt$use.ranef))
-	ret$formula <- update.formula(ret$formula, opt$random)
+	if(!is.null(opt$random)) ret[['formula']] <-
+		update.formula(ret[['formula']], opt$random)
 	ret
 }
-
 
 
 # used by makeArgs.unmarkedFit*
@@ -167,20 +166,30 @@ function(obj, termNames, comb, opt, ...) {
 `makeArgs.hurdle` <- 
 `makeArgs.zeroinfl` <-
 function(obj, termNames, comb, opt, ...) {
+
+	intType <- substring(opt$interceptLabel, 0,
+		regexpr("_", opt$interceptLabel, fixed = TRUE) - 1L)
+
 	i <- termNames %in% opt$interceptLabel
 	termNames[i] <- gsub("(Intercept)", "1", termNames[i], fixed = TRUE)
 	pos <- regexpr("_", termNames, fixed = TRUE)
-	zarg <- lapply(split(substring(termNames, pos + 1L, 256L),
-		substring(termNames, 1L, pos - 1L)), function(x)
-			formula(terms.formula(reformulate(as.character(x)),
-				simplify = TRUE)))
-	zarg <- lapply(zarg, `environment<-`, opt$gmFormulaEnv)
+
 	fnames <- c("count", "zero")
+	
+	zarg <- split(substring(termNames, pos + 1L, 256L),
+		substring(termNames, 1L, pos - 1L))
+	for(j in fnames) zarg[[j]] <-
+		if(is.null(zarg[[j]])) {
+			if(j %in% intType) ~1 else ~0
+		} else formula(terms.formula(reformulate(as.character(zarg[[j]]),
+			intercept = j %in% intType),
+			simplify = TRUE))
+
+	zarg <- lapply(zarg, `environment<-`, opt$gmFormulaEnv)
 	zarg <- zarg[fnames]
-	names(zarg) <- fnames
 	fexpl <- zarg$count[[2L]]
-	if(!is.null(zarg$zero)) fexpl <- call("|", fexpl, zarg$zero[[2L]])
-		else zarg$zero <- NULL
+	if(!is.null(zarg$zero)) fexpl <-
+		call("|", fexpl, zarg$zero[[2L]]) else zarg$zero <- NULL
 	ret <- list(formula = call("~", opt$response, fexpl))
 	attr(ret, "formulaList") <- zarg
 	ret
@@ -257,8 +266,8 @@ function(obj, termNames, comb, opt, ...) {
 `makeArgs.aodml` <-
 function(obj, termNames, comb, opt, ...) {
 	if(sys.nframe() > 2L && (parent.call <- sys.call(-2L))[[1L]] == "dredge" &&
-	   !is.null(getCall(obj)$fixpar))
-		stop(simpleError("'aodml' models with constant parameters cannot be handled by 'dredge' (yet)",
+	   !is.null(get_call(obj)$fixpar))
+		stop(simpleError("'aodml' models with constant parameters cannot be handled by 'dredge'",
 						 call = parent.call))
 	makeArgs.default(obj, termNames, comb, opt, ...)
 }

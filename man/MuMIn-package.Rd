@@ -62,7 +62,7 @@ model selection by AIC.
 }
 
 \examples{
-
+\dontshow{oop <- }
 options(na.action = "na.fail") #  change the default "na.omit" to prevent models 
                                #  from being fitted to different datasets in 
                                #  case of missing values.
@@ -75,14 +75,13 @@ ms1 <- dredge(fm1)
 par(mar = c(3,5,6,4))
 plot(ms1, labAsExpr = TRUE)
 \dontshow{ \} }
-
 model.avg(ms1, subset = delta < 4)
 
 confset.95p <- get.models(ms1, cumsum(weight) <= .95)
 avgmod.95p <- model.avg(confset.95p)
 summary(avgmod.95p)
 confint(avgmod.95p)
-
+\dontshow{options(oop)}
 }
 
 \keyword{package}

@@ -120,7 +120,7 @@ function(x, typeR = FALSE) {
 }
 
 `QIC` <- function (object, ..., typeR = FALSE) {
-	if (length(list(...))) {
+	if (!missing(...)) {
 		res <- sapply(list(object, ...), getQIC, typeR = typeR)
 		val <- as.data.frame(t(res[1L,, drop = FALSE]))
 		colnames(val) <- c("QIC")
@@ -132,7 +132,7 @@ function(x, typeR = FALSE) {
 }
 
 `QICu` <- function (object, ..., typeR = FALSE) {
-	if (length(list(...))) {
+	if (!missing(...)) {
 		res <- sapply(list(object, ...), getQIC, typeR = typeR)
 		val <- as.data.frame(t(res[2L,, drop = FALSE]))
 		colnames(val) <- "QICu"

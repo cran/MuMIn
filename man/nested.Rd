@@ -13,8 +13,8 @@ nested(x, indices = c("none", "numeric", "rownames"), rank = NULL)
 }
 
 \arguments{
-	\item{x}{a model.selection table (result of \code{dredge}' or 
-	\code{model.sel}) }
+	\item{x}{a \code{"model.selection"} object (result of \code{dredge} or 
+	\code{model.sel}). }
 	
 	\item{indices}{if omitted or \code{"none"} then the function checks if, for 
 		each model, there are any higher ranked models nested within it.

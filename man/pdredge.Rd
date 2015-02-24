@@ -21,7 +21,7 @@ pdredge(global.model, cluster = NA, beta = FALSE, evaluate = TRUE, rank = "AICc"
         see \code{\link{dredge}}. }
     \item{trace}{ displays the generated calls, but may not work as expected
         since the models are evaluated in batches rather than one by one. }
-    \item{cluster}{ either a valid \code{cluster} object, or \code{NA} for a
+    \item{cluster}{ either a valid \code{"cluster"} object, or \code{NA} for a
         single threaded execution. }
 	\item{check}{ either integer or logical value controlling how much checking
 		for existence and correctness of dependencies is done on the cluster
@@ -79,7 +79,7 @@ if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) \{
 Beetle100 <- Beetle[sample(nrow(Beetle), 100, replace = TRUE),]
 
 fm1 <- glm(Prop ~ dose + I(dose^2) + log(dose) + I(log(dose)^2),
-    data = Beetle100, family = binomial)
+    data = Beetle100, family = binomial, na.action = na.fail)
 
 msubset <- expression(xor(dose, `log(dose)`) & (dose | !`I(dose^2)`)
     & (`log(dose)` | !`I(log(dose)^2)`))

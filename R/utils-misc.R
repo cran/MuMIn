@@ -1,8 +1,12 @@
-`DebugPrint` <- function(x) {
-	if(isTRUE(getOption('mumin.debug'))) {
-		cat("~", deparse(substitute(x)), "=");
-		print(x)	
-	}
+`DebugPrint` <-
+function (x) {
+    if (isTRUE(getOption("debug.print"))) {
+		fun <- asChar(sys.call(sys.parent())[[1L]])
+		name <- substitute(x)
+		cat(sprintf("<%s> ~ ", fun))
+		if(is.language(name)) cat(asChar(name), "= \n")
+        print(x)
+    }
 }
 	
 `srcc` <- function() {
@@ -10,7 +14,7 @@
 	return(if(ret$visible) ret$value else invisible(ret$value))
 }
 
-`.cry` <-
+`cry` <-
 function(Call = NA, Message, ..., warn = FALSE, domain = paste0("R-", .packageName)) {
 	if (is.character(Call))
 		Call <- call(Call[1L], sys.call(-1L)[[1L]]) else
@@ -19,13 +23,11 @@ function(Call = NA, Message, ..., warn = FALSE, domain = paste0("R-", .packageNa
 		stop(simpleError(gettextf(Message, ..., domain = domain), Call))
 }
 
-#if (!exists("getElement", mode = "function", where = "package:base", inherits = FALSE)) {
 `getElement` <- function (object, name) {
     if (isS4(object))
 		if (.hasSlot(object, name)) slot(object, name) else NULL
     else object[[name, exact = TRUE]]
 }
-#}
 
 # cbind list of data.frames omitting duplicated column (names)
 `cbindDataFrameList` <-
@@ -64,7 +66,7 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 		if(is.null(nm) || nm[i] == "") {
 			switch(mode(x[[i]]),
 				call = {
-						v <- deparse(x[[i]], control = NULL, width.cutoff = 20L, nlines = 2L)
+						v <- asChar(x[[i]], width.cutoff = 20L)
 						if(length(v) != 1L) v <- sprintf("%s...", v[1L])
 						v },
 				symbol =, name = as.character(x[[i]]),
@@ -130,10 +132,9 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 		vnames <- names(vars)
 		#if(!all(sapply(Call, is.name))) warning("at least some elements do not have syntactic name")
 		if(is.null(vnames)) {
-			names(vars) <- vapply(Call, deparse, "", control = NULL, nlines = 1L)
+			names(vars) <- vapply(Call, asChar, "")
 		} else if (any(vnames == "")) {
-			names(vars) <- ifelse(vnames == "", vapply(Call, deparse,
-				"", control = NULL, nlines = 1L), vnames)
+			names(vars) <- ifelse(vnames == "", vapply(Call, asChar, ""), vnames)
 		}
 		get("clusterCall")(cluster, getv, vars)
 		# clusterCall(cluster, getv, vars)
@@ -143,13 +144,13 @@ function(x) all(vapply(x[-1L], identical, logical(1L), x[[1L]]))
 # test if 'x' can be updated (in current environment or on a cluster)
 # level is 0/FALSE - no checking, 1 - check if variables and functions exist,
 # >1 - reevaluate x and compare with original 
-`testUpdatedObj` <- function(cluster = NA, x, call = .getCall(x),
+`testUpdatedObj` <- function(cluster = NA, x, call = get_call(x),
 	level = 1L, exclude = "subset") {
 	
 	if(isTRUE(level)) level <- 2L
 
 	if (level > 0L) {
-		xname <- deparse(substitute(x))
+		xname <- asChar(substitute(x))
 		doParallel <- inherits(cluster, "cluster")
 		if(doParallel) {
 			clusterCall <- get("clusterCall")
@@ -223,6 +224,7 @@ function (object, ...)
 if (!is.null(w <- object$prior.weights)) sum(w != 0) else length(object$residuals)
 	
 ## Cheating RCheck:
+getFrom <-
 .xget <-
 function(pkg, name)
 get(name, envir = asNamespace(pkg), inherits = FALSE)
@@ -237,14 +239,14 @@ function(extra, r2nullfit = FALSE) {
 	}
 	if(any(sapply(extra, is.function))) {
 		extraExpr[[1L]] <- as.name("alist")
-		extra <- eval(extraExpr, parent.frame())
+		extra <- eval.parent(extraExpr)
 	}
 	extraNames <- sapply(extra, function(x) switch(mode(x),
-		call = deparse(x[[1L]]), name = deparse(x), character = , x))
+		call = asChar(x[[1L]]), name = asChar(x), character = , x))
 	if(!is.null(names(extra)))
 		extraNames <- ifelse(names(extra) != "", names(extra), extraNames)
 	extra <- structure(as.list(unique(extra)), names = extraNames)
-	if(any(i <- vapply(extra, is.language, logical(1L))))
+	if(any(i <- vapply(extra, is.language, TRUE)))
 		extra[i] <- lapply(extra[i], eval)
 
 	if(any(c("adjR^2", "R^2") %in% extra)) {

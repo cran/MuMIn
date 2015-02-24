@@ -1,6 +1,6 @@
-`AICc` <- 
-function (object, ..., k = 2, REML = NULL)
-UseMethod("AICc")
+# AIC = -2 * LL + 2 * n
+# LL = -1/2 * log(dev) * n + C
+# AIC = log(dev) * n + C + 2 * n
 
 .get.nobs <- function(llik, error = FALSE) {
 	no <- attr(llik, "nall")
@@ -9,47 +9,67 @@ UseMethod("AICc")
 	no
 }
 
-
-`AICc.logLik` <- 
-function (object, ..., k = 2) {
-	if (length(list(...)) > 0L) warning("additional arguments ignored")
-	df <- attr(object, "df")
-	no <- .get.nobs(object, TRUE)
-	aic <- -2 * as.numeric(object) + k * df
-	aic + 2 * df * (df + 1) / (no - df - 1)
-}
-
-
-
-`AICc.default` <- 
-function (object, ..., k = 2, REML = NULL) {
-	loglik <- .getLogLik()
-	
-	.aicc <- function(ll, df, no)
-		(-2 * ll + k * df) + (2 * df * (df + 1) / (no - df - 1))
-		
-	need.reml.arg <- c("mer", "merMod", "lme", "gls", "lm")
-
-	if (length(list(...))) {
-		lls <- sapply(list(object, ...), function(x) {
-			ll <- if (!is.null(REML) && inherits(x, need.reml.arg))
-				loglik(x, REML = REML) else loglik(x)
-			no <- .get.nobs(ll, FALSE)
-			if (is.null(no)) no <- nobs(x, use.fallback = FALSE)
-			c(as.numeric(ll), attr(ll, "df"), if (is.null(no)) NA_integer_ else no)
-		})
-		val <- data.frame(df = lls[2L, ], AICc = .aicc(lls[1L, ], lls[2L, ], lls[3L, ]))
-
-		Call <- match.call()
-		Call$k <- Call$REML <- NULL
-		row.names(val) <- as.character(Call[-1L])
-		val
-	} else {
-		ll <- if (!is.null(REML) && inherits(object, need.reml.arg))
-				loglik(object, REML = REML) else loglik(object)
-		no <- .get.nobs(ll, FALSE)
-		if (is.null(no)) no <- nobs(object, use.fallback = FALSE)
-		.aicc(as.numeric(ll), attr(ll, "df"), no)
+.aic <- function(objectlist, chat, k, REML, ICFun, ICName) {
+	if(chat < 1) {
+		warning("'chat' given is < 1, increased to 1")
+		chat <- 1
 	}
+	npar.adj <- if(chat == 1) 0 else 1
+	
+	loglik <- .getLogLik()
+	llCall <-  call("loglik", as.name("object"))
+	if(!is.null(REML)) llCall$REML <- REML
+	ll <- function(object) fixLogLik(NA, object)
+	body(ll)[[2L]] <- llCall
+	
+	if(length(objectlist) > 1L) {
+		lls <- lapply(objectlist, ll)
+		val <- data.frame(df = vapply(lls, attr, 1, "df"),
+						  ic = sapply(lls, ICFun, chat = chat, k = k, npar.adj = npar.adj))
+		Call <- match.call(sys.function(sys.parent()), call = sys.call(sys.parent()))
+		Call$chat <- Call$REML <- Call$k <- NULL
+		dimnames(val) <- list(as.character(Call[-1L]), c("df", ICName))
+		return(val)
+	} else {
+		return(ICFun(ll(objectlist[[1L]]), chat = chat, k = k, npar.adj = npar.adj))
+	}	
 }
 
+`QAICc` <-
+function(object, ..., chat, k = 2, REML = NULL) {
+	.aic(list(object, ...), chat, k, REML, function(ll, chat, k, npar.adj) {
+		no <- .get.nobs(ll, error = FALSE)
+		# df is the number of parameters plus 1 for estimating c-hat
+		df <- attr(ll, "df") + npar.adj
+		#neg2ll <- log(deviance(object)) * n # + Constant...
+		neg2ll <- -2 * c(ll)
+		ret <- (neg2ll / chat) + (k * df) * (1 + ((df + 1) / (no - df - 1)))
+		return (ret)
+	}, "QAICc") 
+}
+
+`QAIC` <-
+function(object, ..., chat, k = 2, REML = NULL) {
+	.aic(list(object, ...), chat, k, REML, function(ll, chat, k, npar.adj) {
+		df <- attr(ll, "df") + npar.adj
+		neg2ll <- -2 * c(ll)
+		#ret <- (neg2ll * no / chat) + k * df
+		#ret <- -2 * ll / chat + k * df
+		ret <- neg2ll / chat + k * df
+		return (ret)
+	}, "QAIC") 
+}
+
+`AICc` <-
+function(object, ..., k = 2, REML = NULL) {
+	.aic(list(object, ...), 1, k, REML, function(ll, chat, k, npar.adj) {
+		no <- .get.nobs(ll, error = FALSE)
+		df <- attr(ll, "df")
+		ret <- (-2 * c(ll)) + (k * df) * (1 + ((df + 1) / (no - df - 1)))
+		return (ret)
+	}, "AICc") 
+}
+
+
+#QAIC = -2log Likelihood/c-hat + 2K
+#QAICc = -2log Likelihood/c-hat + 2K + 2K(K + 1)/(n - K - 1)

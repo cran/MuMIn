@@ -17,35 +17,31 @@ function (FUN, eval.args = NULL, Class) {
 	
 	body(FUNV)[c(if(missing(eval.args)) 4L, if(missing(Class)) 8L)] <- NULL
     formals(FUNV) <- formals(FUN)
-	rm(FUN)
+	rm(FUN, inherits = FALSE)
     FUNV
 }
 
 `updateable2` <-
 function (FUN, Class) .Defunct("updateable")
 
-`.getCall` <- function(x) {
+
+`get_call` <- function(x) {
+	rval <-
 	if(isS4(x)) {
 		if(any(i <- (sln <- c("call", "CALL", "Call")) %in% slotNames(x)))
 			slot(x, sln[i][1L]) else
 			if(!is.null(attr(x, "call")))
 				attr(x, "call") else NULL
 	} else {
-		if(!is.atomic(x) && !is.null(x$call)) {
-			x$call
+		if(!is.atomic(x) && (i <- match("call", names(x), nomatch = 0L)) != 0L) {
+			x[[i]]
 		} else if(!is.null(attr(x, "call"))) {
 			attr(x, "call")
 		} else
 			NULL
 	}
+	if(is.null(rval)) stats::getCall(x) else rval
 }
-
-
-`getCall.default` <-
-function (x, ...)
-.getCall(x)
-
-
 
 ##==============================================================================
 
@@ -60,7 +56,7 @@ function (x, ...)
 	clx <- match.call(clx, definition = eval(funcl, envir = ns))
 	clx[[1L]] <- funcl
 	#list(clx, cl)
-	res <- eval(clx, parent.frame())
+	res <- eval.parent(clx)
 	res$call <- cl
 	class(res) <- c(if(lme4) "gamm4", "gamm", "list")
 	res

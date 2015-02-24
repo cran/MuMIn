@@ -36,7 +36,7 @@ function(frm, except = NULL) {
 #}
 
 `.formulaEnv` <- function(object, env = .GlobalEnv) {
-	res <- as.formula(object, env = env)
+	res <- formula(object, env = baseenv())
 	environment(res) <- env
 	res
 }
@@ -80,3 +80,33 @@ function(frm, except = NULL) {
 	x
 }
 
+`decomposeFormula` <- function(f, rhs.as.formula = FALSE) {
+	env <- environment(f)
+	rhs <- list()
+	lhs <- NULL
+	repeat {
+		l <- length(f)
+		if(l == 1L || f[[1L]] != "~") {
+			lhs <- f
+			break
+		}
+		rhs[[length(rhs) + 1L]] <- f[[l]]
+		if(l == 3L) f <- f[[2L]] else break
+	}
+	if(rhs.as.formula) {
+		rhs <- lapply(rhs, function(z) .formulaEnv(call("~", z), env))
+	}
+	structure(list(lhs = lhs, rhs = rev(rhs)), .Environment = env)
+}
+
+
+mergeFormulas <- function(flist, env = environment(flist[[1L]])) {
+	fs <- lapply(flist, decomposeFormula, TRUE)
+	j <- min(sapply(fs, function(z) length(z$rhs)))
+	tn <- character(0L)
+	for(fi in fs) tn <- c(tn, attr(terms(fi$rhs[[j]]), "term.labels"))
+	tn <- tn[!duplicated(tn)]
+	f <- reformulate(tn)
+	environment(f) <- env
+	f
+}

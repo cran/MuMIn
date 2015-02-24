@@ -14,7 +14,7 @@ function (object, ..., dispersion = NULL) {
 			(df.r > 0) rss / df.r else NaN
 		rss + 2 * scale  * (nobs(x) - df.r)
 	}
-    if (length(list(...))) {
+    if (!missing(...)) {
         cps <- vapply(list(object, ...), .cp, 1L, disp = dispersion)
         val <- data.frame(Cp = cps)
         Call <- match.call()

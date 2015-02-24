@@ -12,22 +12,22 @@ Weights(x)
 }
 
 \arguments{
-	\item{x}{ a numeric vector of information criterion values such as AIC, or
+	\item{x}{a numeric vector of information criterion values such as AIC, or
 	objects returned by functions like \code{AIC}. There are also methods for
-	extracting Akaike weights from a \code{model.selection} or \code{averaging}
-	objects. }
+	extracting \sQuote{Akaike weights} from a \code{"model.selection"} or 
+	\code{"averaging"} objects. }
 
 }
 
 \value{
-	a numeric vector of normalized likelihoods.
+	A numeric vector of normalized likelihoods.
 }
 
 
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{importance}}
+\code{\link{importance}}, \code{\link{weighted.mean}}
 
 \code{\link{weights}}, which extracts fitting weights from model objects.
 }

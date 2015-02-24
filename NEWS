@@ -1,12 +1,52 @@
 MuMIn package news:
 
+Version: 1.13.4 (2015-02-24)
+coefTable.coxph: added workaround for the case when variance-covariance matrix 
+	is NA (as in results of 'intcox') (reported by Vanessa Boukili)
+
+Version: 1.13.3 (2015-02-19)
+get.models+subset.model.selection: unified 'subset' expression interpretation
+dredge: no longer exceeds memory limit with very complex models, and its 
+	efficiency has somewhat improved. With trace=2 a progress bar is displayed.
+model.sel: has new attribute 'fit'.
+"averaging" object now stores component models.
+model.sel,subset,get.models: unified interpretation of the "subset" expression
+(fixed) extracting random effects formula (affected 'r.squaredGLMM' for 'lmer', 
+	reported by Yevgen Matusevych)
+(fixed) makeArgs (and hence 'dredge'): formulas with no intercept are now 
+	handled correctly in 'zeroinfl' models.
+
+Version: 1.13.2 (2015-01-08)
+(fixed) makeArgs (and hence 'dredge'): gave error if no random effects 
+	was specified in 'glmmadmb' model (reported by Szymek Drobniak).
+
+Version: 1.13.1 (2015-01-06)
+(fixed) getAllTerms: now properly handles single formula in 'hurdle' and 
+	'zeroinfl' models (package 'pscl').
+
+Version: 1.13.0 (2015-01-03)
+(added) get.response: utility to extract response variable.
+
+Version: 1.12.4 (2014-12-26)
+(added) stdizeFit: utility to modify model object or a call to modelling function 
+	to use standardized data.
+
+Version: 1.12.3 (2014-12-23)
+(fixed) checkModels: workaround for the "dotted argument identity" issue (namely
+	sometimes equal "..1"s are not identical).
+
+Version: 1.12.2 (2014-12-19)
+(fixed) [Q]AICc: previously they ignored REML argument for some model classes.
+	The code has been rewritten so that most of the core calculation is done by
+	a common internal function.
+
 Version: 1.12.1 (2014-12-16)
 minor corrections to the documentation
 
 Version: 1.12.0 (2014-12-16)
 (added) exprApply: new function to manipulate expressions (with example of use
 	with 'dredge' to manipulate terms inside formula).
-(p)dredge, subset.model.selection: curly braces can be used to indicate complex 
+dredge, subset.model.selection: curly braces can be used to indicate complex 
 	terms (e.g. {I(x)} or {s(x,k=2}) instead of backtick quotes. Spacing in 
 	these expressions is irrelevant (as both whitespace and backticks seem to be 
 	a problem for some users).
@@ -19,8 +59,8 @@ print.model.selection: rank function call is added to the output
 Version: 1.11.2 (2014-12-01)
 (fixed) r.squaredGLMM: in "binomial" family models the residual variance is 
 	used for additive dispersion (thanks to Paul Johnson). 
-	There are still problems with 'lmer' when 'subset' argument is given, 
-	observation-level random term has to be specified manually in this case.
+	There is still issue with 'lmer' with 'subset' argument, and 
+	observation-level random term has to be specified manually.
 (fixed) some formula-decomposition related functions (that sometimes caused 
 	problems with 'r.squaredGLMM' for 'lmer', reported by Yevgen Matusevych)
 dredge: warns about potentially misspecified arguments 

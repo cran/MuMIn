@@ -1,5 +1,5 @@
 `null.fit` <- function(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL) {
-	cl <- .getCall(x)
+	cl <- get_call(x)
 	if(!is.environment(envir)) envir <- environment(as.formula(formula(x)))
 	
 	if(RE.keep) {
@@ -105,7 +105,7 @@ function(x, null = NULL, null.RE = FALSE) {
 	if(is.null(null))
 		null <- null.fit(x, TRUE, null.RE, parent.frame())
 
-	#print(.getCall(null))
+	#print(get_call(null))
 	L0 <- as.vector(if(inherits(null, "glm")) logLik(null) else logLik(null, REML = FALSE))
 	L1 <- if(inherits(x, "glm")) logLik(x) else logLik(x, REML = FALSE)
 	n <- if(is.null(attr(L1, "nobs"))) nobs(x) else attr(L1, "nobs")

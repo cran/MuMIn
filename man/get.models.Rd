@@ -3,11 +3,12 @@
 \alias{pget.models}
 \encoding{utf-8}
 
-\title{Evaluate models from selection table}
+\title{Retrieve models from selection table}
 
 \description{
-    Generate a list of fitted model objects from a \code{model.selection} table,
-	optionally using parallel computation in a cluster.
+    Generate or extract a list of fitted model objects from a 
+	\code{"model.selection"} table, optionally using parallel computation in a 
+	cluster.
 }
 
 
@@ -19,7 +20,7 @@ get.models(object, subset, cluster = NA, ...)
   \item{object}{ object returned by \code{\link{dredge}}. }
   \item{subset}{subset of models, an expression evaluated within the model
 	selection table (see \sQuote{Details}).}
-	\item{cluster}{ optionally, a \code{cluster} object. If it is a valid 
+	\item{cluster}{ optionally, a \code{"cluster"} object. If it is a valid 
 		cluster, models are evaluated using parallel computation. }
 	\item{\dots}{additional arguments to update the models. For example, in
     \code{lme} one may want to use \code{method = "REML"} while using \code{"ML"}

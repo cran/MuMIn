@@ -3,9 +3,11 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		 fixed = NULL, m.max = NA, m.min = 0, subset,
 		 trace = FALSE, varying, extra, ct.args = NULL,
 		 ...) {
+	
+	trace <- min(as.integer(trace), 2L)
 
 	gmEnv <- parent.frame()
-	gmCall <- .getCall(global.model)
+	gmCall <- get_call(global.model)
 	gmNobs <- nobs(global.model)
 
 	if (is.null(gmCall)) {
@@ -18,21 +20,19 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		#"For objects without a 'call' component the call to the fitting function \n",
 		#" must be used directly as an argument to 'dredge'.")
 		# NB: this is unlikely to happen
-		if(!is.function(eval(gmCall[[1L]], parent.frame())))
-			.cry(NA, "could not find function '%s'", deparse(gmCall[[1L]],
-				control = NULL))
+		if(!is.function(eval.parent(gmCall[[1L]])))
+			cry(NA, "could not find function '%s'", asChar(gmCall[[1L]]))
 	} else {
 		# if 'update' method does not expand dots, we have a problem with
 		# expressions like ..1, ..2 in the call. So try to replace them with
 		# respective arguments in the original call
-		is.dotted <- grep("^\\.\\.", sapply(as.list(gmCall), deparse))
-		if(length(is.dotted) > 0L) {
-			substGmCall <- substitute(global.model)
-			if(is.name(substGmCall)) {
-				.cry(NA, "call to 'global.model' contains unexpanded dots and cannot be updated: \n%s",
-					 deparse(gmCall, control = NULL))
-			} else gmCall[is.dotted] <-
-				substitute(global.model)[names(gmCall[is.dotted])]
+		isDotted <- grep("^\\.\\.", sapply(as.list(gmCall), deparse))
+		if(length(isDotted) != 0L) {
+			if(is.name(substitute(global.model))) {
+				cry(NA, "call stored in 'global.model' contains unexpanded dots and cannot be updated: \n    %s",
+					 asChar(gmCall))
+			} else gmCall[isDotted] <-
+				substitute(global.model)[names(gmCall[isDotted])]
 		}
 		
 		# object from 'run.mark.model' has $call of 'make.mark.model' - fixing
@@ -43,46 +43,46 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		
 	}
 
-	LL <- .getLik(global.model)
-	logLik <- LL$logLik
-	lLName <- LL$name
+	lik <- .getLik(global.model)
+	logLik <- lik$logLik
+	logLikName <- lik$name
 	
 	# *** Rank ***
 	rank.custom <- !missing(rank)
 	
-	if(!rank.custom && lLName == "qLik") {
+	if(!rank.custom && logLikName == "qLik") {
 		rank <- "QIC"
-		.cry(NA, "using 'QIC' instead of 'AICc'", warn = TRUE)
+		cry(NA, "using 'QIC' instead of 'AICc'", warn = TRUE)
 	}
 	
 	rankArgs <- list(...)
 
-	if(any(wrongarg <- names(rankArgs) == "marg.ex")) {
-		.cry(NA, "argument \"marg.ex\" is defunct and has been ignored",
+	if(any(badargs <- names(rankArgs) == "marg.ex")) {
+		cry(NA, "argument \"marg.ex\" is defunct and has been ignored",
 			 warn = TRUE)
-		rankArgs <- rankArgs[!wrongarg]
+		rankArgs <- rankArgs[!badargs]
 	}
-	if(any(names(rankArgs) == "na.action")) {
-		.cry("RTFM", "argument \"na.action\" is really inappropriate here",
+	if(any(names(rankArgs) == "na.action"))
+		cry("RTFM", "argument \"na.action\" is inappropriate here",
 			 warn = FALSE)
-	}
-	
+
 	IC <- .getRank(rank, rankArgs)
 	
-	if(any(wrongarg <- is.na(match(names(rankArgs),
+	if(any(badargs <- is.na(match(names(rankArgs),
 		c(names(formals(get("rank", environment(IC))))[-1L], names(formals()))))))
-		.cry(NA, "arguments %s are not formal arguments of 'dredge' or 'rank'",
-			 prettyEnumStr(names(rankArgs[wrongarg])), warn = TRUE)
+		cry("RTFM", ngettext(sum(badargs),
+			"argument %s is not a name of formal argument of %s",
+			"arguments %s are not names of formal arguments of %s"),
+			prettyEnumStr(names(rankArgs[badargs])), "'dredge' or 'rank'", 
+			warn = TRUE)
 	
 	ICName <- as.character(attr(IC, "call")[[1L]])
 	
 	if(length(tryCatch(IC(global.model), error = function(e) {
-		e$call <- do.call(substitute, list(attr(IC, "call"), 
-			list(x = as.name("global.model"))))
-		stop(e)
+		stop(simpleError(conditionMessage(e), subst(attr(IC, "call"),
+			x = as.name("global.model"))))
 	})) != 1L) {
-		.cry(NA, "result of '%s' is not of length 1", deparse(attr(IC,
-			"call"), control = NULL)[1L])
+		cry(NA, "result of '%s' is not of length 1", asChar(attr(IC, "call")))
 	}
 
 	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,
@@ -91,7 +91,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	# Intercept(s)
 	interceptLabel <- attr(allTerms, "interceptLabel")
 	if(is.null(interceptLabel)) interceptLabel <- "(Intercept)"
-	nInts <- sum(attr(allTerms, "intercept"))
+	nIntercepts <- sum(attr(allTerms, "intercept"))
 
 	#XXX: use.ranef <- FALSE
 	#if(use.ranef && inherits(global.model, "mer")) {
@@ -100,46 +100,45 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 
 
 	# Check for na.omit
-	if(!(gmNA.action <- .checkNaAction(cl = gmCall, what = "'global.model'")))
-		.cry(NA, attr(gmNA.action, "message"))
-	
+	if(!(gmNaAction <- .checkNaAction(cl = gmCall, what = "'global.model'")))
+		cry(NA, attr(gmNaAction, "message"))
 	
 	if(names(gmCall)[2L] == "") gmCall <-
-		match.call(gmCall, definition = eval(gmCall[[1L]], envir = parent.frame()),
+		match.call(gmCall, definition = eval.parent(gmCall[[1L]]),
 				   expand.dots = TRUE)
-		
+
 		
 	# TODO: other classes: model, fixed, etc...
 	gmCoefNames <- fixCoefNames(names(coeffs(global.model)))
 
-	n.vars <- length(allTerms)
+	nVars <- length(allTerms)
 
 	if(isTRUE(rankArgs$REML) || (isTRUE(.isREMLFit(global.model)) && is.null(rankArgs$REML)))
-		.cry(NA, "comparing models fitted by REML", warn = TRUE)
+		cry(NA, "comparing models fitted by REML", warn = TRUE)
 
 	if (beta && is.null(tryCatch(beta.weights(global.model), error = function(e) NULL,
 		warning = function(e) NULL))) {
-		.cry(NA, "do not know how to calculate beta weights for '%s', argument 'beta' ignored",
+		cry(NA, "do not know how to calculate beta weights for '%s', argument 'beta' ignored",
 			 class(global.model)[1L], warn = TRUE)
 		beta <- FALSE
 	}
 
-	m.max <- if (missing(m.max)) (n.vars - nInts) else min(n.vars - nInts, m.max)
+	m.max <- if (missing(m.max)) (nVars - nIntercepts) else min(nVars - nIntercepts, m.max)
 
 	# fixed variables:
 	if (!is.null(fixed)) {
 		if (inherits(fixed, "formula")) {
 			if (fixed[[1L]] != "~" || length(fixed) != 2L)
-				.cry(NA, "'fixed' should be a one-sided formula", warn = TRUE)
+				cry(NA, "'fixed' should be a one-sided formula", warn = TRUE)
 			fixed <- as.vector(getAllTerms(fixed))
 		} else if (identical(fixed, TRUE)) {
 			fixed <- as.vector(allTerms[!(allTerms %in% interceptLabel)])
 		} else if (!is.character(fixed)) {
-			.cry(NA, paste("'fixed' should be either a character vector with",
+			cry(NA, paste("'fixed' should be either a character vector with",
 						   " names of variables or a one-sided formula"))
 		}
 		if (!all(i <- (fixed %in% allTerms))) {
-			.cry(NA, "some terms in 'fixed' do not exist in 'global.model': %s",
+			cry(NA, "some terms in 'fixed' do not exist in 'global.model': %s",
 				 prettyEnumStr(fixed[!i]), warn = TRUE)
 			fixed <- fixed[i]
 		}
@@ -148,8 +147,9 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	deps <- attr(allTerms0, "deps")
 	fixed <- union(fixed, rownames(deps)[rowSums(deps, na.rm = TRUE) == ncol(deps)])
 	fixed <- c(fixed, allTerms[allTerms %in% interceptLabel])
-	n.fixed <- length(fixed)
-	if(n.fixed > 0L) message(sprintf(ngettext(n.fixed, "Fixed term is %s", "Fixed terms are %s"),
+	
+	nFixed <- length(fixed)
+	if(nFixed != 0L) message(sprintf(ngettext(nFixed, "Fixed term is %s", "Fixed terms are %s"),
 		prettyEnumStr(fixed)))
 
 	termsOrder <- order(allTerms %in% fixed)
@@ -163,23 +163,23 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 
 	### BEGIN Manage 'varying'
 	## @param:	varying
-	## @value:	varying, varying.names, variants, nvariants, nvarying
+	## @value:	varying, varyingNames, variants, nVariants, nVarying
 	if(!missing(varying) && !is.null(varying)) {
-		nvarying <- length(varying)
-		varying.names <- names(varying)
+		nVarying <- length(varying)
+		varyingNames <- names(varying)
 		fvarying <- unlist(varying, recursive = FALSE, use.names = FALSE)
 		vlen <- vapply(varying, length, 1L)
-		nvariants <- prod(vlen)
+		nVariants <- prod(vlen)
 		variants <- as.matrix(expand.grid(split(seq_len(sum(vlen)),
-			rep(seq_len(nvarying), vlen))))
+			rep(seq_len(nVarying), vlen))))
 		
-		flat.variant.Vvals <- unlist(lapply(varying, .makeListNames),
+		variantsFlat <- unlist(lapply(varying, .makeListNames),
 			recursive = FALSE, use.names = FALSE)
 		
 	} else {
-		variants <- varying.names <- NULL
-		nvariants <- 1L
-		nvarying <- 0L
+		variants <- varyingNames <- NULL
+		nVariants <- 1L
+		nVarying <- 0L
 	}
 	## END: varying
 	
@@ -188,9 +188,9 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	## @value:	extra, nextra, extraNames, nullfit_
 	if(!missing(extra) && length(extra) != 0L) {
 		# a cumbersome way of evaluating a non-exported function in a parent frame:
-		extra <- eval(as.call(list(call("get", ".get.extras", envir = call("asNamespace",
-															 .packageName), inherits = FALSE),
-					 substitute(extra), r2nullfit = TRUE)), parent.frame())
+		extra <- eval(as.call(list(call("get", ".get.extras",
+			envir = call("asNamespace", .packageName), inherits = FALSE),
+				substitute(extra), r2nullfit = TRUE)), parent.frame())
 		
 		#extra <- eval(call(".get.extras", substitute(extra), r2nullfit = TRUE), parent.frame())
 		if(any(c("adjR^2", "R^2") %in% names(extra))) {
@@ -199,7 +199,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		applyExtras <- function(x) unlist(lapply(extra, function(f) f(x)))
 		extraResult <- applyExtras(global.model)
 		if(!is.numeric(extraResult))
-			.cry(NA, "function in 'extra' returned non-numeric result")
+			cry(NA, "function in 'extra' returned non-numeric result")
 
 		nextra <- length(extraResult)
 		extraNames <- names(extraResult)
@@ -209,22 +209,18 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	}
 	## END: manage 'extra'
 
-	nov <- as.integer(n.vars - n.fixed)
-	ncomb <- (2L ^ nov) * nvariants
+	nov <- as.integer(nVars - nFixed)
+	ncomb <- (2L ^ nov) * nVariants
 
-	if(nov > 31L) .cry(NA, "number of predictors (%d) exceeds allowed maximum of 31", nov)
+	if(nov > 31L) cry(NA, "number of predictors (%d) exceeds allowed maximum of 31", nov)
 	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
-	nmax <- ncomb * nvariants
+	nmax <- ncomb * nVariants
+	rvChunk <- 25L
 	if(evaluate) {
-		ret.nchunk <- 25L
-		ret.ncol <- n.vars + nvarying + 3L + nextra
-		ret <- matrix(NA_real_, ncol = ret.ncol, nrow = ret.nchunk)
-		coefTables <- vector(ret.nchunk, mode = "list")
-	} else {
-		ret.nchunk <- nmax
+		rvNcol <- nVars + nVarying + 3L + nextra
+		ret <- matrix(NA_real_, ncol = rvNcol, nrow = rvChunk)
+		coefTables <- vector(rvChunk, mode = "list")
 	}
-
-	calls <- vector(mode = "list", length = ret.nchunk)
 
 	## BEGIN: Manage 'subset'
 	## @param:	hasSubset, subset, allTerms, [interceptLabel], 
@@ -278,27 +274,31 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			subset <- as.expression(subset)
 			ssValidNames <- c("comb", "*nvar*")
 
-			subsetExpr <- subset[[1L]]
-
-			## subset X
 			#gloFactorTable <- t(attr(terms(global.model), "factors")[-1L, ] != 0)
 			gloFactorTable <- t(attr(terms(reformulate(allTerms0[!(allTerms0
 				%in% interceptLabel)])), "factors") != 0)
-			
 			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
-	
-			subsetExpr <- .substFunc(subsetExpr, ".", .sub_dot, gloFactorTable, 
+			
+			subsetExpr <- subset[[1L]]
+			subsetExpr <- .exprapply(subsetExpr, ".", .sub_dot, gloFactorTable, 
 				allTerms, as.name("comb"))
-			subsetExpr <- .substFunc(subsetExpr, c("{", "Term"), .sub_Term)
+			subsetExpr <- .exprapply(subsetExpr, c("{", "Term"), .sub_Term)
+
+			#@@@ TODO has subsetExpr <- .exprapply(subsetExpr, "has", .sub_Term)
+			
+			tmp <- updateDeps(subsetExpr, deps)
+			subsetExpr <- tmp$expr
+			deps <- tmp$deps
+
+			subsetExpr <- .exprapply(subsetExpr, "dc", .sub_args_as_vars)
 			subsetExpr <- .subst4Vec(subsetExpr, allTerms, as.name("comb"))
 			
-			
-			if(nvarying) {
+			if(nVarying) {
 				ssValidNames <- c("cVar", "comb", "*nvar*")
-				subsetExpr <- .substFunc(subsetExpr, "V", .sub_V, 
-					as.name("cVar"), varying.names)
+				subsetExpr <- .exprapply(subsetExpr, "V", .sub_V, 
+					as.name("cVar"), varyingNames)
 				if(!all(all.vars(subsetExpr) %in% ssValidNames))
-					subsetExpr <- .subst4Vec(subsetExpr, varying.names,
+					subsetExpr <- .subst4Vec(subsetExpr, varyingNames,
 											 as.name("cVar"), fun = "[[")
 			}
 			ssVars <- all.vars(subsetExpr)
@@ -316,15 +316,16 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		}
 	} # END: manage 'subset'
 	
-	comb.sfx <- rep(TRUE, n.fixed)
+	comb.sfx <- rep(TRUE, nFixed)
 	comb.seq <- if(nov != 0L) seq_len(nov) else 0L
 	k <- 0L
 	extraResult1 <- integer(0L)
-	ord <- integer(ret.nchunk)
+	calls <- vector(mode = "list", length = rvChunk)
+	ord <- integer(rvChunk)
 
 	argsOptions <- list(
 		response = attr(allTerms0, "response"),
-		intercept = nInts,
+		intercept = nIntercepts,
 		interceptLabel = interceptLabel,
 		random = attr(allTerms0, "random"),
 		gmCall = gmCall,
@@ -341,24 +342,39 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	matchCoefCall <- as.call(c(alist(matchCoef, fit1, all.terms = allTerms,
 		  beta = beta, allCoef = TRUE), ct.args))
 	
-	retColIdx <- if(nvarying) -n.vars - seq_len(nvarying) else TRUE
+	retColIdx <- if(nVarying) -nVars - seq_len(nVarying) else TRUE
+	
+	if(trace > 1L) {
+		progressBar <- if(.Platform$GUI == "Rgui") {
+			 winProgressBar(max = ncomb, title = "'dredge' in progress")
+		#} else if(capabilities("tcltk") && ("package:tcltk" %in% search())) {
+			 #tkProgressBar(max = ncomb, title = "'dredge' in progress")
+		} else txtProgressBar(max = ncomb, style = 3)
+		setProgressBar <- switch(class(progressBar),
+			    txtProgressBar = setTxtProgressBar,
+			   #tkProgressBar = setTkProgressBar,
+			   winProgressBar = setWinProgressBar,
+			   function(...) {})
+		on.exit(close(progressBar))
+	}
+	iComb <- -1L
+	while((iComb <- iComb + 1L) < ncomb) {
+		varComb <- iComb %% nVariants
+		jComb <- (iComb - varComb) / nVariants
 
-	prevJComb <- 0L
-	for(iComb in seq.int(ncomb)) {
-		jComb <- ceiling(iComb / nvariants)
-		if(jComb != prevJComb) {
+		if(varComb == 0L) {
 			isok <- TRUE
-			prevJComb <- jComb
 			
-			comb <- c(as.logical(intToBits(jComb - 1L)[comb.seq]), comb.sfx)
-			nvar <- sum(comb) - nInts
+			## comb : logical term indexes
+			comb <- c(as.logical(intToBits(jComb)[comb.seq]), comb.sfx)
+			nvar <- sum(comb) - nIntercepts
 							
 			if(nvar > m.max || nvar < m.min ||
 			   !formula_margin_check(comb, deps) ||
 			   switch(hasSubset,
 					FALSE,
 					!all(subset[comb, comb], na.rm = TRUE),
-					!.evalExprIn(subsetExpr, env = ssEnv, enclos = parent.frame(),
+					!evalExprInEnv(subsetExpr, env = ssEnv, enclos = parent.frame(),
 						comb = comb, `*nvar*` = nvar),
 					FALSE
 			   )) {
@@ -383,24 +399,28 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		if(!isok) next;
 		## --- Variants ---------------------------
 		clVariant <- cl
-		if (nvarying) {
-			cvi <- variants[(iComb - 1L) %% nvariants + 1L, ]
+		if (nVarying) {
+			#cvi <- variants[(iComb - 1L) %% nvariants + 1L, ]
+			cvi <- variants[varComb + 1L, ]
 			if(hasSubset == 4L &&
-				!.evalExprIn(subsetExpr, env = ssEnv, enclos = parent.frame(),
-					comb = comb, `*nvar*` = nvar, cVar = flat.variant.Vvals[cvi]))
+				!evalExprInEnv(subsetExpr, env = ssEnv, enclos = parent.frame(),
+					comb = comb, `*nvar*` = nvar, cVar = variantsFlat[cvi]))
 						next;
-			clVariant[varying.names] <- fvarying[cvi]
+			clVariant[varyingNames] <- fvarying[cvi]
 		}
 
-		if(trace) {
+		if(trace == 1L) {
 			cat(iComb, ": "); print(clVariant)
 			utils::flush.console()
+		} else if(trace == 2L) {
+			setProgressBar(progressBar, value = iComb,
+				title = sprintf("dredge: %d of %.0f subsets", k, (k / iComb) * ncomb))
 		}
-
+	
 		if(evaluate) {
 			# begin row1: (clVariant, gmEnv, modelId, IC(), applyExtras(),
 			#              nextra, allTerms, beta,
-			#              if(nvarying) variantsIdx[v] else NULL
+			#              if(nVarying) variantsIdx[v] else NULL
 			fit1 <- tryCatch(eval(clVariant, gmEnv), error = function(err) {
 				err$message <- paste(conditionMessage(err), "(model",
 					iComb, "skipped)", collapse = "")
@@ -420,42 +440,46 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 				}
 			}
 
-			#mcoef1 <- matchCoef(fit1, all.terms = allTerms, beta = beta,
-			#	allCoef = TRUE)
 			mcoef1 <- eval(matchCoefCall)
-
-			ll <- logLik(fit1)
+			ll1 <- logLik(fit1)
 			nobs1 <- nobs(fit1)
-			if(nobs1 != gmNobs) warning(gettextf(
-				"number of observations in model #%d (%d) differs from that in global model (%d)",
-				iComb, nobs1, gmNobs))
+			if(nobs1 != gmNobs) cry(NA, "number of observations in model #%d (%d) different from global model (%d)",
+				iComb, nobs1, gmNobs, warn = TRUE)
 
 			row1 <- c(mcoef1[allTerms], extraResult1,
-				df = attr(ll, "df"), ll = ll, ic = IC(fit1)
+				df = attr(ll1, "df"), ll = ll1, ic = IC(fit1)
 			)
 			## end -> row1
 
 			k <- k + 1L # all OK, add model to table
-
-			ret.nrow <- nrow(ret)
-			if(k > ret.nrow) { # append if necesarry
-				nadd <- min(ret.nchunk, nmax - ret.nrow)
-				coefTables <- c(coefTables, vector(nadd, mode = "list"))
-				ret <- rbind(ret, matrix(NA, ncol = ret.ncol, nrow = nadd),
+			rvlen <- nrow(ret)
+			if(retNeedsExtending <- k > rvlen) { # append if necesarry
+				nadd <- min(rvChunk, nmax - rvlen)
+				ret <- rbind(ret, matrix(NA_real_, ncol = rvNcol, nrow = nadd),
 					deparse.level = 0L)
-					calls <- c(calls, vector("list", nadd))
-				ord <- c(ord, integer(nadd))
+				addi <- seq.int(rvlen + 1L, length.out = nadd)
+				coefTables[addi] <- vector("list", nadd)
 			}
 			ret[k, retColIdx] <- row1
 			coefTables[[k]] <- attr(mcoef1, "coefTable")
 		} else { # if !evaluate
-			k <- k + 1L # all OK, add model to table
+			k <- k + 1L
+			rvlen <- length(ord)	
+			if(retNeedsExtending <- k > rvlen) {
+				nadd <- min(rvChunk, nmax - rvlen)
+				addi <- seq.int(rvlen + 1L, length.out = nadd)
+			}
+		}
+		if(retNeedsExtending) {
+			calls[addi] <- vector("list", nadd)
+			ord[addi] <- integer(nadd)
 		}
 		ord[k] <- iComb
 		calls[[k]] <- clVariant
 	} ### for (iComb ...)
-
+	
 	if(k == 0L) stop("result is empty")
+	ord <- ord + 1L
 	names(calls) <- ord
 	if(!evaluate) return(calls[seq_len(k)])
 
@@ -467,9 +491,10 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		coefTables <- coefTables[i]
 	}
 
-	if(nvarying) {
-		varlev <- ord %% nvariants; varlev[varlev == 0L] <- nvariants
-		ret[, n.vars + seq_len(nvarying)] <- variants[varlev, ]
+	if(nVarying) {
+		varlev <- ord %% nVariants
+		varlev[varlev == 0L] <- nVariants
+		ret[, nVars + seq_len(nVarying)] <- variants[varlev, ]
 	}
 	
 	ret <- as.data.frame(ret)
@@ -484,16 +509,15 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	v <- order(termsOrder)
 	ret[, i] <- ret[, v]
 	allTerms <- allTerms[v]
-	colnames(ret) <- c(allTerms, varying.names, extraNames, "df", lLName, ICName)
+	colnames(ret) <- c(allTerms, varyingNames, extraNames, "df", logLikName, ICName)
 
-	if(nvarying) {
-		variant.names <- vapply(flat.variant.Vvals, function(x) if(is.character(x)) x else
-			deparse(x, control = NULL, width.cutoff = 20L)[1L], "")
-		vnum <- split(seq_len(sum(vlen)), rep(seq_len(nvarying), vlen))
-		names(vnum) <- varying.names
-		for (i in varying.names) ret[, i] <-
-			factor(ret[, i], levels = vnum[[i]], labels = variant.names[vnum[[i]]])
-			
+	if(nVarying) {
+		variant.names <- vapply(variantsFlat, asChar, "", width.cutoff = 20L)
+
+		vnum <- split(seq_len(sum(vlen)), rep(seq_len(nVarying), vlen))
+		names(vnum) <- varyingNames
+		for (i in varyingNames) ret[, i] <-
+			factor(ret[, i], levels = vnum[[i]], labels = variant.names[vnum[[i]]])	
 	}
 
 	o <- order(ret[, ICName], decreasing = FALSE)
@@ -515,6 +539,20 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		call = match.call(expand.dots = TRUE),
 		coefTables = coefTables,
 		nobs = gmNobs,
-		vCols = varying.names
+		vCols = varyingNames
 	)
 } ######
+
+`dredgeAll` <-
+function(global.model, beta = FALSE, ...) {
+	cl <- match.call(definition = dredge)
+	cl$evaluate <- FALSE
+	cl[[1L]] <- as.name("dredge")
+	models <- lapply(eval.parent(cl), eval, parent.frame())
+	ret <- model.sel(models)
+	attr(ret, "modelList") <- models
+	attr(ret, "global") <- global.model
+	attr(ret, "global.call") <- get_call(global.model)
+	attr(ret, "call") <- cl
+	ret
+}

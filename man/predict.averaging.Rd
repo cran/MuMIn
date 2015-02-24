@@ -2,9 +2,9 @@
 \alias{predict.averaging}
 \encoding{utf-8}
 
-\title{Predict method for the averaged model}
+\title{Predict method for averaged models}
 \description{
-Model-averaged predictions with optional standard errors.
+Model-averaged predictions, optionally with standard errors.
 }
 
 \usage{
@@ -14,8 +14,8 @@ Model-averaged predictions with optional standard errors.
 
 \arguments{
     \item{object}{an object returned by \code{model.avg}. }
-    \item{newdata}{ optional \code{data.frame} in which to look for variables with
-        which to predict. If omitted, the fitted values are used. }
+    \item{newdata}{ optional \code{data.frame} in which to look for variables 
+	    with which to predict. If omitted, the fitted values are used. }
     \item{se.fit}{logical, indicates if standard errors should be returned.
         This has any effect only if the \code{predict} methods for each of the
         component models support it. }
@@ -50,18 +50,17 @@ the estimated standard errors.
 \code{predict}ing is possible only with \code{averaging} objects with
 \code{"modelList"} attribute, i.e. those created \emph{via} \code{model.avg}
 from a model list, or from \code{model.selection} object with argument \code{fit
-= TRUE} (note this will recreate the model objects which may be time consuming,
-see \code{\link{model.avg}}).
+= TRUE} (which will recreate the model objects, see \code{\link{model.avg}}).
 
 If all the component models are oridinary linear models, the prediction can be
 made either with the full averaged coefficients (the argument \code{full =
 TRUE} this is the default) or subset-averaged coefficients. Otherwise the
 prediction is obtained by calling \code{predict} on each component model and
 weighted averaging the results, which corresponds to the assumption that all
-predictors are present in all models, but those not estimated are equal zero.
-See \sQuote{Note} in \code{\link{model.avg}}. Predictions from component models
+predictors are present in all models, but those not estimated are equal zero 
+(see \sQuote{Note} in \code{\link{model.avg}}). Predictions from component models
 with standard errors are passed to \code{par.avg} and averaged in the same way
-as the coefficients.
+as the coefficients are.
 
 Predictions on the response scale from generalized models can be calculated by
 averaging predictions of each model on the link scale, followed by inverse
@@ -97,14 +96,17 @@ on the outermost level (equivalent to \code{level = 0} in
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{model.avg}}, and \code{\link{par.avg}} for details of model-averaged parameter calculation.
+\code{\link{model.avg}}, and \code{\link{par.avg}} for details of model-averaged
+parameter calculation.
 
 \code{\link[nlme]{predict.lme}}, \code{\link[nlme]{predict.gls}}
 }
 
 \examples{
 
-\dontshow{ if(require(graphics)) \{ }
+\dontshow{
+oop <- options(na.action="na.fail")
+if(require(graphics)) \{ }
 
 # Example from Burnham and Anderson (2002), page 100:
 fm1 <- lm(y ~ X1 + X2 + X3 + X4, data = Cement)
@@ -149,9 +151,8 @@ legend("topleft",
     lty = 1, lwd = c(rep(2,n),3,3,3),  cex = .75, col=1:8)
 
 palette(opal)
-
-\dontshow{ \} }
-
+\dontshow{ \} 
+options(oop) }
 }
 
 \keyword{models}

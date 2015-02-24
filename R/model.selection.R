@@ -43,33 +43,36 @@ function (x, i = NULL, ...) {
 	return(attr(x, "model.calls", exact = TRUE)[i])
 }
 
+
+evalSubsetExpr <-
+function(ss, dfr) {
+	ss <- .exprapply(.exprapply(.exprapply(
+		ss,
+		"dc", .sub_dc_has, as.name(".subset_vdc")),
+		c("{", "Term"), .sub_Term),
+		"has", .sub_has)
+	ss <- subst(ss, . = dfr)
+	DebugPrint(ss)
+	eval(ss, dfr)
+}
+
+
 `subset.model.selection` <-
 function(x, subset, select, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
-	expr.sub.expand <- expression(
-		.substFunc(.substFunc(.substFunc(
-			substitute(subset),
-			"dc", .sub_dc_has, as.name(".subset_vdc")),
-			c("{", "Term"), .sub_Term),
-			"has", .sub_has))
-					
-	subst <- function(cl, ...) eval(call("substitute", cl, list(...)))
-
+	
 	if (missing(select)) {
 		if(missing(subset)) return(x)
-		e <- eval(expr.sub.expand)
-		e <- subst(e, . = x)
-		DebugPrint(e)
-		i <- eval(e, x, parent.frame())
+		i <- evalSubsetExpr(substitute(subset), x)
 		return(`[.model.selection`(x, i, recalc.weights = recalc.weights, 
 			recalc.delta = recalc.delta, ...))
 	} else {
 		cl <- match.call(expand.dots = FALSE)
-		if(!missing(subset)) cl$subset <- 
-			subst(eval(expr.sub.expand), . = substitute(x))
+		if(!missing(subset)) cl$subset <- evalSubsetExpr(substitute(subset), x)
+		
 	    cl <- cl[c(1L, match(names(formals("subset.data.frame")), names(cl), 0L))]
 	    cl[[1L]] <- as.name("subset.data.frame")
 		DebugPrint(cl)
-		ret <- eval(cl, parent.frame())
+		ret <- eval.parent(cl)
 		if(recalc.weights && ("weight" %in% colnames(ret)))
 			ret[, 'weight'] <- ret[, 'weight'] / sum(ret[, 'weight'])
 		if(recalc.delta && ("delta" %in% colnames(ret)))
@@ -83,18 +86,15 @@ function (x, i, j, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 	ret <- `[.data.frame`(x, i, j, ...)
 	if (missing(j)) {
 		s <- c("row.names", "model.calls", "coefTables", "random.terms", "order")
+		if(!is.null(attr(ret, "modelList"))) s <- c(s, "modelList")
+	
 		k <- match(dimnames(ret)[[1L]], dimnames(x)[[1L]])
 		attrib <- attributes(x)
 		attrib[s] <- lapply(attrib[s], `[`, k)
 		attributes(ret) <- attrib
-		if(recalc.weights) {
-			ret[, 'weight'] <- Weights(`[.data.frame`(ret, , 
-				which(names(ret) == "delta") - 1L))
-		}
-		if(recalc.delta) {
-			ic <- `[.data.frame`(ret, , which(names(ret) == "delta") - 1L)
-            ret[, "delta"] <- ic - min(ic)
-		}
+		ic <- `[.data.frame`(ret, , which(names(ret) == "delta") - 1L)
+		if(recalc.weights) ret[, 'weight'] <- Weights(ic)
+		if(recalc.delta)  ret[, "delta"] <- ic - min(ic)
 		if(!is.null(warningList <- attr(ret, "warnings")))
 			attr(ret, "warnings") <- warningList[sapply(warningList, attr, "id") %in% rownames(ret)]
 	} else {
@@ -191,7 +191,7 @@ function (x, y, suffixes = c(".x",".y"), ...)  {
 
 `print.model.selection` <-
 function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
-	orig.x <- x
+	origx <- x
 	if(!is.null(x$weight)) x$weight <- round(x$weight, 3L)
 	xterms <- attr(x, "terms")
 	if(is.null(xterms) || !all(xterms %in% colnames(x)[seq_along(xterms)])) {
@@ -265,7 +265,7 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 			}
 		}
 		
-		cat("Models ranked by", deparse(attr(attr(x, 'rank'), "call"), control = NULL), "\n")
+		cat("Models ranked by", asChar(attr(attr(origx, 'rank'), "call")), "\n")
 
 		if(!is.null(random.terms)) {
 			if(addrandcol) {
@@ -278,11 +278,11 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 			}
 
 		}
-		if (warnings && !is.null(attr(x, "warnings"))) {
-			cat("\n"); print.warnings(attr(x, "warnings"))
+		if (warnings && !is.null(attr(origx, "warnings"))) {
+			cat("\n"); print.warnings(attr(origx, "warnings"))
 		}
 	}
-	invisible(orig.x)
+	invisible(origx)
 }
 
 `update.model.selection` <- function (object, global.model, ..., evaluate = TRUE) {
@@ -301,7 +301,7 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
             cl <- as.call(cl)
         }
     }
-    return(if (evaluate) eval(cl, parent.frame()) else cl)
+    return(if (evaluate) eval.parent(cl) else cl)
 }
 
 `logLik.model.selection` <- function (object, ...) {
@@ -336,10 +336,10 @@ function (object, ...) {
 			fam <- lapply(model.calls, "[[", "family")
 			fam1 <- unique(fam)
 			ret <- lapply(unique(fam), eval)[
-				as.integer(as.factor(vapply(fam, deparse, "", control = NULL)))
+				as.integer(as.factor(vapply(fam, asChar, "")))
 				]
 			names(ret) <- rownames(object)
-			#index <- split(seq_along(fam), vapply(fam, deparse, "", control = NULL))
+			#index <- split(seq_along(fam), vapply(fam, asChar, ""))
 			#for(i in seq_along(fam1)) fam1[[i]] <- list(family = eval(fam1[[i]]), index = index[[i]])
 			#fam <- family(dd1)
 			#index <- lapply(fam, "[[", "index")
@@ -359,7 +359,7 @@ function(cl, family = NULL, class = NULL,
 	cl[haveNoCall] <- lapply(cl[haveNoCall], function(x) call("<unknown>", formula = NA))
 	arg <- lapply(cl, function(x) sapply(x, function(argval)
 		switch(mode(argval), character = , logical = argval,
-		numeric = signif(argval, 3L), deparse(argval, nlines = 1L))))
+		numeric = signif(argval, 3L), asChar(argval))))
 	arg <- rbindDataFrameList(lapply(lapply(arg, t), as.data.frame))
 	if(!is.null(args.omit)) arg <- arg[, !(colnames(arg) %in% args.omit)]
 

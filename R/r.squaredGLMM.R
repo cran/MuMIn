@@ -32,29 +32,20 @@ function(x) {
 ## extracts random effect formula. e.g:
 ## ~ ... + (a | ...) + (b + c | ...) --> ~ a + b + c
 ranform <- function (form) {
-#	z <- list()
-#	.substFunc(form[[3L]], "|", function(x) z <<- c(z, x[[2L]]))
-#	frm <- z[[1L]]
-#	for(x in z[-1L]) frm <- call("+", x, frm)
-#	as.formula(call("~", frm))
-#}
-## == ~4x faster:
-	z <- .findbars(form[[length(form)]])
-	frm <- z[[1L]][[2L]]
-	for(x in z[-1L]) frm <- call("+", frm, x[[2L]])
-	as.formula(call("~", frm))
+	ans <- update.formula(reformulate(vapply(lapply(.findbars(form),
+		"[[", 2L), deparse, "")), ~ . + 1)
+	environment(ans) <- environment(form)
+	ans
 }
 
-
 `r.squaredGLMM.merMod` <-
-`r.squaredGLMM.mer` <-
 function(x) {
 	fam <- family(x)
 	useObsLevVar <- (fam$family == "poisson" && fam$link == "log") || fam$family == "binomial"
 	## for poisson(log) and binomial(*), update 'x' to include individual-level
 	## variance (1 | 1:nobs(x)):
     if (useObsLevVar && !any(sapply(x@flist, nlevels) == nobs(x))) {
-		cl <- getCall(x)
+		cl <- get_call(x)
         frm <- formula(x)
 		nRowData <- eval(call("eval", as.expression(call("NROW", cl$formula[[2L]])),
 							  envir = cl$data), envir = environment(frm),
@@ -65,13 +56,15 @@ function(x) {
 		cl$formula <- update.formula(frm, frx)		
 		x <- tryCatch(eval(cl, envir = environment(frm), enclos = parent.frame()),
 			error = function(e) {
-				.cry(conditionCall(e), conditionMessage(e), warn = TRUE)
-				.cry(cl, "fitting model with the observation-level random effect term failed. Add the term manually")
+				cry(conditionCall(e), conditionMessage(e), warn = TRUE)
+				cry(cl, "fitting model with the observation-level random effect term failed. Add the term manually")
 		})
 		message("The result is correct only if all data used by the model ",
 				"has not changed since model was fitted.", domain = "R-MuMIn")
     }
 
+
+	
 	mmAll <- model.matrix(ranform(formula(x)), data = model.frame(x))
 		##Note: Argument 'contrasts' can only be specified for fixed effects
 		##contrasts.arg = eval(cl$contrasts, envir = environment(formula(x))))	
@@ -119,7 +112,7 @@ function(x) {
 	fam <- family(x)
 	useObsLevVar <- (fam$family == "poisson" && fam$link == "log") || fam$family == "binomial"
 		if(useObsLevVar) {
-			.cry(NA, "cannot calculate 'unit variance' in glmmML")
+			cry(NA, "cannot calculate 'unit variance' in glmmML")
 	} 
 	fxpred <- as.vector(x$x %*% coef(x))
 	.rsqGLMM(family(x), varFx = var(fxpred), varRe = x$sigma^2, varResid = NULL,
@@ -149,12 +142,12 @@ function (fam, varFx, varRe, varResid, beta0) {
         binomial.probit = 1,
 		poisson.log = {
             expBeta0 <- exp(beta0)
-            if (expBeta0 < 6) .cry(sys.call(-1L), "exp(beta0) of %0.1f is too close to zero, estimate may be unreliable \n", 
+            if (expBeta0 < 6) cry(sys.call(-1L), "exp(beta0) of %0.1f is too close to zero, estimate may be unreliable \n", 
                 expBeta0, warn = TRUE)
             log1p(1 / expBeta0)
         },
 		poisson.sqrt = 0.25,
-		.cry(sys.call(-1L), "do not know how to calculate variance for this family/link combination")
+		cry(sys.call(-1L), "do not know how to calculate variance for this family/link combination")
 		)
 	
 	#print(c(Sf = varFx, Sl = varRe, Se = varResid, Sd = varDistr))

@@ -3,7 +3,7 @@
 \encoding{utf-8}
 \title{Second-order Akaike Information Criterion}
 \description{
-Calculate second-order Akaike information criterion for one or several fitted
+Calculate Second-order Akaike Information Criterion for one or several fitted
 model objects (AIC\eqn{_{c}}{c}, AIC for small samples). }
 
 \usage{
@@ -12,10 +12,10 @@ AICc(object, ..., k = 2, REML = NULL)
 
 \arguments{
   \item{object}{a fitted model object for which there exists a \code{logLik}
-    method, or a \code{logLik} object. }
+    method, or a \code{"logLik"} object. }
   \item{\dots}{optionally more fitted model objects. }
-  \item{k}{the \sQuote{penalty} per parameter to be used; the default \code{k} =
-    2 is the classical AIC. }
+  \item{k}{the \sQuote{penalty} per parameter to be used; the default \code{k =
+    2} is the classical AIC. }
    \item{REML}{ optional logical value, passed to the \code{logLik} method
     indicating whether the restricted log-likelihood or log-likelihood should be
     used. The default is to use the method used for model estimation.
@@ -23,10 +23,10 @@ AICc(object, ..., k = 2, REML = NULL)
 }
 
 \value{
-    If just one object is provided, returns a numeric value with the
-    corresponding AIC\eqn{_{c}}{c}; if more than one object are provided, returns a
-    \code{data.frame} with rows corresponding to the objects and columns
-    representing the number of parameters in the model (df) and AIC\eqn{_{c}}{c}.
+If just one object is provided, returns a numeric value with the
+corresponding AIC\eqn{_{c}}{c}; if more than one object are provided, returns a
+\code{data.frame} with rows corresponding to the objects and columns
+representing the number of parameters in the model (\emph{df}) and AIC\eqn{_{c}}{c}.
 }
 
 \note{
@@ -59,10 +59,10 @@ Other implementations:
 }
 
 \examples{
-
 #Model-averaging mixed models
-
-\dontshow{ if(require(nlme)) \{ }
+\dontshow{ if(require(nlme)) \{
+oop <- }
+options(na.action = "na.fail")
 
 data(Orthodont, package = "nlme")
 
@@ -73,8 +73,6 @@ fm2 <- lme(distance ~ Sex*age, data = Orthodont,
 # Model selection: ranking by AICc using ML
 ms2 <- dredge(fm2, trace = TRUE, rank = "AICc", REML = FALSE)
 
-
-
 (attr(ms2, "rank.call"))
 
 # Get the models (fitted by REML, as in the global model)
@@ -84,10 +82,11 @@ fmList <- get.models(ms2, 1:4)
 # the default weights in 'model.avg' are ML based:
 summary(model.avg(fmList))
 
-# same result
-#model.avg(fmList, rank = "AICc", rank.args = list(REML=FALSE))
+\dontrun{
+# the same result:
+model.avg(fmList, rank = "AICc", rank.args = list(REML = FALSE))
+}
 \dontshow{ \} }
-
 }
 
 \keyword{models}

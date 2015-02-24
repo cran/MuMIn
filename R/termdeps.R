@@ -31,7 +31,7 @@ termlist <- function(x) {
 # calculates all lower order term names:
 # expandintr(1:3) --> c("1", "2", "1:2", "3", "1:3", "2:3", "1:2:3")
 expandintr <- function(x) {
-	asstr <- function(x) deparse(x, control = NULL, backtick = TRUE)
+	asstr <- function(x) asChar(x, backtick = TRUE)
 	if(!is.language(x)) {
 		a <- sapply(x, asstr)
 		k <- length(a)

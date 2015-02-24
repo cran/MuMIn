@@ -3,15 +3,17 @@ function(object, subset, cluster = NA, ...) {
     if (!inherits(object, "model.selection"))
 		stop("'object' must be a 'model.selection' object")
 
+	hasModelList <- is.list(attr(object, "modelList"))
 	calls <- attr(object, "model.calls")
-	if(is.null(calls)) stop("'object' has no 'model.calls' attribute")
-
+	if((hasNoCalls <- is.null(calls)) && !hasModelList)
+		stop("'object' has no 'model.calls' attribute")
+	
 	if(!missing(subset)) {
-	    r <- eval(substitute(subset), envir = object, enclos = parent.frame())
+		r <- evalSubsetExpr(substitute(subset), object)
+	    #r <- eval(substitute(subset), envir = object, enclos = parent.frame())
 		if(!isTRUE(r) && !is.na(r)) {
 			if(is.character(r)) r <- match(r, dimnames(object)[[1L]])
-			calls <- calls[r]
-		}
+		} else r <- TRUE
 	} else {
 		stop("'subset' is missing (use subset=TRUE to evaluate all models)")
 	}
@@ -19,10 +21,22 @@ function(object, subset, cluster = NA, ...) {
 	newargs <- match.call()
 	newargs[[1L]] <- NULL
 	newargs[c('object', 'subset', 'cluster')] <- NULL
-
 	naNames <- names(newargs)
-	if(length(newargs))  for(i in seq_along(calls)) calls[[i]][naNames] <- newargs
+	
+	if(hasModelList) {
+		DebugPrint(hasModelList)
+		if(length(newargs) == 0L) {
+			models <- attr(object, "modelList")[r]
+			attr(models, "rank.call") <- attr(object, "rank.call")
+			attr(models, "rank") <- attr(object, "rank")
+			return(models)
+		}
+		DebugPrint("refitting...")
+		if(hasNoCalls) calls <- lapply(attr(object, "modelList")[r], get_call)
+	} else calls <- calls[r]
 
+	if(length(newargs)) for(i in seq_along(calls)) calls[[i]][naNames] <- newargs
+	
 	doParallel <- inherits(cluster, "cluster")
 	if(doParallel) {
 		.parallelPkgCheck()
@@ -42,10 +56,8 @@ function(object, subset, cluster = NA, ...) {
 		models <- lapply(calls, eval, envir = env)
 	}
 	}
-
 	attr(models, "rank.call") <- attr(object, "rank.call")
 	attr(models, "rank") <- attr(object, "rank")
-
 	return(models)
 }
 
