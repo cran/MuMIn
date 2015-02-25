@@ -27,9 +27,18 @@ fm1 <- coxph(formula = Surv(time, status) ~ temp, data = lung1)
 fme <- coxme(formula = Surv(time, status) ~ ph.ecog + (temp | 1), data = lung1)
 fme1 <- coxme(formula = Surv(time, status) ~ ph.ecog + (age | 1) + (wt.loss | 1), data = lung1)
 fme2 <- coxme(formula = Surv(time, status) ~ ph.ecog + (wt.loss | 1), data = lung1)
+fm2 <- coxph(formula = Surv(time, status) ~ temp *  ph.ecog, data = lung1)
 
-model.sel(fm0, fm1, fme, fme1, fme2)
+avg <- model.avg(dredge(fm2), fit = T)
 
+#avgpred(avg, type = "response")
+
+
+(ms <- model.sel(fm0, fm1, fme, fme1, fme2))
+
+summary(avg <- model.avg(ms))
+
+predict(fm1, se.fit = T)
 
 #fit1 <- lme(effort ~ Type, data=ergoStool, random= ~1|Subject/ran1, method="ML")
 

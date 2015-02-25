@@ -6,7 +6,7 @@ function(x)  UseMethod("Weights")
 function(x) x[, "weight"] / sum(x[, "weight"])
 
 `Weights.averaging` <-
-function(x) x$summary$Weight
+function(x) x$msTable$weight
 
 `Weights.data.frame` <-
 function(x) {

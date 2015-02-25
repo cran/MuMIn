@@ -231,12 +231,22 @@ rm(list=ls())
 data(oldcol)
 
 fm1.sarlm <- errorsarlm(CRIME ~ INC * HOVAL * OPEN, data = COL.OLD,
- nb2listw(COL.nb, style = "W"), method = "eigen", quiet = TRUE)
+ listw = nb2listw(COL.nb, style = "W"), method = "eigen", quiet = TRUE)
 
+ 
 dd <- dredge(fm1.sarlm)
 
 gm <- get.models(dd, cumsum(weight) <= .98)
 ma <- model.avg(gm)
+
+
+#fm <- fm1.sarlm
+#avgpred(ma)
+#avgpred(ma, newdata = COL.OLD, listw = nb2listw(COL.nb, style = "W"))
+#avgpred(ma, newdata = COL.OLD[1:10, ])
+#
+#std_predict(fm, newdata = COL.OLD, listw = nb2listw(COL.nb, style = "W"))
+#predict(fm, newdata = COL.OLD, listw = nb2listw(COL.nb, style = "W"))
 
 stopifnot(isTRUE(all.equal(coefTable(ma), coefTable(model.avg(dd, cumsum(weight) <= .98)))))
 

@@ -1,7 +1,7 @@
 export(
 	dredge, pdredge, get.models, pget.models, 
 	model.avg, par.avg, 
-	model.sel, mod.sel,
+	model.sel,
 	getAllTerms, coeffs, coefTable, tTable, 
 	importance, Weights, 
 	AICc, QAIC, QAICc, Cp, ICOMP, CAICF, DIC, 
@@ -10,8 +10,12 @@ export(
 	beta.weights, model.names,
 	simplify.formula, expand.formula,
 	updateable, updateable2,
-	uGamm, nested, stdize,
-	exprApply
+	uGamm, nested, stdize, stdizeFit,
+	exprApply,
+	get.response,
+	get_call,
+# Defunct:
+	mod.sel
 )
 
 importFrom(stats, family)
@@ -71,10 +75,6 @@ S3method(coeffs, model.selection)
 S3method(coefTable, model.selection)
 
 S3method(print, coefTable)
-
-S3method(AICc, default)
-
-S3method(AICc, logLik)
 
 S3method(getAllTerms, formula)
 S3method(getAllTerms, terms)
@@ -249,7 +249,6 @@ S3method(logLik, logistf)
 S3method(r.squaredGLMM, lm)
 S3method(r.squaredGLMM, lme)
 S3method(r.squaredGLMM, merMod)
-S3method(r.squaredGLMM, mer)
 S3method(r.squaredGLMM, glmmML)
 
 S3method(coefTable, aodml)
@@ -262,8 +261,8 @@ S3method(coefTable, aodql)
 S3method(getAllTerms, betareg)
 S3method(makeArgs, betareg)
 S3method(coefTable, betareg)
+S3method(family, betareg)
 
-S3method(getCall, default)
 S3method(getCall, model.selection)
 
 S3method(nobs, caic)
@@ -303,5 +302,8 @@ S3method(stdize, data.frame)
 S3method(stdize, formula)
 S3method(stdize, matrix)
 
+S3method(get.response, default)
+S3method(get.response, lm)
+S3method(get.response, averaging)
 
 

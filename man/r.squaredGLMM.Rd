@@ -9,7 +9,7 @@
 
 \title{Pseudo-R-squared for Generalized Mixed-Effect models}
 \description{
-Calculate a conditional and marginal coefficient of determination for 
+Calculate conditional and marginal coefficient of determination for 
 Generalized mixed-effect models (\Rsqx{GLMM}).
 
 }
@@ -72,9 +72,6 @@ Currently methods exist for classes: \code{mer}(\code{Mod}), \code{lme},
 
 See note in \code{\link{r.squaredLR}} help page for comment on using \Rsq in 
 model selection. 
-
-\bold{This function is still in experimental stage and should be used with 
-caution.} 
 
 }
 

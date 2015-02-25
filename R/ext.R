@@ -4,7 +4,7 @@
 
 # family
 `family.default` <- function (object, ...)  {
-	cl <- .getCall(object)
+	cl <- get_call(object)
 	if(is.null(cl)) 
 		return(NULL)
 	fam <- cl$family
@@ -17,7 +17,7 @@
 
 
 `family.mer` <- function (object, ...)  {
-	if(.getCall(object)[[1L]] == "lmer" && inherits(object, "mer"))
+	if(get_call(object)[[1L]] == "lmer" && inherits(object, "mer"))
 		gaussian() else family.default(object)
 }
 
@@ -46,9 +46,16 @@ function (object, random = FALSE, ...) {
 	model.matrix(formula(terms(mf)), mf, contrasts.arg = object$contrasts)
 }
 
+# Class 'betareg' from package 'betareg':
+
+family.betareg <-
+function (object, ...) {
+	ret <- binomial(object$link$mean)
+	attr(ret, "link-precision") <- object$link$precision
+	ret
+}
 
 # Classes 'coxme' and 'lmekin' from package 'coxme':
-
 
 `formula.coxme` <-
 function(x, ...)  {
@@ -60,7 +67,7 @@ function(x, ...)  {
 }
 
 `formula.lmekin` <-
-function(x, ...) eval(x$call$formula, parent.frame())
+function(x, ...) eval.parent(x$call$formula)
 
 
 ## Classes 'hurdle' and 'zeroinfl' from package 'pscl':
@@ -131,7 +138,7 @@ function (object, newdata, level, asList = FALSE,
 	cl <- match.call()
 	cl$se.fit <- NULL
 	cl[[1L]] <- call("get", "predict.lme", asNamespace("nlme"))	
-	res <- eval(cl, parent.frame())
+	res <- eval.parent(cl)
 	
 	if(se.fit && (missing(level) || any(level > 0)))
 		warning("cannot calculate standard errors for level > 0")
@@ -161,13 +168,30 @@ function (object, newdata, level, asList = FALSE,
 		offset = object@offset,
 		...)
 
-`predict.merMod` <- function (object, newdata, type = c("link", "response"), se.fit = FALSE, 
-    ...)
-.predict_glm(object, newdata, type, se.fit,
-		trms = delete.response(terms(formula(object, fixed.only = TRUE))),
-		coeff = lme4::fixef(object),
-		offset = lme4::getME(object, "offset"),
-		...)
+
+`predict.merMod` <- function (object, newdata, type = c("link", "response"), se.fit = FALSE,
+		re.form,
+    ...) {
+	
+	if(!se.fit) {
+		fun <- getFrom("lme4", "predict.merMod")
+		cl <- match.call(definition = fun)
+		cl[[1L]] <- fun
+		cl$se.fit <- NULL
+		return(eval.parent(cl))
+	}
+	
+	level0 <- (!is.null(re.form) && !inherits(re.form, "formula") && is.na(re.form)) || 
+        (inherits(re.form, "formula") && length(re.form) == 2L && identical(re.form[[2L]], 
+            0))
+	if(!level0) stop("cannot calculate predictions with both standard errors and random effects")
+
+	.predict_glm(object, newdata, type, se.fit,
+			trms = delete.response(terms(formula(object, fixed.only = TRUE))),
+			coeff = lme4::fixef(object),
+			offset = lme4::getME(object, "offset"),
+			...)
+}
 
 
 .predict_glm <- function (object, newdata, type = c("link", "response"), se.fit = FALSE,
@@ -183,7 +207,7 @@ function (object, newdata, level, asList = FALSE,
             for (i in off.num) offset <- offset + eval(attr(trms, 
                 "variables")[[i + 1L]], newdata)
 		
-		cl <- getCall(object)
+		cl <- get_call(object)
         if (!is.null(cl$offset)) 
             offset <- offset + eval(cl$offset, newdata)
     } else {
@@ -232,11 +256,11 @@ function (object, ...) object$beta
 ## What if 'data' changed in the meantime?
 # model.matrix.gee <-
 # function (object, ...) {
-	# cl <- .getCall(fgee)
+	# cl <- get_call(fgee)
 	# cl[[1L]] <- as.name("model.matrix")
 	# cl$object <- cl$formula
 	# cl$id <- cl$corstr <- cl$formula <- NULL
-	# eval(cl, parent.frame())
+	# eval.parent(cl)
 # }
 
 
@@ -252,11 +276,9 @@ structure(object@coefficients, names = object@varnames)
 `getCall.yagsResult` <-
 	function(x, ...) x@Call
 	
-	
-
 `formula.yagsResult` <-
 function (x, ...) 
-eval(x@Call$formula, parent.frame())
+eval.parent(x@Call$formula)
 
 
 ##=============================================================================
@@ -295,4 +317,4 @@ function(object, ...) {
 
 formula.maxlikeFit <-
 function (x, ...) 
-as.formula(.getCall(x)$formula, env = parent.frame())
+as.formula(get_call(x)$formula, env = parent.frame())

@@ -32,7 +32,7 @@ function(object, ...) {
 
 `print.gamm` <-
 function(x, ...) {
-	cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"),
+	cat("\nCall:\n", paste(asChar(x$call, nlines = -1L), sep = "\n", collapse = "\n"),
         "\n\n", sep = "")
 	cat("--- \n")
 	print(x[[if(inherits(x, "gamm4")) "mer" else "lme"]])

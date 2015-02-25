@@ -12,7 +12,7 @@ umfOccu <- local({
 	nSites <- 100
 	nReps <- 5
 	covariates <- data.frame(veght=rnorm(nSites),
-		habitat=factor(c(rep('A', 50), rep('B', 50))))
+		habitat = factor(c(rep('A', 50), rep('B', 50))))
 	psipars <- c(-1, 1, -1)
 	ppars <- c(1, -1, 0)
 	X <- model.matrix(~veght+habitat, covariates) # design matrix
@@ -30,7 +30,6 @@ fm2oc <- occu(~veght+habitat ~veght*habitat, umfOccu)
 fm3oc <- occu(~habitat ~veght+habitat, umfOccu)
 fm4oc <- occu(~veght ~veght+habitat, umfOccu)
 
-
 data(linetran)
 ltUMF <- with(linetran, {
    unmarkedFrameDS(y = cbind(dc1, dc2, dc3, dc4),
@@ -41,9 +40,27 @@ ltUMF <- with(linetran, {
 
 fm2 <- distsamp(~area * habitat ~ habitat, ltUMF)
 
-#getAllTerms(fm2)
+dd <- dredge(fm2, fixed = ~p(sigmaarea))
+mo <- get.models(dd, T)
+avg <- model.avg(mo)
 
-dredge(fm2, fixed = ~p(sigmaarea))
+#formula(fm2)
+#names(fm2)
+#getAllTerms(fm2)
+#coef(fm2)
+#linearComb(fm2, matrix(c(1,1,1, 1, 2,2,2,2), ncol = 4, nrow = 2, byrow = T), "det")
+
+
+#avgpred(avg, use.lincomb = TRUE, type = "link")
+
+#MuMIn:::avgpred(avg)
+
+#getMethod("predict", "unmarkedFit")
+
+#yall <- lapply(mo, std_predict)
+#z <- yall[[1]]
+#yy1 <- avgterms(yall, Weights(dd), revised.var = T, full = F, dfs = NULL)
+#yy2 <- avgsefit(lapply(yall, lapply,  "[", T , 1), Weights(dd), revised.var = T, full = F, dfs = NULL)
 
 # Bring in Data
 library(unmarked)
@@ -59,15 +76,12 @@ getAllTerms(global)
 msubset <- expression(`p(sitevar1)` || `p(I(sitevar1^2))`)
 dd2 <- dredge(global, subset = msubset)
 
-#str(fm4oc)
-#showMethods("backTransform")
-#getMethod("backTransform", "unmarkedLinComb")
-#backTransform(fm4oc)
-
 # dredge(fm2oc, eval=F, fixed=~psi(habitat))
 
 #(dd <- dredge(fm2oc, fixed = ~psi(habitat), trace = T))
 (dd <- dredge(fm2oc, fixed = ~psi(habitat)))
+
+#MuMIn:::avgpred(model.avg(dd, fit = T))
 
 # mod <- get.models(dd, 1:5)
 
@@ -76,9 +90,10 @@ dd2 <- dredge(global, subset = msubset)
 
 # Checking if 'dc' works properly in both subset.model.selection and dredge.
 dd2 <- dredge(fm2oc, subset = `psi(habitat)` & dc(`p(habitat)`, `p(veght)`))
-dd1a <- subset(dd, has(`psi(habitat)`) &  dc(`p(habitat)`, `p(veght)`), recalc.delta = TRUE)
+dd1a <- subset(dd, has(psi(habitat)) & dc(p(habitat), p(veght)), recalc.delta = TRUE)
 stopifnot(all.equal(dd2, dd1a, check.attributes = FALSE))
 stopifnot(!any(is.na(dd2[, "p(habitat)"]) & !is.na(dd2[, "p(veght)"])))
+
 
 
 model.sel(dd, rank = "AIC")
@@ -89,6 +104,7 @@ summary(ma2 <- model.avg(dd[1:3]))
 summary(ma3 <- model.avg(model.sel(model.sel(dd, rank = "AIC"), rank = "AICc")[1:3]))
 
 predict(ma1, type = "det")
+# MuMIn:::avgpred(ma1)$fit[, "det"]
 
 stopifnot(!any(is.na(coefTable(ma1))))
 stopifnot(!any(is.na(coefTable(ma2))))
@@ -102,7 +118,7 @@ summary(model.avg(dd, delta <= 4))
 #family.unmarkedFit <- function (object, ...) NA
 
 # Model selection
-print(mod.sel(fm1oc, fm2oc, fm3oc))
+print(model.sel(fm1oc, fm2oc, fm3oc))
 
 
 #models <- list(fm1oc, fm2oc, fm3oc)

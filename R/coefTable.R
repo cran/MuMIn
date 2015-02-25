@@ -41,12 +41,19 @@ function(model, ...) {
 	.makeCoefTable(cf[, 1L], cf[, 2L], dfs)
 }
 
-`coefTable.coxph` <-
 `coefTable.survreg` <-
 `coefTable.lm` <-
 function(model, ...)
 	.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))), model$df.residual)
 
+	
+`coefTable.coxph` <-
+function(model, ...) {
+	.makeCoefTable(coef(model), if(all(is.na(model$var))) 
+		rep(NA_real_, length(coef(model))) else sqrt(diag(model$var)), 
+		model$df.residual)
+}
+	
 `coefTable.glmmML` <- function(model, ...)
 	.makeCoefTable(model$coefficients, model$coef.sd)
 

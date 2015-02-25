@@ -31,9 +31,9 @@ dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	\item{beta}{logical, should standardized coefficients be returned? }
 
 	\item{evaluate}{whether to evaluate and rank the models. If \code{FALSE}, a
-	list of model \code{call}s is returned. }
+	list of unevaluated \code{call}s is returned. }
 
-	\item{rank}{optional custom rank function (information criterion) to be used
+	\item{rank}{optional custom rank function (returning an information criterion) to be used
 	instead \code{AICc}, e.g. \code{AIC}, \code{QAIC} or \code{BIC}.
 	See \sQuote{Details}. }
 
@@ -47,8 +47,10 @@ dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	\item{subset}{ logical expression describing models to keep in the resulting
 		set. See \sQuote{Subsetting}. }
 
-	\item{trace}{if \code{TRUE}, all calls to the fitting function (i.e. updated
-	\code{global.model} calls) are printed before actual fitting takes place. }
+	\item{trace}{if \code{TRUE} or \code{1}, all calls to the fitting function 
+	are printed before actual fitting takes place. If \code{> 1}, a progress bar 
+	is displayed.
+	}
 
 	\item{varying}{ optionally, a named list describing the additional arguments
 	to vary between the generated models. Item names correspond to the
@@ -88,7 +90,7 @@ dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		\code{\link[=model.avg]{model averaging}}).}
 
   \item{\dots}{ optional arguments for the \code{rank} function. Any can be
-    an expression (of mode \code{call}), in which case any \code{x} within it
+    an expression (of mode \code{"call"}), in which case any \code{x} within it
     will be substituted with a current model. }
 }
 
@@ -96,9 +98,9 @@ dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 \details{
 Models are fitted through repeated evaluation of modified call extracted from 
 the \code{global.model} (in a similar fashion as with \code{update}). This 
-approach, while robust in that it can be applied to majority of model
-types is not the most efficient and may be computationally-intensive.
-
+approach, while robust in that it can be applied to most model types is not 
+the most efficient and may be computationally-intensive.
+ 
 Note that the number of combinations grows exponentially with number of
 predictors (\ifelse{latex}{\eqn{2^{N}}}{\ifelse{html}{2ⁿ}{2^N}}, less when 
 interactions are present, see below). 
@@ -257,11 +259,10 @@ Coefficients can be extracted with \code{coef} or \code{\link{coefTable}}.
 	\sQuote{Akaike weights}. Models are ordered by the value of
 	the information criterion specified by \code{rank} (lowest on top).
 
-The attribute \code{"calls"} is a list containing the model calls used (arranged
-in the same order as the models). A model call can be retrieved with
+The attribute \code{"model.calls"} is a list containing the model calls used 
+(arranged in the same order as in the table). A model call can be retrieved with
 \code{getCall(*, i)} where \var{i} is a vector of model index or name (if given
 as character string).
-
 
 Other attributes:
 \code{"global"} - the \code{global.model} object,
@@ -300,15 +301,15 @@ regression.
 
 \emph{Lasso} variable selection provided by various packages, e.g. \pkg{glmnet}, 
 	\pkg{lars} or \pkg{glmmLasso}.
-
 }
-
 
 
 \examples{
 # Example from Burnham and Anderson (2002), page 100:
 
-options(na.action = "na.fail")   #  prevent fitting models to different datasets
+#  prevent fitting sub-models to different datasets
+\dontshow{oop <- }
+options(na.action = "na.fail")
 
 fm1 <- lm(y ~ ., data = Cement)
 dd <- dredge(fm1)
@@ -341,13 +342,12 @@ dredge(fm1, subset = !(X1 && X2))
 # Fit only models containing either X3 or X4 (but not both);
 # include X3 only if X2 is present, and X2 only if X1 is present.
 dredge(fm1, subset = dc(X1, X2, X3) && xor(X3, X4))
-# the same as above, but without using "dc"
+# the same as above, without "dc"
 dredge(fm1, subset = (X1 | !X2) && (X2 | !X3) && xor(X3, X4))
 
 # Include only models with up to 2 terms (and intercept)
 dredge(fm1, m.max = 2)
 }
-
 
 # Add R^2 and F-statistics, use the 'extra' argument
 dredge(fm1, m.max = 1, extra = c("R^2", F = function(x)
@@ -362,17 +362,9 @@ dredge(fm1, m.max = 1, extra = list(
     })
 )
 
-
 # Add other information criterions (but rank with AICc):
-\dontshow{
-# there is no BIC in R < 2.13.0, so need to add it:
-if(!exists("BIC", mode = "function"))
-    BIC <- function(object, ...)
-        AIC(object, k = log(length(resid(object))))
-}
 dredge(fm1, m.max = 1, extra = alist(AIC, BIC, ICOMP, Cp))
-
-
+\dontshow{options(oop)}
 }
 
 \keyword{models}

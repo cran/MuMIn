@@ -24,7 +24,7 @@ DIC(object, ...)
 \arguments{
   \item{object}{a fitted model object (in case of ICOMP and CAICF, \code{logLik}
 	and \code{vcov} methods must exist for the object). For \code{DIC}, an 
-	object of class \code{MCMCglmm} or \code{mer}.
+	object of class \code{"MCMCglmm"} or \code{"merMod"}.
 	}
   \item{\dots}{optionally more fitted model objects. }
   \item{dispersion}{the dispersion parameter. If \code{NULL}, it is inferred
@@ -93,7 +93,7 @@ complexity and fit. \emph{Journal of the Royal Statistical Society Series B-Stat
 \code{\link{AIC}} and \code{\link{BIC}} in \pkg{stats}, \code{\link{AICc}}.
 \code{\link{QIC}} for GEE model selection.
 \code{\link[arm]{extractDIC}} in package \pkg{arm}, on which the (non-visible) 
-method \code{extractDIC.mer} used by \code{DIC} is based.
+method \code{extractDIC.merMod} used by \code{DIC} is based.
 }
 
 % \examples{}

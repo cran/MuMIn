@@ -50,14 +50,10 @@ will select rows  with \emph{a} \bold{and} without \emph{b} (this is
 equivalent to \code{!is.na(a) & is.na(b)}). \code{has} can take any number of
 arguments.
 
-Complex model terms need either to enclosed within curly brackets or backticks
- (e.g \code{{s(a,k=2} |} \bq{log(b)}), except  \code{has}. 
+Complex model terms need to be enclosed within either curly brackets or backticks
+ (e.g \code{{s(a,k=2)} |} \bq{log(b)}), except \code{has}. 
  Backticks-quoted names must match exactly (including whitespace) the term names 
  as returned by \code{getAllTerms}.
-
-Note that the \code{has()} notation cannot be used in the
-\code{subset} argument for \code{dredge}, where the variable names should be
-given directly, with the same effect.
 
 To select rows where one variable can be present conditional on the presence of 
 other variable(s), the function \code{dc} (\bold{d}ependency \bold{c}hain) can be used. 
@@ -76,7 +72,7 @@ subsetting and extracting from \code{data.frame}s.
 }
 
 \examples{
-fm1 <- lm(formula = y ~ X1 + X2 + X3 + X4, data = Cement)
+fm1 <- lm(formula = y ~ X1 + X2 + X3 + X4, data = Cement, na.action = na.fail)
 
 # generate models where each variable is included only if the previous
 # are included too, e.g. X2 only if X1 is there, and X3 only if X2 and X1

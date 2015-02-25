@@ -1,6 +1,7 @@
 \name{updateable}
 \alias{updateable}
 \alias{updateable2}
+\alias{get_call}
 \alias{uGamm}
 \alias{MuMIn-gamm}
 \alias{gamm-wrapper}
@@ -15,7 +16,9 @@ argument \code{FUN}.
 \usage{
 updateable(FUN, eval.args = NULL, Class)
 
-# updateable wrapper for mgcv::gamm and gamm4::gamm4
+get_call(x)
+
+## updateable wrapper for mgcv::gamm and gamm4::gamm4
 uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 }
 
@@ -26,6 +29,9 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 	
 	\item{Class}{optional character vector naming class(es) to be set onto the
 		result of \code{FUN} (not possible with formal S4 objects). }
+	
+	\item{x}{an object from which the call should be extracted. }
+	
 	\item{formula, random, \dots}{arguments to be passed to \code{gamm} or \code{gamm4}}
 	\item{lme4}{if \code{TRUE}, \code{gamm4} is called, \code{gamm} otherwise. }
 }
@@ -35,11 +41,10 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 	re-fitted via \code{\link{update}}. This is thanks to the \code{call} stored
 	in the object, which can be used (possibly modified) later on. It is also
 	utilised by \code{dredge} to generate sub-models.
-	
 	Some functions (such as \code{gamm} or \code{MCMCglmm}) do not provide their
-	result with the \code{call} element. In this case \code{updateable} can be
-	used on that function to add it. The resulting wrapper should be used in
-	exactly the same way as the original function.
+	result with the \code{call} element. To work that around, \code{updateable} 
+	can be used on that function to store the call. The resulting
+	wrapper should be used in exactly the same way as the original function.
 	
 	Argument \code{eval.args} specifies names of function arguments that should
 	be evaluated in the stored call. This is useful when, for example, the model
@@ -52,22 +57,26 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 }
 
 \value{
-   A function with the same arguments as \code{FUN}, wrapping a call to
-   \code{FUN} and adding an element named \code{call} to its result if possible,
-   or an attribute \code{"call"} (if the returned value is atomic or a formal S4
-   object).
+   \code{updateable} returns a function with the same arguments as \code{FUN}, 
+   wrapping a call to  \code{FUN} and adding an element named \code{call} to its
+   result if possible, otherwise an attribute \code{"call"} (if the returned 
+   value is atomic or a formal S4 object).
 }
 
 \note{
+  \code{get_call} is similar to \code{\link{getCall}} (defined in package 
+  \pkg{stats}), but it can also extract the \code{call} when it is an 
+  \code{\link[=attr]{attribute}} (and not an element of the object). Because the
+  default \code{getCall} method cannot do that, the default \code{update} method
+  will not work with atomic or S4 objects resulting from \code{updateable} 
+  wrappers.
+
  \code{uGamm} sets also an appropriate class onto the result (\code{"gamm4"}
  and/or \code{"gamm"}), which is needed for some generics defined in \pkg{MuMIn}
  to work (note that unlike the functions created by \code{updateable} it has no
  formal arguments of the original function). As of version 1.9.2,
  \code{MuMIn::gamm} is no longer available.
 
-  \pkg{MuMIn} replaces the default method for \code{getCall} (defined originally in 
-  package \pkg{stats}), with a function that can extract the call also when it is an
-  \code{\link[=attr]{attribute}} (rather than an element of the object).
 }
 
 

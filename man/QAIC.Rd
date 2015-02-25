@@ -10,8 +10,8 @@ count data (or its version corrected for small sample,
 }
 
 \usage{
-QAIC(object, ..., chat, k = 2)
-QAICc(object, ..., chat, k = 2)
+QAIC(object, ..., chat, k = 2, REML = NULL)
+QAICc(object, ..., chat, k = 2, REML = NULL)
 }
 
 \arguments{
@@ -19,6 +19,10 @@ QAICc(object, ..., chat, k = 2)
   \item{\dots}{ optionally, more fitted model objects.}
   \item{chat}{ \eqn{\hat{c}}{c-hat}, the variance inflation factor. }
   \item{k}{the \sQuote{penalty} per parameter. }
+  \item{REML}{ optional logical value, passed to the \code{logLik} method
+    indicating whether the restricted log-likelihood or log-likelihood should be
+    used. The default is to use the method used for model estimation.
+   }
 }
 
 \value{
@@ -50,6 +54,9 @@ over-dispersion
 \author{Kamil Barto\enc{ń}{n}}
 
 \examples{
+\dontshow{oop <- }
+options(na.action = "na.fail")
+
 # Based on "example(predict.glm)", with one number changed to create
 # overdispersion
 budworm <- data.frame(
@@ -74,6 +81,7 @@ x.quasibinomial <- function(...) {
 }
 QAIC(update(budworm.lg, family = x.quasibinomial), chat = chat)
 }
+\dontshow{options(oop)}
 }
 
 \keyword{models}
