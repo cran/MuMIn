@@ -15,9 +15,10 @@ Build a model selection table.
 
 model.sel(object, ...)
 
-\method{model.sel}{default}(object, ..., rank = NULL, rank.args = NULL, beta = FALSE, extra)
+\method{model.sel}{default}(object, ..., rank = NULL, rank.args = NULL,
+    beta = c("none", "sd", "partial.sd"), extra)
 \method{model.sel}{model.selection}(object, rank = NULL, rank.args = NULL, fit = NA,
-    ..., beta = FALSE, extra)
+    ..., beta = c("none", "sd", "partial.sd"), extra)
 }
 
 \arguments{
@@ -39,7 +40,9 @@ model.sel(object, ...)
 		\code{NA} to re-fit the models only if this is needed.
 		See \sQuote{Details}. }
 	
-	\item{beta}{logical, should standardized coefficients be returned? }
+	\item{beta}{indicates whether and how the component models' coefficients 
+        should be standardized. See the argument's description in 
+        \code{\link{dredge}}. }
 	
 	\item{extra}{optional additional statistics to include in the result,
 		provided as functions, function names or a list of such (best if named

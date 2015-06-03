@@ -29,16 +29,6 @@ function (object, ...)
 length(object$linear)
 
 
-# Extends: lme4
-`nobs.mer` <-
-function(object, nall = TRUE, ...) {
-	N <- object@dims[["n"]]
-	p <- object@dims[["p"]]
-	if (nall) return (N)
-	REML <- object@dims[['REML']]
-	N - REML * p
-}
-
 # Extends: nnet/spdep
 `nobs.sarlm` <-
 `nobs.spautolm` <-
@@ -110,3 +100,6 @@ object@dims[['n']]
 function (object, ...)
 nrow(object[['points.retained']])
 
+`nobs.geem` <-
+function (object, ...) 
+sum(object$weights != 0)

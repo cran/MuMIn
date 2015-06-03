@@ -72,16 +72,10 @@ function(model, adjustSigma = TRUE, ...) {
 	.makeCoefTable(nlme::fixef(model), se, model$fixDF[["X"]])
 }
 
-`coefTable.mer` <-
-function(model, ...)
-	#sm <- eval(expression(summary), asNamespace("lme4"))
-	.makeCoefTable(lme4::fixef(model), vcov(model, ...)@factors$correlation@sd)
-
 `coefTable.multinom` <- 
 function (model, ...) {
 	.makeCoefTable(coeffs(model), sqrt(diag(vcov(model, ...))))
 }
-
 
 `coefTable.sarlm` <-
 `coefTable.spautolm` <-
@@ -135,11 +129,16 @@ function(model, ...)
 `coefTable.geeglm` <-
 function(model, ..., type = c("naive", "robust")) {
 	cf <- summary(model, ...)$coefficients
-	type <- match.arg(type)
-	j <- if(type == "naive") 2L else 4L
+	j <- if(match.arg(type) == "naive") 2L else 4L
 	.makeCoefTable(cf[, 1L], cf[, j], coefNames = rownames(cf))
 }
 
+`coefTable.geem` <-
+function(model, ..., type = c("naive", "robust")) {
+	smr <- summary(model)
+	.makeCoefTable(smr$beta, smr[[if(match.arg(type) == "naive") "se.model" else "se.robust"]],
+	               coefNames = smr$coefnames)
+}
 
 `coefTable.geese` <-
 function(model, ..., type = c("naive", "robust")) {
@@ -198,7 +197,8 @@ function (model, ...)
 
 `coefTable.aodml` <-
 function (model, ...) {
-	.makeCoefTable(coeffs(model), sqrt(diag(model$varparam)))
+	.makeCoefTable(coeffs(model), sqrt(diag(vcov(model))))
+	#.makeCoefTable(coeffs(model), sqrt(diag(model$varparam)))
 }
 
 ## XXX: fixed effects coefficients only

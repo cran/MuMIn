@@ -19,8 +19,8 @@ importance(x)
 }
 
 \value{
-    a numeric vector of relative importance values, named as the predictor
-    variables.
+    a numeric vector of so called relative importance values, named as the 
+    predictor variables.
 }
 
 

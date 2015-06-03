@@ -7,17 +7,6 @@ function (model) summary(model)$coefficients
 `coeffs.lme` <-
 function(model) model$coefficients$fixed
 
-# `coeffs.glmer` <-
-# `coeffs.lmer` <-
-# function(model) {
-	# ret <- model@fixef
-	# names(ret) <- model@cnames$.fixed
-	# return(ret)
-# }
-
-`coeffs.mer` <-
-function(model) model@fixef
-
 `coeffs.merMod` <-
 function (model) lme4::fixef(model)
 
@@ -54,8 +43,6 @@ function (model)
 #summary(model)$solutions[, 1L]
 colMeans(model$Sol[, seq.int(model$Fixed$nfl), drop = FALSE])
 
-
-
 `coeffs.gamm` <-
 function (model) coef(model$gam)
 
@@ -76,11 +63,6 @@ function (model) {
 		cfnames <- sprintf("%s(%s)", cfnames[,2L], cfnames[,1L])
 		structure(as.vector(cf), names = cfnames)
 	} else cf
-}
-
-`coeffs.aodml` <-
-function (model) {
-	c(model$b, model$phi)
 }
 
 `coeffs.asreml` <- 

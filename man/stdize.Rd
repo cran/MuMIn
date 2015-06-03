@@ -31,7 +31,7 @@ variables.
     binary = c("center", "scale", "binary", "half", "omit"),
     center = TRUE, scale = TRUE, omit.cols = NULL, prefix = TRUE,
     append = FALSE, ...)
-    
+
 stdizeFit(object, data, which = c("formula", "subset", "offset", "weights"),
     evaluate = TRUE, quote = NA)
 }
@@ -39,7 +39,7 @@ stdizeFit(object, data, which = c("formula", "subset", "offset", "weights"),
 \arguments{
     \item{x}{a numeric or logical vector, factor, numeric matrix, 
          \code{data.frame} or a formula. }
-    \item{center, scale}{ either a logical value or vector, or a numeric vector
+    \item{center, scale}{ either a logical value, or a logical or numeric vector
          of length equal to the number of columns of \code{x} (see
          \sQuote{Details}). \code{scale} can be also a function to use for
          scaling. 
@@ -100,20 +100,6 @@ stdizeFit(object, data, which = c("formula", "subset", "offset", "weights"),
 where the values are centred and/or scaled. Transformation is carried out
 column-wise in \code{data.frame}s and matrices. 
 
-If \code{center} or \code{scale} are logical scalars or vectors of length equal
-to the number of columns of \code{x}, the centring is done by subtracting the
-mean (if \code{center} corresponding to the column is \code{TRUE}), and scaling
-is done by dividing the (centred) value by standard deviation (if corresponding
-\code{scale} is \code{TRUE}). 
-If \code{center} or \code{scale} are numeric vectors with length equal 
-to the number of columns of \code{x} (or numeric scalars for vector methods),
-then these are used instead. Any \code{NA}s in the numeric vector result in no
-centering or scaling on the corresponding column.
-
-Binary variables, logical or factors with two levels, are converted to
-numeric variables and transformed according to the argument \code{binary},
-unless \code{center} or \code{scale} are explicitly given.
-
 The returned value is compatible with that of \code{\link{scale}} in that the
 numeric centring and scalings used are stored in attributes attributes
 \code{"scaled:center"} and \code{"scaled:scale"} (these can be \code{NA} if no
@@ -142,6 +128,23 @@ By default, \code{stdize} scales by dividing by standard deviation rather than t
 the \acronym{SD} as \code{standardize} does. Scaling by \acronym{SD} is used 
 also on uncentred values, which is different from \code{\link{scale}} where
 root-mean-square is used.
+
+If \code{center} or \code{scale} are logical scalars or vectors of length equal
+to the number of columns of \code{x}, the centring is done by subtracting the
+mean (if \code{center} corresponding to the column is \code{TRUE}), and scaling
+is done by dividing the (centred) value by standard deviation (if corresponding
+\code{scale} is \code{TRUE}). 
+If \code{center} or \code{scale} are numeric vectors with length equal 
+to the number of columns of \code{x} (or numeric scalars for vector methods),
+then these are used instead. Any \code{NA}s in the numeric vector result in no
+centering or scaling on the corresponding column.
+
+Note that \code{scale = 0} is equivalent to no scaling (i.e. \code{scale = 1}).
+
+Binary variables, logical or factors with two levels, are converted to
+numeric variables and transformed according to the argument \code{binary},
+unless \code{center} or \code{scale} are explicitly given.
+
 }
 
 \author{Kamil Barto\enc{ń}{n}}
@@ -156,8 +159,14 @@ deviations. \emph{Statistics in medicine} 27, 2865-2873.
 Compare with \code{\link{scale}} and \code{\link[arm]{standardize}} or
 \code{\link[arm]{rescale}} (the latter two in package \pkg{arm}).
 
+For typical standardizing, model coefficients transformation may be
+easier, see \code{\link{std.coef}}.
+
 \code{\link{apply}} and \code{\link{sweep}} for arbitrary transformations of 
-columns in a \code{data.frame}. 
+columns in a \code{data.frame}.
+
+
+
 }
 
 \examples{

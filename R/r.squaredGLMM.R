@@ -9,14 +9,20 @@ function(x) .NotYetImplemented()
 `r.squaredGLMM.lme` <-
 function(x) {
 	VarFx <- var(fitted(x, level = 0L))
-
 	mmRE <- model.matrix(x$modelStruct$reStruct,
 						 data = x$data[rownames(x$fitted), , drop = FALSE])
 	n <- nrow(mmRE)
 
 	sigma2 <- x$sigma^2
+	reStruct <- x$modelStruct$reStruct
+	if((m <- length(reStruct)) > 1L) {
+		nams <- names(reStruct)
+		for(i in seq.int(m))
+			attr(reStruct[[i]], "Dimnames")[[2L]] <-
+				paste(nams[[i]], attr(reStruct[[i]], "Dimnames")[[2L]], sep = ".")
+	}
 	
-	varRe <- sum(sapply(x$modelStruct$reStruct, function(z) {
+	varRe <- sum(sapply(reStruct, function(z) {
 		sig <- nlme::pdMatrix(z) * sigma2
 		mm1 <-  mmRE[, rownames(sig), drop = FALSE]
 		#sum(diag(mm1 %*% sig %*% t(mm1))) / n
@@ -64,7 +70,6 @@ function(x) {
     }
 
 
-	
 	mmAll <- model.matrix(ranform(formula(x)), data = model.frame(x))
 		##Note: Argument 'contrasts' can only be specified for fixed effects
 		##contrasts.arg = eval(cl$contrasts, envir = environment(formula(x))))	

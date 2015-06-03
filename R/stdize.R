@@ -17,13 +17,18 @@ function(x, center = TRUE, scale = TRUE, ...) {
 	} else scaleFunc <- function(x) sd(x, na.rm = TRUE)
 	
 	#if(!missing(...)) warning("additional arguments ignored")
-	if(length(scale) != 1L) warning("only first element of 'center' is used")
-	if(length(center) != 1L) warning("only first element of 'scale' is used")
-	scale <- scale[1L]
-	center <- center[1L]
+	
+	for(i in c("scale", "center")) {
+		if(length(v <- get(i, inherits = FALSE)) > 1L)
+			cry(NA, "only first element of '%s' is used", i)
+		assign(i, v[1L])
+	}
+
 	if(is.logical(scale)) scale <- if(scale) scaleFunc(x) else 1
 	if(is.logical(center)) center <- if(center) mean(x, na.rm = TRUE) else 0
-	if(!is.na(scale) && scale != 0) {
+	
+	if(scale == 0) scale <- 1
+	if(!is.na(scale)) {
 		x <- (x - center) / scale
 		attr(x, "scaled:center") <-  center
 		attr(x, "scaled:scale") <- scale
@@ -39,6 +44,11 @@ function(x, center = TRUE, scale = TRUE, ...) {
 		scaleFunc <- scale
 		scale <- TRUE
 	} else scaleFunc <- function(x) sd(x, na.rm = TRUE)
+	
+	for(i in c("scale", "center"))
+		if((nv <- length(v <- get(i, inherits = FALSE))) > 1L && nv != ncol(x))
+			cry(NA, "length of '%s' (%d) not equal to number of columns in 'x' (%d)", i, nv, ncol(x))
+	
 	if(is.logical(scale)) scale <- if(scale) apply(x, 2L, scaleFunc) else 1
 	if(is.logical(center)) center <- if(center) colMeans(x, na.rm = TRUE) else 0
 	nc <- ncol(x)
@@ -51,6 +61,7 @@ function(x, center = TRUE, scale = TRUE, ...) {
 	attr(x, "scaled:scale") <- scale
 	x
 }
+
 
 stdize.factor <-
 function(x, binary = c("center", "scale", "binary", "half", "omit"),
@@ -89,7 +100,11 @@ function(x, binary = c("center", "scale", "binary", "half", "omit"),
 		scaleFunc <- scale
 		scale <- TRUE
 	} else scaleFunc <- function(x) sd(x, na.rm = TRUE)
-
+	
+	for(i in c("scale", "center"))
+		if((nv <- length(v <- get(i, inherits = FALSE))) > 1L && nv != ncol(x))
+			cry(NA, "length of '%s' (%d) not equal to number of columns in 'x' (%d)", i, nv, ncol(x))
+	
 	if(!is.null(source)) {
 		if(!missing(center) || !missing(scale) || !missing(binary))
 			warning("arguments 'center', 'scale' and 'binary' ignored if 'source' is given")

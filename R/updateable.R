@@ -48,22 +48,18 @@ function (FUN, Class) .Defunct("updateable")
 `uGamm` <-
  function(formula, random = NULL, ..., lme4 = inherits(random, "formula")) {
 	pkg <- if(lme4) "gamm4" else "mgcv"
-	if (!require(pkg, character.only = TRUE)) stop("'gamm' requires package '",
-												pkg, "' to be installed")
+	if (!require(pkg, character.only = TRUE)) stop("cannot load package ", sQuote(pkg))
 	funcl <- call("get", if(lme4) "gamm4" else "gamm", ns <- asNamespace(pkg))
 	clx <- cl <- match.call()
 	clx$lme4 <- NULL	
 	clx <- match.call(clx, definition = eval(funcl, envir = ns))
 	clx[[1L]] <- funcl
-	#list(clx, cl)
 	res <- eval.parent(clx)
 	res$call <- cl
-	class(res) <- c(if(lme4) "gamm4", "gamm", "list")
+	class(res) <- c(if(lme4) "gamm4", "gamm")
 	res
- }
+}
 
 
 `gamm` <- 
 function(...) .Deprecated("uGamm", old = "MuMIn::gamm")
-
-

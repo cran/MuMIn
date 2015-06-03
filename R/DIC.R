@@ -15,13 +15,7 @@ if(!exists("extractDIC", mode = "function")) {
 	extractDIC <- function (fit, ...) UseMethod("extractDIC")
 }
 
-# from package 'arm'
-`extractDIC.mer` <- function (fit, ...) {
-	dev <- deviance(fit, REML = fit@dims["REML"])
-    devML <- deviance(fit, REML = FALSE)
-    as.vector(2 * devML - dev)
-}
-
+## from package 'arm'
 `extractDIC.merMod` <- function (fit, ...) {
 	dev <- deviance(fit, REML = isREML(fit))
     devML <- deviance(fit, REML = FALSE)

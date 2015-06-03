@@ -16,8 +16,8 @@ quasiLik(object, ...)
 }
 
 \arguments{
-  \item{object}{a fitted model object of class \code{"gee"}, \code{"geepack"} or
-        \code{"yags"}.}
+  \item{object}{a fitted model object of class \code{"gee"}, \code{"geepack"}, 
+    \code{"geem"} or \code{"yags"}.}
   \item{\dots}{ for QIC and QIC\eqn{_{u}}{u}, optionally more fitted model objects. }  
   \item{typeR}{ logical, whether to calculate QIC(R). QIC(R) is
     based on quasi-likelihood of a working correlation \eqn{R} model. Defaults
@@ -50,7 +50,9 @@ Hardin J. W., Hilbe, J. M. (2003) \emph{Generalized Estimating Equations}. Chapm
 \seealso{
 Methods exist for 
 \code{\link[gee]{gee}} (package \pkg{gee}),
-\code{\link[geepack]{geeglm}} (\pkg{geepack}), and
+\code{\link[geepack]{geeglm}} (\pkg{geepack}), 
+\code{\link[geeM]{geem}} (\pkg{geeM}), 
+and
 \code{yags} (\pkg{yags} on R-Forge).
 \code{yags} and
 \code{\link[ape]{compar.gee}} from package \pkg{ape} both provide QIC values.

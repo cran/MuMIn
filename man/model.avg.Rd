@@ -14,8 +14,9 @@ Model averaging based on an information criterion.
 
 model.avg(object, ..., revised.var = TRUE)
 
-\method{model.avg}{default}(object, ..., beta = FALSE, rank = NULL, rank.args = NULL,
-    revised.var = TRUE, dispersion = NULL, ct.args = NULL)
+\method{model.avg}{default}(object, ..., beta = c("none", "sd", "partial.sd"),
+    rank = NULL, rank.args = NULL, revised.var = TRUE,
+    dispersion = NULL, ct.args = NULL)
 
 \method{model.avg}{model.selection}(object, subset, fit = FALSE, ..., revised.var = TRUE)
 
@@ -29,7 +30,9 @@ model.avg(object, ..., revised.var = TRUE)
     \item{\dots}{ for default method, more fitted model objects. Otherwise,
 		arguments that are passed to the default method. }
 
-    \item{beta}{ logical, should standardized coefficients be returned? }
+    \item{beta}{ indicates whether and how the component models' coefficients 
+        should be standardized. See the argument's description in 
+        \code{\link{dredge}}. }
 
 	\item{rank}{ optionally, a rank function (returning an information criterion) to
 		use instead of \code{AICc}, e.g. \code{BIC} or \code{QAIC}, may be
@@ -73,7 +76,7 @@ a \code{data.frame} with log-likelihood, \emph{IC},
 	is a named vector with numerical representation of the terms in 
 	the row names of \code{msTable}. 
 }
-\item{avg.model}{the model averaged parameters. A \code{matrix} with rows for
+\item{coefTable}{the model averaged parameters. A \code{matrix} with rows for
 	model terms, columns for averaged coefficient, unconditional standard error,
 	adjusted SE (\code{NA} if \emph{df}s are not available), \emph{z}-test 
 	statistic and associated \emph{p}-value. }
