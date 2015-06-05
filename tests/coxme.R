@@ -40,12 +40,16 @@ summary(avg <- model.avg(ms))
 
 predict(fm1, se.fit = T)
 
-#fit1 <- lme(effort ~ Type, data=ergoStool, random= ~1|Subject/ran1, method="ML")
 
-if(exists("lmekin", mode = "function", envir = asNamespace("coxme"))) {
-	fit2 <- lmekin(effort ~ Type + (1|Subject), data = ergoStool)
-	dd <- dredge(fit2, trace = TRUE)
-	summary(ma <- model.avg(dd))
+if(length(find.package("nlme", quiet = TRUE)) == 1) {
+	#fit1 <- lme(effort ~ Type, data=ergoStool, random= ~1|Subject/ran1, method="ML")
+
+	if(exists("lmekin", mode = "function", envir = asNamespace("coxme"))) {
+		data("ergoStool", package = "nlme")
+		fit2 <- lmekin(effort ~ Type + (1|Subject), data = ergoStool)
+		dd <- dredge(fit2, trace = TRUE)
+		summary(ma <- model.avg(dd))
+	}
 }
 
 }

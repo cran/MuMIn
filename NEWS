@@ -1,5 +1,42 @@
 MuMIn package news:
 
+Version: 1.14.0 (2015-06-03)
+(added) partial.sd, std.coef: calculate partial std. deviation and standardize 
+    model coefficients. 'beta.weights' is now deprecated in favour of 
+    'std.coef'.
+dredge, model.avg, model.sel: argument 'beta' is modified to allow for 
+	standardizing with SD or partial SD.
+coefTable, coeffs: method for class 'aodml' (package 'aod3') no longer return 
+    'phi' coefficients. This is for consistency with results of 'vcov' and 
+    'coef', as well as their counterparts for 'glimML' models.
+Removed all methods for 'mer' objects (used in lme4 < 1.0.0)
+
+Version: 1.13.10 (2015-06-01)
+(fixed) compatibility with lme4-1.1.8, 'null.fit' now works properly with gamm 
+    models.
+
+Version: 1.13.9 (2015-05-28)
+stdize: improved interpretation of the argument "scale".
+new dataset "GPA" ("First-year college Grade Point Average" referred in Burnham 
+    & Anderson (2002)).
+
+Version: 1.13.8 (2015-05-22)
+(added) QIC support for 'geem' models (request from Lee McDaniel).
+
+Version: 1.13.7 (2015-05-14)
+coefTable: method for 'averaging' objects gains new arguments "full" and 
+	"adjust.se".
+(fixed) getAllTerms: now correctly names coefficients of 'unmarked::gdistsamp' 
+    models (reported by Nathan Hostetter)
+
+Version: 1.13.6 (2015-05-01)
+(fixed) model.avg, model.sel: now better distinguish model objects from lists of 
+    objects.
+
+Version: 1.13.5 (2015-04-15)
+(fixed) r.squaredGLMM: method for 'lme' class with a multilevel grouping 
+	structure (reported by Alex Gunderson)
+
 Version: 1.13.4 (2015-02-24)
 coefTable.coxph: added workaround for the case when variance-covariance matrix 
 	is NA (as in results of 'intcox') (reported by Vanessa Boukili)
@@ -103,7 +140,7 @@ r.squaredGLMM: should be considerably faster and memory efficient due to
 
 Version: 1.10.3 (2014-06-27)
 (fixed) dredge: no longer drops random term in 'glmmadmb' models (spotted by 
-	Carlos LeÃ³n)
+	Carlos Le¢n)
 
 Version: 1.10.2
 mystery update

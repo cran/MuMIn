@@ -11,7 +11,7 @@
 Calculate Mallows' \emph{Cp} and Bozdogan's ICOMP and CAIFC information criteria.
 
 Extract or calculate Deviance Information Criterion from \code{MCMCglmm} and 
-\code{mer} object.
+\code{merMod} object.
 }
 
 \usage{

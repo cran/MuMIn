@@ -8,7 +8,8 @@ Parallelized version of \code{dredge}.
 }
 
 \usage{
-pdredge(global.model, cluster = NA, beta = FALSE, evaluate = TRUE, rank = "AICc", 
+pdredge(global.model, cluster = NA, 
+    beta = c("none", "sd", "partial.sd"), evaluate = TRUE, rank = "AICc", 
     fixed = NULL, m.max = NA, m.min = 0, subset, trace = FALSE, 
     varying, extra, ct.args = NULL, check = FALSE, ...)
 

@@ -54,8 +54,9 @@ functions include those produced by:
 }
 
 Generalized Estimation Equation model implementations: \lxcode{geeglm}{geepack}
-from package \CRANpkg{geepack}, \lxcode{gee}{gee} from \CRANpkg{gee}, and 
-\code{yags} from \href{http://yags.r-forge.r-project.org/}{\pkg{yags}} (from 
+from package \CRANpkg{geepack}, \lxcode{gee}{gee} from \CRANpkg{gee}, 
+\lxcode{geem}{geeM} from \CRANpkg{geeM}, and \code{yags} from 
+\href{http://yags.r-forge.r-project.org/}{\pkg{yags}} (from 
 R-Forge) can be used with \code{\link{QIC}} as the selection criterion.
 
 \lxcode{MCMCglmm}{MCMCglmm}* models (package \CRANpkg{MCMCglmm}) with e.g. 

@@ -7,19 +7,24 @@ export(
 	AICc, QAIC, QAICc, Cp, ICOMP, CAICF, DIC, 
 	r.squaredLR, null.fit, r.squaredGLMM,
 	QIC, quasiLik,
-	beta.weights, model.names,
+	model.names,
 	simplify.formula, expand.formula,
 	updateable, updateable2,
 	uGamm, nested, stdize, stdizeFit,
 	exprApply,
 	get.response,
 	get_call,
+	std.coef, beta.weights, 
+ 	partial.sd,
 # Defunct:
 	mod.sel
 )
 
 importFrom(stats, family)
 importFrom(stats, nobs, getCall)
+
+importFrom(Matrix, t, rowSums)
+
 S3method(getCall, yagsResult)
 
 S3method("$<-", model.selection)
@@ -113,13 +118,6 @@ S3method(predict, gls)
 S3method(model.frame, lme)
 S3method(model.matrix, lme)
 
-S3method(getAllTerms, mer)
-S3method(coeffs, mer)
-S3method(coefTable, mer)
-S3method(nobs, mer)
-S3method(predict, mer)
-S3method(family, mer)
-
 S3method(coeffs, merMod)
 
 S3method(coefTable, multinom)
@@ -150,12 +148,12 @@ S3method(predict, gamm)
 S3method(makeArgs, default)
 S3method(makeArgs, gls)
 S3method(makeArgs, lme)
-S3method(makeArgs, mer)
 S3method(makeArgs, unmarkedFit)
 S3method(makeArgs, unmarkedFitDS)
 S3method(makeArgs, coxph)
 S3method(makeArgs, clmm)
 S3method(makeArgs, merMod)
+S3method(makeArgs, mer) # for 'cpglmm'
 S3method(makeArgs, glmmadmb)
 
 S3method(family, default)
@@ -195,6 +193,7 @@ S3method(coefTable, glimML)
 S3method(family, glimML)
 S3method(getAllTerms, glimML)
 S3method(terms, glimML)
+S3method(model.frame, glimML)
 
 S3method(formula, MCMCglmm)
 S3method(nobs, MCMCglmm)
@@ -205,7 +204,6 @@ S3method(coefTable, MCMCglmm)
 S3method(makeArgs, MCMCglmm)
 S3method(getAllTerms, MCMCglmm)
 
-S3method(extractDIC, mer)
 S3method(extractDIC, merMod)
 S3method(extractDIC, MCMCglmm)
 S3method(extractDIC, lme)
@@ -214,18 +212,24 @@ S3method(coef, geese)
 S3method(coefTable, gee)
 S3method(coefTable, geeglm)
 S3method(coefTable, geese)
+S3method(coefTable, geem)
 S3method(coefTable, yagsResult)
 
 S3method(getQIC, default)
 S3method(getQIC, gee)
 S3method(getQIC, geeglm)
 S3method(getQIC, yagsResult)
+S3method(getQIC, geem)
 
 S3method(print, quasiLik)
 S3method(quasiLik, gee)
+S3method(quasiLik, geem)
 S3method(quasiLik, geeglm)
 S3method(quasiLik, yagsResult)
 S3method(nobs, yagsResult)
+S3method(nobs, geem)
+
+S3method(model.matrix, geem)
 
 S3method(coeffs, mark)
 S3method(coefTable, mark)
@@ -252,11 +256,13 @@ S3method(r.squaredGLMM, merMod)
 S3method(r.squaredGLMM, glmmML)
 
 S3method(coefTable, aodml)
-S3method(coeffs, aodml)
+#S3method(coeffs, aodml)
 S3method(coefTable, aodml)
 S3method(makeArgs, aodml)
 S3method(nobs, aodql)
 S3method(coefTable, aodql)
+S3method(model.frame, aodml)
+S3method(model.matrix, aodml)
 
 S3method(getAllTerms, betareg)
 S3method(makeArgs, betareg)
@@ -305,5 +311,3 @@ S3method(stdize, matrix)
 S3method(get.response, default)
 S3method(get.response, lm)
 S3method(get.response, averaging)
-
-

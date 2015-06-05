@@ -16,8 +16,8 @@ model, with optional rules for model inclusion.
 }
 
 \usage{
-dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc", 
-    fixed = NULL, m.max = NA, m.min = 0, subset, 
+dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
+    rank = "AICc", fixed = NULL, m.max = NA, m.min = 0, subset, 
     trace = FALSE, varying, extra, ct.args = NULL, ...)
 
 \method{print}{model.selection}(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...)
@@ -28,7 +28,15 @@ dredge(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 	\item{global.model}{a fitted \sQuote{global} model object. See
 	\sQuote{Details} for a list of supported types. }
 
-	\item{beta}{logical, should standardized coefficients be returned? }
+	\item{beta}{indicates whether and how the coefficients estimates should be
+	standardized, and must be one of \code{"none"}, \code{"sd"} or
+	\code{"partial.sd"}. You can specify just the initial letter. \code{"none"}
+	corresponds to unstandardized coefficients, \code{"sd"} and
+	\code{"partial.sd"} to coefficients standardized by \acronym{SD} and Partial
+	\acronym{SD}, respectively. For backwards compatibility, logical value is
+	also accepted, \code{TRUE} is equivalent to \code{"sd"} and \code{FALSE} to
+	\code{"none"}. See \code{\link{std.coef}}.
+	 }
 
 	\item{evaluate}{whether to evaluate and rank the models. If \code{FALSE}, a
 	list of unevaluated \code{call}s is returned. }

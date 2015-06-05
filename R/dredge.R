@@ -1,15 +1,34 @@
+
+.expr_beta_arg <- expression({
+	if(is.logical(beta) && beta) {
+		betaMode <- as.integer(beta)
+		strbeta <- if(beta) "sd" else "none"
+	} else if(is.character(beta)) {
+		strbeta <- match.arg(beta)
+		beta <- strbeta != "none"
+		betaMode <- (strbeta != "none") + (strbeta == "partial.sd")
+	} else {
+		betaMode <- 0L
+		strbeta <- "none"
+	}
+})
+
+
 `dredge` <-
-function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
+function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, rank = "AICc",
 		 fixed = NULL, m.max = NA, m.min = 0, subset,
 		 trace = FALSE, varying, extra, ct.args = NULL,
 		 ...) {
 	
 	trace <- min(as.integer(trace), 2L)
-
+	
+	strbeta <- betaMode <- NULL
+	eval(.expr_beta_arg)
+	
 	gmEnv <- parent.frame()
-	gmCall <- get_call(global.model)
 	gmNobs <- nobs(global.model)
 
+	gmCall <- get_call(global.model)
 	if (is.null(gmCall)) {
 		gmCall <- substitute(global.model)
 		if(!is.call(gmCall)) {
@@ -26,21 +45,18 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		# if 'update' method does not expand dots, we have a problem with
 		# expressions like ..1, ..2 in the call. So try to replace them with
 		# respective arguments in the original call
-		isDotted <- grep("^\\.\\.", sapply(as.list(gmCall), deparse))
+		isDotted <- grep("^\\.\\.", sapply(as.list(gmCall), asChar))
 		if(length(isDotted) != 0L) {
 			if(is.name(substitute(global.model))) {
-				cry(NA, "call stored in 'global.model' contains unexpanded dots and cannot be updated: \n    %s",
-					 asChar(gmCall))
+				cry(NA, "call stored in 'global.model' contains dotted names and cannot be updated. \n    Consider using 'updateable' on the modelling function")
 			} else gmCall[isDotted] <-
 				substitute(global.model)[names(gmCall[isDotted])]
 		}
-		
 		# object from 'run.mark.model' has $call of 'make.mark.model' - fixing
 		# it here:
 		if(inherits(global.model, "mark") && gmCall[[1L]] == "make.mark.model") {
 			gmCall <- call("run.mark.model", model = gmCall, invisible = TRUE)
 		}
-		
 	}
 
 	lik <- .getLik(global.model)
@@ -109,18 +125,23 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 
 		
 	# TODO: other classes: model, fixed, etc...
-	gmCoefNames <- fixCoefNames(names(coeffs(global.model)))
+    gmCoefNames <- names(coeffs(global.model))
+    if(any(dup <- duplicated(gmCoefNames <- names(coef(global.model)))))
+        cry(NA, "model cannot have duplicated coefficient names: ",
+             prettyEnumStr(gmCoefNames[dup]))
+	gmCoefNames <- fixCoefNames(gmCoefNames)
 
 	nVars <- length(allTerms)
 
 	if(isTRUE(rankArgs$REML) || (isTRUE(.isREMLFit(global.model)) && is.null(rankArgs$REML)))
 		cry(NA, "comparing models fitted by REML", warn = TRUE)
 
-	if (beta && is.null(tryCatch(beta.weights(global.model), error = function(e) NULL,
+	if ((betaMode != 0L) && is.null(tryCatch(std.coef(global.model, betaMode == 2L), error = function(e) NULL,
 		warning = function(e) NULL))) {
-		cry(NA, "do not know how to calculate beta weights for '%s', argument 'beta' ignored",
+		cry(NA, "do not know how to standardize coefficients of '%s', argument 'beta' ignored",
 			 class(global.model)[1L], warn = TRUE)
-		beta <- FALSE
+		betaMode <- 0L
+		strbeta <- "none"
 	}
 
 	m.max <- if (missing(m.max)) (nVars - nIntercepts) else min(nVars - nIntercepts, m.max)
@@ -340,7 +361,9 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		)
 	
 	matchCoefCall <- as.call(c(alist(matchCoef, fit1, all.terms = allTerms,
-		  beta = beta, allCoef = TRUE), ct.args))
+		  beta = betaMode, allCoef = TRUE), ct.args))
+	
+
 	
 	retColIdx <- if(nVarying) -nVars - seq_len(nVarying) else TRUE
 	
@@ -357,11 +380,15 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			   function(...) {})
 		on.exit(close(progressBar))
 	}
+	
 	iComb <- -1L
 	while((iComb <- iComb + 1L) < ncomb) {
 		varComb <- iComb %% nVariants
 		jComb <- (iComb - varComb) / nVariants
 
+		#if(iComb %% 100L == 0L)
+			#setProgressBar(progressBar, value = iComb, title = sprintf("dredge: %d/%d total", k, iComb))
+		
 		if(varComb == 0L) {
 			isok <- TRUE
 			
@@ -414,7 +441,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			utils::flush.console()
 		} else if(trace == 2L) {
 			setProgressBar(progressBar, value = iComb,
-				title = sprintf("dredge: %d of %.0f subsets", k, (k / iComb) * ncomb))
+				title = sprintf("dredge: %d of %.0f subsets (%d total)", k, (k / iComb) * ncomb, iComb))
 		}
 	
 		if(evaluate) {
@@ -441,6 +468,9 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 			}
 
 			mcoef1 <- eval(matchCoefCall)
+			
+			DebugPrint(mcoef1)
+			
 			ll1 <- logLik(fit1)
 			nobs1 <- nobs(fit1)
 			if(nobs1 != gmNobs) cry(NA, "number of observations in model #%d (%d) different from global model (%d)",
@@ -526,7 +556,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 
 	ret$delta <- ret[, ICName] - min(ret[, ICName])
 	ret$weight <- exp(-ret$delta / 2) / sum(exp(-ret$delta / 2))
-
+	
 	structure(ret,
 		class = c("model.selection", "data.frame"),
 		model.calls = calls[o],
@@ -535,7 +565,7 @@ function(global.model, beta = FALSE, evaluate = TRUE, rank = "AICc",
 		terms = structure(allTerms, interceptLabel = interceptLabel),
 		rank = IC,
 		rank.call = attr(IC, "call"),
-		beta = beta,
+		beta = strbeta, #eval(formals(sys.function())[["beta"]])[betaMode + 1L],
 		call = match.call(expand.dots = TRUE),
 		coefTables = coefTables,
 		nobs = gmNobs,

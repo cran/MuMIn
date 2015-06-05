@@ -10,7 +10,9 @@ function(cfarr, weight, revised.var, full, alpha) {
 	weight <- weight / sum(weight)
 	nCoef <- dim(cfarr)[3L]
 	if(full) {
-		cfarr[, 1:2, ][is.na(cfarr[, 1:2, ])] <- 0
+		nas <- is.na(cfarr[, 1L, ]) & is.na(cfarr[, 2L, ])
+		cfarr[, 1L, ][nas] <- cfarr[, 2L, ][nas] <- 0
+		#cfarr[, 1L:2L, ][is.na(cfarr[, 1L:2L, ])] <- 0
 		if(!all(is.na(cfarr[, 3L, ])))
 			cfarr[ ,3L, ][is.na(cfarr[ , 3L, ])] <- Inf
 	}
@@ -25,8 +27,6 @@ function(cfarr, weight, revised.var, full, alpha) {
 	avgcoef[is.nan(avgcoef)] <- NA
 	return(avgcoef)
 }
-
-
 
 
 `model.avg.model.selection` <-
@@ -115,20 +115,24 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 
 
 `model.avg.default` <-
-function(object, ..., beta = FALSE,	rank = NULL, rank.args = NULL,
-	revised.var = TRUE, dispersion = NULL, ct.args = NULL) {
+function(object, ..., beta = c("none", "sd", "partial.sd"),
+		 rank = NULL, rank.args = NULL, revised.var = TRUE,
+		 dispersion = NULL, ct.args = NULL) {
 
-	if (inherits(object, "list")) {
+	if (is.object(object)) {
+		models <- list(object, ...)
+        rank <- .getRank(rank, rank.args = rank.args, object = object) 
+	} else {
 		if(length(object) == 0L) stop("'object' is an empty list")
 		models <- object
 		object <- object[[1L]]
         if (!is.null(rank) || is.null(rank <- attr(models, "rank"))) {
             rank <- .getRank(rank, rank.args = rank.args, object = object)
       	}
-	} else {
-		models <- list(object, ...)
-        rank <- .getRank(rank, rank.args = rank.args, object = object)
 	}
+	
+	strbeta <- betaMode <- NULL
+	eval(.expr_beta_arg)
 
 	nModels <- length(models)
 	if(nModels == 1L) stop("only one model supplied. Nothing to do")
@@ -154,15 +158,22 @@ function(object, ..., beta = FALSE,	rank = NULL, rank.args = NULL,
 	
 	coefTableCall <- as.call(c(alist(coefTable, models[[i]],
 		dispersion = dispersion[i]), ct.args))
+	
+	if(betaMode == 2L) {
+		coefTableCall[[1L]] <- as.name("std.coef")
+		coefTableCall[['partial.sd']] <- TRUE
+	}
+	
+	DebugPrint(coefTableCall)
 
 	# check if models are unique:
 	if(!is.null(dispersion)) dispersion <- rep(dispersion, length.out = nModels)
 	coefTables <- vector(nModels, mode = "list")
-	for(i in seq_len(nModels)) coefTables[[i]] <-
-		eval(coefTableCall)
+	for(i in seq_len(nModels))
+		coefTables[[i]] <-  eval(coefTableCall)
 		#coefTable(models[[i]], dispersion = dispersion[i])
+	
 	mcoeffs <- lapply(coefTables, "[", , 1L)
-
 	dup <- unique(sapply(mcoeffs, function(i) which(sapply(mcoeffs, identical, i))))
 	dup <- dup[sapply(dup, length) > 1L]
 	if (length(dup) > 0L) stop("models are not unique. Duplicates: ",
@@ -191,7 +202,7 @@ function(object, ..., beta = FALSE,	rank = NULL, rank.args = NULL,
 	models <- models[model.order]
 	coefTables <- coefTables[model.order]
 
-	if (beta) {
+	if (betaMode == 1L) {
 		response.sd <- sd(model.response(model.frame(object)))
 		for(i in seq_along(coefTables))
 			coefTables[[i]][, 1L:2L] <-
@@ -574,8 +585,14 @@ function(x, ...) {
 }
 
 `coefTable.averaging` <-
-function (model, full = FALSE, ...) {
-	if(full)
-		summary(model)$coefmat.full[, 1L:2L] else
-		model$coefTable[, 1L:2L]
+function (model, full = FALSE, adjust.se = TRUE, ...) {
+    no.ase <- all(is.na(model$coefTable[, 3L]))
+	if(adjust.se && no.ase) 
+        warning("adjusted std. error not available for this type of model")
+    cols <- c(1L, if(!adjust.se || no.ase) 2L else 3L)
+	if(full) {
+		summary(model)$coefmat.full[, cols] 
+    } else {
+		model$coefTable[, cols]
+    }
 }

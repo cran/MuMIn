@@ -29,14 +29,14 @@ mergeMF <-
 function(models) {
 	mf <- model.frame(models[[1L]])
 	mfNames <- colnames(mf)
-	lhs <- getResponseFormula(mf)
+	lhs <- asChar(getResponseFormula(mf))
 
 	f <- attr(fixTermsObject(terms(mf)), "term.labels")
 	#m <- models[[2]]
 	for(m in models[-1L]) {
 		mf1 <- model.frame(m)
-		if(!identical(lhs, lhs1 <- getResponseFormula(terms(mf1))))
-			stop("response differs between models: ", sQuote(c(asChar(lhs), asChar(lhs1))))
+		if(!identical(lhs, lhs1 <- asChar(getResponseFormula(terms(mf1)))))
+			stop("response differs between models: ", sQuote(c(asChar(lhs), lhs1)))
 		mf <- cbind(mf, mf1[, !(colnames(mf1) %in% mfNames), drop = FALSE])
 		tt1 <- fixTermsObject(terms(mf1))
 		f <- c(f, attr(tt1, "term.labels"))
@@ -45,7 +45,7 @@ function(models) {
 	}
 	
 	f <- reformulate(f[!duplicated(f)])
-	f <- as.formula(call("~", lhs, f[[length(f)]]))
+	f <- as.formula(call("~", parse(text = lhs, keep.source = FALSE)[[1L]], f[[length(f)]]))
 	environment(f) <- environment(formula(models[[1L]]))
 	tt <- fixTermsObject(terms(f))
 	mf <- mf[, rownames(attr(tt, "factors"))]

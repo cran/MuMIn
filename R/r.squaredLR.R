@@ -1,11 +1,34 @@
-`null.fit` <- function(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL) {
+`null.fit` <-
+function(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL) {
 	cl <- get_call(x)
 	if(!is.environment(envir)) envir <- environment(as.formula(formula(x)))
 	
 	if(RE.keep) {
-		if(inherits(x, c("mer", "merMod", "coxme", "lmekin", "gamm"))) {
+		if(inherits(x, c("mer", "merMod", "coxme", "lmekin"))) {
 			cl$formula <- .nullREForm(as.formula(cl$formula))
 			environment(cl$formula) <- envir
+		} else if(inherits(x, "gamm")) {
+			mefm <- x[[if("lme" %in% names(x)) "lme" else "mer"]]
+			
+			if(inherits(mefm, "merMod")) {
+				Fun <- if(inherits(mefm, "glmerMod"))
+					"glmer" else if(inherits(mefm, "lmerMod")) {
+					cl$family <- NULL
+					"lmer"
+				}
+				cl$REML <- as.logical(x$mer@devcomp$dims[['REML']])
+				frm <- cl$formula
+				frm[[3L]] <- call("+", 1, as.formula(cl$random)[[2L]])
+				cl$random <- NULL
+				environment(cl$formula) <- envir
+			} else if (inherits(mefm, "lme")) {
+				Fun <- "lme"
+				cl$fixed <- update.formula(as.formula(cl$formula), . ~ 1)
+				cl$formula <- cl$family <- NULL
+				cl$method <- x$lme$method
+				environment(cl$fixed) <- envir
+			}
+			cl[[1L]] <- as.symbol(Fun)
 		} else if(inherits(x, c("glmmML", "glimML"))) {
 			cl$formula <- update.formula(as.formula(cl$formula), . ~ 1)
 			environment(cl$formula) <- envir
@@ -60,9 +83,11 @@
 			cl$random <- NULL
 		}, {
 			stop("do not know (yet) how to construct a null model for class ",
-				paste(sQuote(class(x))))
+				sQuote(class(x)))
 		}
 	)
+	
+
 	if(!is.na(Fun)) cl[[1L]] <- as.name(Fun)
 	if(identical(Fun, "glm")) {
 		if(formulaArgName != "formula")
@@ -73,6 +98,7 @@
 	cl <- cl[c(TRUE, names(cl)[-1L] %in% names(call2arg(cl)))]
 	if(evaluate) eval(cl, envir = envir) else cl
 }
+		
 
 # from lme4:::findbars:
 .findbars <- function (term) {

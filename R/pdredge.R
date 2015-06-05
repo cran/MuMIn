@@ -1,13 +1,18 @@
 ## TODO: chunk size for evaluate = FALSE
 
 `pdredge` <-
-function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
+function(global.model, cluster = NA, 
+	beta = c("none", "sd", "partial.sd"),
+	evaluate = TRUE,
 	rank = "AICc", fixed = NULL, m.max = NA, m.min = 0, subset,
 	trace = FALSE, varying, extra, ct.args = NULL, check = FALSE, ...) {
 
 #FIXME: m.max cannot be 0 - e.g. for intercept only model
 
 	trace <- min(as.integer(trace), 2L)
+
+	strbeta <- betaMode <- NULL
+	eval(.expr_beta_arg)
 
 
 ###PAR
@@ -28,9 +33,9 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 ###PAR
 
 	gmEnv <- parent.frame()
-	gmCall <- get_call(global.model)
 	gmNobs <- nobs(global.model)
 
+	gmCall <- get_call(global.model)
 	if (is.null(gmCall)) {
 		gmCall <- substitute(global.model)
 		if(!is.call(gmCall)) {
@@ -47,21 +52,18 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		# if 'update' method does not expand dots, we have a problem with
 		# expressions like ..1, ..2 in the call. So try to replace them with
 		# respective arguments in the original call
-		isDotted <- grep("^\\.\\.", sapply(as.list(gmCall), deparse))
+		isDotted <- grep("^\\.\\.", sapply(as.list(gmCall), asChar))
 		if(length(isDotted) != 0L) {
 			if(is.name(substitute(global.model))) {
-				cry(NA, "call to 'global.model' contains unexpanded dots and cannot be updated: \n%s",
-					 asChar(gmCall))
+				cry(NA, "call stored in 'global.model' contains dotted names and cannot be updated. \n    Consider using 'updateable' on the modelling function")
 			} else gmCall[isDotted] <-
 				substitute(global.model)[names(gmCall[isDotted])]
 		}
-		
 		# object from 'run.mark.model' has $call of 'make.mark.model' - fixing
 		# it here:
 		if(inherits(global.model, "mark") && gmCall[[1L]] == "make.mark.model") {
 			gmCall <- call("run.mark.model", model = gmCall, invisible = TRUE)
 		}
-		
 	}
 
 	lik <- .getLik(global.model)
@@ -100,7 +102,8 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 	ICName <- as.character(attr(IC, "call")[[1L]])
 
 	if(length(tryCatch(IC(global.model), error = function(e) {
-		stop(simpleError(conditionMessage(e), subst(attr(IC, "call"), x = as.name("global.model"))))
+		stop(simpleError(conditionMessage(e), subst(attr(IC, "call"),
+			x = as.name("global.model"))))
 	})) != 1L) {
 		cry(NA, "result of '%s' is not of length 1", asChar(attr(IC, "call")))
 	}
@@ -128,18 +131,24 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		match.call(gmCall, definition = eval.parent(gmCall[[1L]]),
 				   expand.dots = TRUE)
 
-	gmCoefNames <- fixCoefNames(names(coeffs(global.model)))
+    gmCoefNames <- names(coeffs(global.model))
+    if(any(dup <- duplicated(gmCoefNames <- names(coef(global.model)))))
+        cry(NA, "model cannot have duplicated coefficient names: ",
+             prettyEnumStr(gmCoefNames[dup]))
+
+	gmCoefNames <- fixCoefNames(gmCoefNames)
 
 	nVars <- length(allTerms)
 
 	if(isTRUE(rankArgs$REML) || (isTRUE(.isREMLFit(global.model)) && is.null(rankArgs$REML)))
 		cry(NA, "comparing models fitted by REML", warn = TRUE)
 
-	if (beta && is.null(tryCatch(beta.weights(global.model), error = function(e) NULL,
+	if ((betaMode != 0L) && is.null(tryCatch(std.coef(global.model, betaMode == 2L), error = function(e) NULL,
 		warning = function(e) NULL))) {
-		cry(NA, "do not know how to calculate beta weights for '%s', argument 'beta' ignored",
+		cry(NA, "do not know how to standardize coefficients of '%s', argument 'beta' ignored",
 			 class(global.model)[1L], warn = TRUE)
-		beta <- FALSE
+		betaMode <- 0L
+		strbeta <- "none"
 	}
 
 	m.max <- if (missing(m.max)) (nVars - nIntercepts) else min(nVars - nIntercepts, m.max)
@@ -372,7 +381,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 				nextra = nextra,
 				matchCoefCall = as.call(c(list(
 					as.name("matchCoef"), as.name("fit1"), 
-					all.terms = allTerms, beta = beta, 
+					all.terms = allTerms, beta = betaMode, 
 					allCoef = TRUE), ct.args))
 				# matchCoefCall = as.call(c(alist(matchCoef, fit1, all.terms = Z$allTerms, 
 				#   beta = Z$beta, allCoef = TRUE), ct.args))
@@ -603,7 +612,7 @@ function(global.model, cluster = NA, beta = FALSE, evaluate = TRUE,
 		terms = structure(allTerms, interceptLabel = interceptLabel),
 		rank = IC,
 		rank.call = attr(IC, "call"),
-		beta = beta,
+		beta = strbeta,
 		call = match.call(expand.dots = TRUE),
 		coefTables = coefTables,
 		nobs = gmNobs,

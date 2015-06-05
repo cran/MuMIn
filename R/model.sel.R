@@ -7,8 +7,14 @@
 function (object, ...) UseMethod("model.sel")
 
 `model.sel.model.selection` <-
-function (object, rank = NULL, rank.args = NULL, fit = NA, ..., beta = FALSE, extra) {
-	reFit <- !missing(extra) || (beta != attr(object, "beta"))
+function (object, rank = NULL, rank.args = NULL, fit = NA, ...,
+		  beta = c("none", "sd", "partial.sd"),
+		  extra) {
+
+	strbeta <- betaMode <- NULL
+	eval(.expr_beta_arg)
+	
+	reFit <- !missing(extra) || (strbeta != attr(object, "beta"))
 	if(!is.null(rank.args) && !identical(fit, FALSE)) reFit <- TRUE
 	
 	if(!isTRUE(fit) && !is.null(rank)) {
@@ -53,16 +59,21 @@ function (object, rank = NULL, rank.args = NULL, fit = NA, ..., beta = FALSE, ex
 
 
 `model.sel.default` <-
-function(object, ..., rank = NULL, rank.args = NULL, beta = FALSE, extra) {
+function(object, ..., rank = NULL, rank.args = NULL,
+		 beta = c("none", "sd", "partial.sd"),
+		 extra) {
 	.makemnames <- function(cl) {
 		cl[c("rank", "rank.args", "beta", "extra")] <- NULL
 		unlist(.makeListNames(cl[-1L]))
 	}
+	
+	strbeta <- betaMode <- NULL
+	eval(.expr_beta_arg)
 
 	if (missing(object) && length(models <- list(...)) > 0L) {
 		object <- models[[1L]]
 		names(models) <- .makemnames(sys.call())
-	} else if (inherits(object, "list")) {
+	} else if (is.list(object) && !is.object(object)) {
 		if(length(object) ==  0L) stop("at least one model must be given")
 		models <- object
 		object <- models[[1L]]
@@ -89,6 +100,14 @@ function(object, ..., rank = NULL, rank.args = NULL, beta = FALSE, extra) {
 	allTermsList <- lapply(models, getAllTerms, intercept = TRUE)
 	random.terms <- lapply(allTermsList, attr, "random.terms")
 	all.terms <- unique(unlist(allTermsList, use.names = FALSE))
+    
+    lapply(models, function(fit) {
+        if(any(dup <- duplicated(cfn <- names(coeffs(fit)))))
+        cry(sys.call(-2L), "models cannot have duplicated coefficient names: %s",
+             prettyEnumStr(cfn[dup]))
+    })
+
+    
 	all.coef <- fixCoefNames(unique(unlist(lapply(lapply(models, coeffs), names),
 		use.names = FALSE)))
 
@@ -102,7 +121,7 @@ function(object, ..., rank = NULL, rank.args = NULL, beta = FALSE, extra) {
 	#d <- as.data.frame(t(sapply(models, matchCoef, all.terms = all.terms)))
 
 	mcoeflist <- lapply(models, matchCoef, all.terms = all.terms,
-						allCoef = TRUE, beta = beta)
+						allCoef = TRUE, beta = betaMode)
 	d <- as.data.frame(do.call("rbind", mcoeflist))
 	
 	retCoefTable <-	lapply(mcoeflist, attr, "coefTable")
@@ -166,7 +185,7 @@ function(object, ..., rank = NULL, rank.args = NULL, beta = FALSE, extra) {
 		order = o,
 		rank = rank,
 		rank.call = attr(rank, "call"),
-		beta = beta,
+		beta = strbeta,
 		call = match.call(),
 		nobs = nobs(models[[1L]]),
 		coefTables = retCoefTable[o],

@@ -104,11 +104,6 @@ function(x, ...) {
 	return(ret)
 }
 
-# `getAllTerms.glmer` <- # For backwards compatibility
-# `getAllTerms.lmer` <-  # with older versions of lme4
-`getAllTerms.mer` <-
-function(x, ...) getAllTerms(getFrom("lme4", "formula")(x), ...)
-
 # Apparently there is no (explicit) intercept in coxph, but 'terms' gives
 # attr(,"intercept") == 1.
 `getAllTerms.coxph` <- function (x, ...) {
@@ -250,6 +245,51 @@ function(x, ...)  {
 	ret
 }
 
+
+#gdistsamp -> unmarkedFitGDS
+#lambda = abundance / lambda
+#phi = availability / alpha
+#p = detection / det
+
+get_all_terms_multiple_form <-
+function(f, fnames, intercept, ...) {
+	ret <- vector("list", length(fnames))
+	i <- 0L
+	while(is.call(f) && f[[1L]] == "~") {
+		ret[[i <- i + 1L]] <- as.formula(f[c(1L, length(f))])
+		f <- f[[2L]]
+	}
+	ret <- lapply(rev(ret), `environment<-`, NULL)
+	names(ret) <- fnames
+	ret <- lapply(ret, getAllTerms.formula, intercept = FALSE)
+	
+	deps <- termdepmat_combine(lapply(ret, attr, "deps"))
+
+	attrInt <- sapply(ret, attr, "intercept")
+	ret <- unlist(lapply(names(ret), function(i) if(length(ret[[i]]))
+						 paste0(i, "(", ret[[i]], ")") else character(0L)))
+
+	dimnames(deps) <- list(ret, ret)
+
+	Ints <- paste0(names(attrInt[attrInt != 0L]), "(Int)")
+	if(intercept) ret <- c(Ints, ret)
+	attr(ret, "intercept") <- attrInt
+	attr(ret, "interceptLabel") <- Ints
+	attr(ret, "deps") <- deps
+	return(ret)
+}
+
+`getAllTerms.unmarkedFitGDS` <- function (x, intercept = FALSE, ...)  {
+	get_all_terms_multiple_form(formula(x), c("lambda", "alpha", "det"), intercept = intercept, ...)
+}
+
+## TODO:
+#
+#`getAllTerms.unmarkedFit` <- function (x, intercept = FALSE, ...)  {
+#	get_all_terms_multiple_form(formula(x), ......)
+#}
+
+
 `getAllTerms.unmarkedFit` <- function (x, intercept = FALSE, ...)  {
 	f <- formula(x)
 	ret <- list()
@@ -259,6 +299,7 @@ function(x, ...)  {
 	}
 	ret <- lapply(ret, `environment<-`, NULL)
 	names(ret) <- sapply(x@estimates@estimates, slot, "short.name")[seq_along(ret)]
+	
 	ret <- lapply(ret, getAllTerms.formula, intercept = FALSE)
 	
 	deps <- termdepmat_combine(lapply(ret, attr, "deps"))
