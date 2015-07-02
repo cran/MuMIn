@@ -147,7 +147,7 @@ function(yall, w, revised.var, full, dfs, ...) {
 		}
 	}
 	
-	hasDfs <- !is.null(dfs) && !any(is.na(dfs))
+	hasDfs <- !is.null(dfs) && !anyNA(dfs)
 	k <- if(hasDfs) 3L else 2L
 	d <- dim(fits)
 	avgfit <- avgsefit <- array(NA_real_, dim = d[1L:2L], dimnames = dimnames(fits)[1L:2L])
@@ -166,7 +166,7 @@ function(yall, w, revised.var, full, dfs,  ...) {
 	se.fit <- do.call("cbind", lapply(yall, "[[", "se.fit"))
 	n <- nrow(fit)
 	y <- matrix(0, ncol = 2L, nrow = n)
-	hasDfs <- !is.null(dfs) && !any(is.na(dfs))
+	hasDfs <- !is.null(dfs) && !anyNA(dfs)
 	k <- c(1L, if(hasDfs) 3L else 2L) 
 	for(i in 1L:n) y[i, ] <-
 		par.avg(fit[i, ], se.fit[i, ], weight = w,

@@ -27,7 +27,6 @@ function(object, subset, cluster = NA, ...) {
 		DebugPrint(hasModelList)
 		if(length(newargs) == 0L) {
 			models <- attr(object, "modelList")[r]
-			attr(models, "rank.call") <- attr(object, "rank.call")
 			attr(models, "rank") <- attr(object, "rank")
 			return(models)
 		}
@@ -56,7 +55,6 @@ function(object, subset, cluster = NA, ...) {
 		models <- lapply(calls, eval, envir = env)
 	}
 	}
-	attr(models, "rank.call") <- attr(object, "rank.call")
 	attr(models, "rank") <- attr(object, "rank")
 	return(models)
 }

@@ -28,9 +28,9 @@ par.avg(x, se, weight, df = NULL, level = 1 - alpha, alpha = 0.05,
 
 \value{
   \code{par.avg} returns a vector with named elements:
-  \item{Coefficient}{model coefficients,}
-  \item{SE}{unconditional standard error,}
-  \item{Adjusted SE}{adjusted standard error,}
+  \item{Coefficient}{model coefficients}
+  \item{SE}{unconditional standard error}
+  \item{Adjusted SE}{adjusted standard error}
   \item{Lower CI, Upper CI}{unconditional confidence intervals.}
 }
 

@@ -7,6 +7,9 @@ zz$y <- 100*zz$x + as.numeric(zz$f1)*10 * as.numeric(zz$f2)
 
 nafit <- lm(y~f1*f2*x, zz)
 
+summary(nafit)
+coef(nafit)
+
 gm <- get.models(dredge(nafit), subset = NA)
 ma <- model.avg(gm)
 

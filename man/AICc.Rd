@@ -14,8 +14,8 @@ AICc(object, ..., k = 2, REML = NULL)
   \item{object}{a fitted model object for which there exists a \code{logLik}
     method, or a \code{"logLik"} object. }
   \item{\dots}{optionally more fitted model objects. }
-  \item{k}{the \sQuote{penalty} per parameter to be used; the default \code{k =
-    2} is the classical AIC. }
+  \item{k}{the \sQuote{penalty} per parameter to be used; the default
+  \code{k = 2} is the classical AIC. }
    \item{REML}{ optional logical value, passed to the \code{logLik} method
     indicating whether the restricted log-likelihood or log-likelihood should be
     used. The default is to use the method used for model estimation.

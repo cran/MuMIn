@@ -117,7 +117,7 @@ function(x) {
 	fam <- family(x)
 	useObsLevVar <- (fam$family == "poisson" && fam$link == "log") || fam$family == "binomial"
 		if(useObsLevVar) {
-			cry(NA, "cannot calculate 'unit variance' in glmmML")
+			cry(, "cannot calculate 'unit variance' in glmmML")
 	} 
 	fxpred <- as.vector(x$x %*% coef(x))
 	.rsqGLMM(family(x), varFx = var(fxpred), varRe = x$sigma^2, varResid = NULL,

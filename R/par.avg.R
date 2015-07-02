@@ -16,7 +16,7 @@ function(x, se, weight, df = NULL, level = 1 - alpha, alpha = 0.05,
 	x.sqdiff <- (x - wx)^2
 	xvar <- se^2
 
-	do.ase <- adjusted && !(missing(df) || is.null(df) || any(is.na(df[!is.na(x)])))
+	do.ase <- adjusted && !(missing(df) || is.null(df) || anyNA(df[!is.na(x)]))
 	
 	# Note: pdistr(qdistr(x)) == x
 

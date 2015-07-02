@@ -1,6 +1,5 @@
 #TODO: checking if models are fitted to the same dataset <- model.avg
 
-
 `mod.sel` <- function (object, ...) .Defunct("model.sel")
 
 `model.sel` <-
@@ -28,35 +27,31 @@ function (object, rank = NULL, rank.args = NULL, fit = NA, ...,
 
 	if(reFit && !isTRUE(fit)) {
 		if(is.na(fit)) message("Re-fitting models...")
-		else stop("Cannot proceed without re-fitting models ('fit' is FALSE)")
+			else stop("cannot proceed without re-fitting models ('fit' is FALSE)")
 	}
 	
 	if(isTRUE(fit) || reFit) {
 		#message("to compute 'extras' or beta-weights, need to re-fit model objects.")
-		#message("Re-fitting...")
 		cl <- match.call()
 		ss <- if(is.null(cl$subset)) TRUE else cl$subset
 		models <- do.call("get.models", list(object, subset = ss), envir = parent.frame())
 		cl$subset <- NULL
 		cl$object <- models
-		ret <- do.call("model.sel", as.list(cl), envir = parent.frame())
+		rval <- do.call("model.sel", as.list(cl), envir = parent.frame())
 	} else if(!is.null(rank)) {
-		oldRankCol <- as.character(attr(attr(object, "rank"), "call")[[1L]])
-		rankCol <- as.character(attr(rank, "call")[[1L]])
-		message(gettextf("New rank '%s' applied to logLik objects", rankCol))
-		DebugPrint(oldRankCol)
-		DebugPrint(rankCol)
-		colnames(object)[colnames(object) == oldRankCol] <- rankCol
-		object[, rankCol] <- ic
-		object$delta <- ic - min(ic)
-		object$weight <- Weights(ic)
-		ret <- object[order(ic), ]
-		attr(ret, "rank") <- rank
-		attr(ret, "rank.call") <- attr(rank, "call")
-	} else ret <- object
-	return(ret)
+		newRankName <- as.character(attr(rank, "call")[[1L]])
+		message(gettextf("New rank '%s' applied to logLik objects", newRankName))
+		k <- type2col(object, "ic")
+		attr(object, "names")[k] <- names(attr(object, "column.types"))[k] <-
+			newRankName
+		itemByType(object, "ic") <- ic
+		itemByType(object, "delta") <- ic - min(ic)
+		itemByType(object, "weight") <- Weights(ic)
+		rval <- object[order(ic), ]
+		attr(rval, "rank") <- rank
+	} else rval <- object
+	return(rval)
 }
-
 
 `model.sel.default` <-
 function(object, ..., rank = NULL, rank.args = NULL,
@@ -91,7 +86,7 @@ function(object, ..., rank = NULL, rank.args = NULL,
 
 	.checkModels(models, FALSE)
 
-	if(is.null(names(models)) || any(is.na(names(models))))
+	if(is.null(names(models)) || anyNA(names(models)))
 		names(models) <- seq_along(models)
 	names(models) <- make.unique(names(models), sep = "")
 
@@ -120,16 +115,15 @@ function(object, ..., rank = NULL, rank.args = NULL,
 	j <- !(all.terms %in% all.coef)
 	#d <- as.data.frame(t(sapply(models, matchCoef, all.terms = all.terms)))
 
-	mcoeflist <- lapply(models, matchCoef, all.terms = all.terms,
+	coefTables <- lapply(models, matchCoef, all.terms = all.terms,
 						allCoef = TRUE, beta = betaMode)
-	d <- as.data.frame(do.call("rbind", mcoeflist))
-	
-	retCoefTable <-	lapply(mcoeflist, attr, "coefTable")
+	d <- as.data.frame(do.call("rbind", coefTables))
+	coefTables <- lapply(coefTables, attr, "coefTable")
 
 	d[,j] <- lapply(d[,j, drop = FALSE], function(x) factor(is.nan(x),
 		levels = TRUE, labels = "+"))
 
-	ret <- vapply(models, function(x) {
+	rval <- vapply(models, function(x) {
 		ll <- logLik(x)
 		ic <- tryCatch(rank(x), error = function(e) e)
 		if(inherits(ic, "error")) {
@@ -140,18 +134,20 @@ function(object, ..., rank = NULL, rank.args = NULL,
 		}
 		c(attr(ll, "df"), ll, ic)
 		}, structure(double(3L), names = c("df", lLName, ICname)))
-	ret <- as.data.frame(t(ret))
-	ret <- cbind(d, ret)
-	ret[, "delta"] <- ret[, ICname] - min(ret[, ICname])
-	ret[, "weight"] <- Weights(ret[,ICname])
-	o <- order(ret[, "delta"], decreasing = FALSE)
+	rval <- as.data.frame(t(rval))
+	rval <- cbind(d, rval)
+	rval[, "delta"] <- rval[, ICname] - min(rval[, ICname])
+	rval[, "weight"] <- Weights(rval[,ICname])
+	mode(rval[, "df"]) <- "integer"
+	
+	o <- order(rval[, "delta"], decreasing = FALSE)
 
 	descrf <- modelDescr(models)
 	descrf$model <- NULL
 	if(nlevels(descrf$family) == 1L) descrf$family <- NULL
 	if(ncol(descrf)) {
 		i <- seq_len(length(all.terms))
-		ret <- cbind(ret[, i], descrf, ret[, -i])
+		rval <- cbind(rval[, i], descrf, rval[, -i])
 	}
 	
 	if(!missing(extra) && length(extra) != 0L) {
@@ -164,19 +160,18 @@ function(object, ..., rank = NULL, rank.args = NULL,
 		extraResultNames <- unique(unlist(lapply(res, names)))
 		nextra <- length(extraResultNames)
 		i <- seq_len(length(all.terms))
-		ret <- cbind(ret[, i], do.call("rbind", lapply(res, function(x) {
+		rval <- cbind(rval[, i], do.call("rbind", lapply(res, function(x) {
 			if(length(x) < nextra) {
 				tmp <- rep(NA_real_, nextra)
 				tmp[match(names(x), extraResultNames)] <- x
 				tmp
 			} else x
-		})), ret[, -i])
-
-	}
-	row.names(ret) <- names(models)
+		})), rval[, -i])
+	} else nextra <- 0L
+	row.names(rval) <- names(models)
 	
-	ret <- structure(
-		ret[o, ],
+	rval <- structure(
+		rval[o, ],
 		terms = structure(all.terms, interceptLabel =
 			unique(unlist(lapply(allTermsList, attr, "interceptLabel")))),
 		model.calls = lapply(models, get_call)[o],
@@ -184,24 +179,27 @@ function(object, ..., rank = NULL, rank.args = NULL,
 		modelList = models[o],
 		order = o,
 		rank = rank,
-		rank.call = attr(rank, "call"),
 		beta = strbeta,
 		call = match.call(),
 		nobs = nobs(models[[1L]]),
-		coefTables = retCoefTable[o],
+		coefTables = coefTables[o],
 		vCols = colnames(descrf),
+		column.types = {
+			colTypes <- c(terms = length(all.terms), varying = ncol(descrf), 
+				extra = nextra, df = 1, loglik = 1, ic = 1, delta = 1,
+				weight = 1)
+			column.types <- rep(1L:length(colTypes), colTypes)
+			names(column.types) <- colnames(rval)
+			lv <- 1L:length(colTypes)
+			factor(column.types, levels = lv, labels = names(colTypes)[lv])
+		},
 		class = c("model.selection", "data.frame")
 	)
-	if(!("class" %in% colnames(ret)))
-		attr(ret, "model.class") <- class(models[[1L]])[1L]
+	if(!("class" %in% colnames(rval)))
+		attr(rval, "model.class") <- class(models[[1L]])[1L]
 	
 	if (!all(sapply(random.terms, is.null)))
-		attr(ret, "random.terms") <- random.terms[o]
+		attr(rval, "random.terms") <- random.terms[o]
 
-	ret
+	rval
 }
-
-
-
-
-

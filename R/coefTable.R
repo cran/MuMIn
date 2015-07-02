@@ -124,7 +124,6 @@ function(model, ...) {
 function(model, ...)
 	.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))))
 
-	
 `coefTable.gee` <-
 `coefTable.geeglm` <-
 function(model, ..., type = c("naive", "robust")) {
@@ -136,7 +135,8 @@ function(model, ..., type = c("naive", "robust")) {
 `coefTable.geem` <-
 function(model, ..., type = c("naive", "robust")) {
 	smr <- summary(model)
-	.makeCoefTable(smr$beta, smr[[if(match.arg(type) == "naive") "se.model" else "se.robust"]],
+	.makeCoefTable(smr$beta, smr[[if(match.arg(type) == "naive")
+								  "se.model" else "se.robust"]],
 	               coefNames = smr$coefnames)
 }
 

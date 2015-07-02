@@ -1,33 +1,49 @@
+# Exports:
 export(
-	dredge, pdredge, get.models, pget.models, 
-	model.avg, par.avg, 
-	model.sel,
-	getAllTerms, coeffs, coefTable, tTable, 
-	importance, Weights, 
-	AICc, QAIC, QAICc, Cp, ICOMP, CAICF, DIC, 
-	r.squaredLR, null.fit, r.squaredGLMM,
-	QIC, quasiLik,
-	model.names,
-	simplify.formula, expand.formula,
-	updateable, updateable2,
-	uGamm, nested, stdize, stdizeFit,
-	exprApply,
-	get.response,
-	get_call,
-	std.coef, beta.weights, 
- 	partial.sd,
-# Defunct:
-	mod.sel
+	"dredge", "pdredge", "get.models", "pget.models", 
+	"model.avg", "par.avg", 
+	"model.sel",
+	"getAllTerms", "coeffs", "coefTable", 
+	"importance", "Weights", 
+	"AICc", "QAIC", "QAICc", "Cp", "ICOMP", "CAICF", "DIC", 
+	"r.squaredLR", "null.fit", "r.squaredGLMM",
+	"QIC", "quasiLik",
+	"model.names",
+	"simplify.formula", "expand.formula",
+	"updateable",
+	"uGamm", "nested", "stdize", "stdizeFit",
+	"exprApply",
+	"get.response",
+	"get_call",
+	"std.coef", "beta.weights", 
+	"partial.sd",
+	"arm.glm",
+    # defunct and deprecated:
+	"mod.sel",  "tTable", "updateable2"
 )
 
-importFrom(stats, family)
-importFrom(stats, nobs, getCall)
+# Imports:
+importFrom("graphics", "axis", "box", "mtext", "par", "plot.new", "plot.window",
+	"rect",	"strheight", "strwidth", "title")
+#importFrom(grDevices, colorRamp, rgb)
+importFrom("methods", ".hasSlot", "isGeneric", "slot", "slotNames")
+importFrom("stats", ".checkMFClasses", ".getXlevels", ".MFclass", "AIC",
+	"as.formula", "delete.response", "deviance", "df.residual",
+	"family", "fitted", "formula", "getCall", "glm.fit",  "make.link",
+	"model.frame", "model.matrix", "model.response", "na.fail", "nobs", "pnorm",
+	"power", "predict", "printCoefmat", "qnorm", "qt", "reformulate", "resid",
+	"sd", "summary.glm", "terms", "terms.formula", "update", "update.default",
+	"update.formula", "var", "weighted.mean", "weights",
+    "gaussian", "binomial", "Gamma", "inverse.gaussian", "quasi", 
+    "quasibinomial", "quasipoisson"
+    )
+importFrom("stats4", "logLik", "coef", "vcov")
+#importFrom(utils, capture.output, setTxtProgressBar, txtProgressBar)
+importFrom("Matrix", "t", "rowSums", "det", "diag", "solve")
 
-importFrom(Matrix, t, rowSums)
 
+# Methods:
 S3method(getCall, yagsResult)
-
-S3method("$<-", model.selection)
 
 S3method(print, averaging)
 S3method(print, summary.averaging)
@@ -41,10 +57,19 @@ S3method(vcov, averaging)
 S3method(model.matrix, averaging)
 S3method(print, model.selection)
 S3method(subset, model.selection)
+
+S3method(nobs, model.selection)
+
 S3method("[", model.selection)
+S3method("[[", model.selection)
+S3method("[<-", model.selection)
+S3method("[[<-", model.selection)
+S3method("$<-", model.selection)
+S3method("names<-", model.selection)
 S3method("row.names<-", model.selection)
 
 S3method(merge, model.selection)
+S3method(rbind, model.selection)
 
 S3method(update, model.selection)
 S3method(coef, model.selection)
@@ -67,6 +92,7 @@ S3method(print, importance)
 S3method(Weights, model.selection)
 S3method(Weights, averaging)
 S3method(Weights, data.frame)
+S3method(Weights, numeric)
 S3method(Weights, default)
 
 S3method(getAllTerms, default)
@@ -119,6 +145,7 @@ S3method(model.frame, lme)
 S3method(model.matrix, lme)
 
 S3method(coeffs, merMod)
+S3method(predict, merMod)
 
 S3method(coefTable, multinom)
 S3method(coeffs, multinom)
@@ -129,6 +156,7 @@ S3method(coefTable, gls)
 
 S3method(formula, unmarkedFit)
 S3method(getAllTerms, unmarkedFit)
+S3method(coeffs, unmarkedFit)
 S3method(coefTable, unmarkedFit)
 S3method(nobs, unmarkedFit)
 S3method(getAllTerms, unmarkedFitDS)
@@ -311,3 +339,7 @@ S3method(stdize, matrix)
 S3method(get.response, default)
 S3method(get.response, lm)
 S3method(get.response, averaging)
+
+#S3method("xtable", "summary.averaging")
+#S3method("xtable", "averaging")
+#S3method("xtable", "model.selection")

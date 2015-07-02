@@ -30,6 +30,9 @@ fm2oc <- occu(~veght+habitat ~veght*habitat, umfOccu)
 fm3oc <- occu(~habitat ~veght+habitat, umfOccu)
 fm4oc <- occu(~veght ~veght+habitat, umfOccu)
 
+#ms <- model.sel(fm1oc, fm2oc, fm3oc, fm4oc)
+#summary(print(model.avg(ms)))
+
 data(linetran)
 ltUMF <- with(linetran, {
    unmarkedFrameDS(y = cbind(dc1, dc2, dc3, dc4),
@@ -106,9 +109,9 @@ summary(ma3 <- model.avg(model.sel(model.sel(dd, rank = "AIC"), rank = "AICc")[1
 predict(ma1, type = "det")
 # MuMIn:::avgpred(ma1)$fit[, "det"]
 
-stopifnot(!any(is.na(coefTable(ma1))))
-stopifnot(!any(is.na(coefTable(ma2))))
-stopifnot(!any(is.na(coefTable(ma3))))
+stopifnot(!any(is.na(coefTable(ma1)[, 1:2])))
+stopifnot(!any(is.na(coefTable(ma2)[, 1:2])))
+stopifnot(!any(is.na(coefTable(ma3)[, 1:2])))
 stopifnot(isTRUE(all.equal(coefTable(ma1), coefTable(ma2))))
 stopifnot(isTRUE(all.equal(coefTable(ma2), coefTable(ma3))))
 stopifnot(!any(is.na(dd[, "psi(habitat)"])))

@@ -22,7 +22,7 @@ vCorrelated <- Vectorize(is.correlated, c("i", "j"))
 
 # Create logical matrix
 smat <- outer(1:4, 1:4, vCorrelated, data = Cement)
-nm <- colnames(Cement[1:4])
+nm <- colnames(Cement[-1])
 dimnames(smat) <- list(nm, nm)
 
 ### A simpler case: exclude only pairs of variables having cor. coefficient
@@ -48,7 +48,7 @@ sexpr
 system.time(dd2 <- dredge(fm, subset = smat))
 system.time(dd1 <- dredge(fm, subset = sexpr))
 
-# Using the argument 'subset' in a form of matrix is usually faster in this case.
+# Using the argument 'subset' in a form of matrix is usually faster.
 # The results are identical:
 dd1
 dd2

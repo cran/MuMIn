@@ -1,11 +1,7 @@
 ###
 # Example of model selection with models from 'unmarked' package
 ###
-
 require(MuMIn)
-# 'stats4' is needed for AIC to work with unmarked-models but is not loaded
-# automatically
-library(stats4)
 require(unmarked)
 
 opt <- options(width = 110)

@@ -5,25 +5,27 @@
 
 \encoding{utf-8}
 \title{Combine model selection tables}
-\description{Combine two model selection tables. }
+\description{Combine two or more model selection tables. }
 
 \usage{
 \method{merge}{model.selection}(x, y, suffixes = c(".x", ".y"), ...)
-% \method{rbind}{model.selection}(..., deparse.level = 1)
+
+\method{rbind}{model.selection}(..., deparse.level = 1, make.row.names = TRUE)
 }
 
 \arguments{
-  \item{x, y}{\code{model.selection} objects to be combined.}
+  \item{x, y, \dots}{\code{model.selection} objects to be combined.
+	(\dots ignored in  \code{merge})}
   \item{suffixes}{a character vector with two elements that are appended
 	respectively to row names of the combined tables.}
-  \item{\dots}{ignored. }
-% \item{\dots}{\code{model.selection} objects for \code{rbind}, ignored in 
-% \code{merge}.}
-%  \item{deparse.level}{currently ignored.}
+  \item{make.row.names}{logical indicating if unique and valid \code{row.names} should
+	be constructed from the arguments. }
+  \item{deparse.level}{ignored. }
 }
 
 \value{
-A \code{model.selection} object containing models from both model selection tables.
+A \code{\link[=model.selection.object]{"model.selection" object}} containing 
+models from all provided tables.
 }
 
 \note{

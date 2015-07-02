@@ -3,23 +3,32 @@
 function(x)  UseMethod("Weights")
 
 `Weights.model.selection` <-
-function(x) x[, "weight"] / sum(x[, "weight"])
+function(x) {
+	i <- type2col(x, "weight")
+	structure(item(x, i) / sum(item(x, i)),	names = row.names(x))
+}
 
 `Weights.averaging` <-
-function(x) x$msTable$weight
+function(x) {
+	x$msTable[, ncol(x$msTable)]
+}
 
 `Weights.data.frame` <-
 function(x) {
 	if(ncol(x) == 2L && colnames(x)[1L] == "df"	&& is.numeric(x[, 2L]))
-		return(Weights.default(x[, 2L]))
+		return(Weights(x[, 2L]))
 	if(ncol(x) == 1L && is.numeric(x[, 1L]))
-		return(Weights.default(x[, 1L]))
+		return(Weights(x[, 1L]))
 	return(NA)
+}
+
+`Weights.numeric` <-
+function(x) {
+	d <- exp(-x / 2)
+	d / sum(d)
 }
 
 `Weights.default` <-
 function(x) {
-	delta <- x - min(x)
-	weight <- exp(-delta / 2) / sum(exp(-delta / 2))
-	return (weight)
+    cry(, "cannot use \"%s\" as 'x'", class(x)[1L])
 }

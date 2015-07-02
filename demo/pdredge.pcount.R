@@ -2,11 +2,9 @@
 # Example of model selection with models from 'unmarked' package
 # with parallel execution
 ###
-
 require(parallel) || require(snow)
 library(MuMIn)
 library(unmarked)
-require(stats4)
 
 # Set up the cluster
 ncores <- if(exists("detectCores", mode = "function"))
@@ -23,13 +21,9 @@ mallardUMF <- unmarkedFramePCount(mallard.y, siteCovs = mallard.site,
 (ufm.mallard <- pcount(~ ivel + date + I(date^2) ~ length + elev + forest,
     mallardUMF, K = 30))
 
-# 'stats4' is needed for AIC to work with unmarkedFit objects but is not loaded
-# automatically with 'unmarked'.
-invisible(clusterEvalQ(clust, library(stats4, logical = TRUE)))
 invisible(clusterEvalQ(clust, library(unmarked, logical = TRUE)))
 
 clusterExport(clust, "mallardUMF")
-invisible(clusterCall(clust, "library", "stats4", character.only = TRUE))
 
 # For comparison, single-threaded run:
 #system.time(print(pdd1 <- pdredge(ufm.mallard,
@@ -50,11 +44,8 @@ attr(pdd2, "warnings") <- NULL
 # the statistics should be identical:
 models <- get.models(pdd2, delta < 2 | df == min(df), cluster = clust)
 
-
 modSel(fitList(fits = structure(models, names = model.names(models,
     labels = getAllTerms(ufm.mallard)))), nullmod = "(Null)")
-
-
 
 stopCluster(clust)
 ########################

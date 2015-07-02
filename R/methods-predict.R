@@ -72,14 +72,12 @@ function (object, newdata, level, asList = FALSE,
 
 `predict.merMod` <-
 function (object, newdata, type = c("link", "response"), se.fit = FALSE,
-		re.form, ...) {
+		re.form = NULL, ...) {
 	
 	if(!se.fit) {
-		fun <- getFrom("lme4", "predict.merMod")
-		cl <- match.call(definition = fun)
-		cl[[1L]] <- fun
+		cl <- sys.call()
 		cl$se.fit <- NULL
-		return(eval.parent(cl))
+		return(do.call(getFrom("lme4", "predict.merMod"), as.list(cl[-1L]), envir = parent.frame()))
 	}
 	
 	level0 <- (!is.null(re.form) && !inherits(re.form, "formula") && is.na(re.form)) || 

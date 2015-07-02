@@ -16,8 +16,7 @@
 	}
 	npar.adj <- if(chat == 1) 0 else 1
 	
-	loglik <- .getLogLik()
-	llCall <-  call("loglik", as.name("object"))
+	llCall <-  call("logLik", as.name("object"))
 	if(!is.null(REML)) llCall$REML <- REML
 	ll <- function(object) fixLogLik(NA, object)
 	body(ll)[[2L]] <- llCall

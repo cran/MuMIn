@@ -23,17 +23,6 @@ asChar <- function(x, control = NULL, nlines = 1L, ...)
 	if(is.character(x)) x[1L:nlines] else
 	deparse(x, control = control, nlines = nlines, ...)
 
-# substitute function calls in 'e'. 'func' must take care of the substitution job.
-`.exprapply` <- function(e, name, func, ...) {
-	if(is.expression(e)) e <- e[[1L]]
-	n <- length(e)
-	if(n == 0L) return(e) else if (n == 1L) {
-		if (!is.call(e)) return(e)
-	} else for(i in 2L:n) e[i] <- list(.exprapply(e[[i]], name, func, ...))
-	if(any(e[[1L]] == name)) e <- func(e, ...)
-	return(e)
-}
-
 ## .sub_* functions used with '.exprapply' as 'func'
 .sub_Term <- function(x) {
 	if(length(x) < 2L) cry(x, "'Term' needs one argument")
@@ -89,23 +78,41 @@ asChar <- function(x, control = NULL, nlines = 1L, ...)
 	call("[[", cVar, i)
 }
 
+# substitute function calls in 'e'. 'func' must take care of the substitution job.
+`.exprapply` <- function(e, name, func, ...) 
+exprApply(e, name, func, ..., symbols = FALSE)
+
 
 `exprApply` <-
-function(expr, what, FUN = identity, ..., symbols = FALSE) {
-	if(asExpr <- is.expression(expr)) expr <- expr[[1L]]
-	n <- length(expr)
-	if(n == 0L)
-		return(expr)
-	else if (n == 1L) {
-		if(!is.call(expr)) {
-			if (symbols && any(expr == what)) expr <- FUN(expr, ...)
-			return(expr)
-		}
-	} else {
-		for(i in seq.int(2L, n)) expr[i] <- 
-			list(exprApply(expr[[i]], what, FUN, symbols =  symbols, ...))
+function (expr, what, FUN = print, ..., symbols = FALSE) {
+    FUN <- match.fun(FUN)
+	self <- sys.function()
+	if((ispairlist <- is.pairlist(expr)) || is.expression(expr)) {
+		for (i in seq_along(expr))	expr[i] <-
+			list(self(expr[[i]], what, FUN, ..., symbols = symbols))
+		return(if(ispairlist) as.pairlist(expr) else expr)
 	}
-	if(any(expr[[1L]] == what)) expr <- FUN(expr, ...)
-	if(asExpr) return(as.expression(expr)) 
-	return(expr)
+    n <- length(expr)
+    if (n == 0L)
+		return(expr) else
+	if (n == 1L) {
+		if (!is.call(expr)) {
+            if (symbols && (is.na(what) || any(expr == what))) 
+                expr <- FUN(expr, ...)
+            return(expr)
+        }
+    } else {
+		if(expr[[1L]] == "function") {
+			if(n == 4L) {
+				n <- 3L
+				expr[[4L]] <- NULL ## remove srcref
+			}
+		} 
+        for (i in seq.int(2L, n)) {
+			y <- self(expr[[i]], what, FUN, symbols = symbols, ...)
+			expr[i] <- list(y)
+		}
+    }
+    if (is.na(what) || any(expr[[1L]] == what)) expr <- FUN(expr, ...)
+    return(expr)
 }

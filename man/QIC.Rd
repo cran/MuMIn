@@ -75,7 +75,7 @@ model.sel(fm1, fm2, fm3, rank = QIC)
 
 \dontrun{
 # same result:
-    dredge(fm1, m.min = 3, rank = QIC, varying = list(
+    dredge(fm1, m.lim = c(3, NA), rank = QIC, varying = list(
     corstr = list("exchangeable", "unstructured", "ar1")
     ))      
 }

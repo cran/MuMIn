@@ -23,7 +23,7 @@ beta.weights(model)
 \arguments{
   \item{x, model}{a fitted model object. }
   \item{partial.sd}{logical, if set to \code{TRUE}, model coefficients are
-	multiplied by Partial \acronym{SD}, otherwise they are multiplied by the
+	multiplied by partial \acronym{SD}, otherwise they are multiplied by the
 	ratio of the standard deviations of the independent variable and dependent
 	variable. }
  \item{\dots}{additional arguments passed to \code{\link{coefTable}}, e.g.
@@ -31,11 +31,11 @@ beta.weights(model)
 }
 
 \details{
-	Standardizing model coefficients has the same effect as centering and
+	Standardizing model coefficients has the same effect as centring and
 	scaling the input variables. \dQuote{Classical} standardized coefficients
 	are calculated as 
     \myequation{\beta^{*}_i = \beta_i\frac{s_{X_{i}}}{s_{y}}
-        }{\betaᵢ* = \betaᵢ ﹡(sₓᵢ / Sᵧ)
+        }{\betaᵢ* = \betaᵢ (sₓᵢ / Sᵧ)
         }{Bi* = Bi * (SXi / Sy)}
     , where
 	\myequation{\beta}{\beta}{B} is the unstandardized coefficient, 
@@ -46,9 +46,7 @@ beta.weights(model)
 	\myequation{s_{y}}{Sᵧ}{Sy}
     is \acronym{SD} of the response variable.
     
-    
-     % \myequation{\beta_i^{*}}{\betaᵢ*}{Bi*}
-	
+
 	If the variables are intercorrelated, the standard deviation of
     \myequation{X_i}{Xᵢ}{Xi}
 	used in computing the standardized coefficients 
@@ -60,13 +58,13 @@ beta.weights(model)
 	included in the regression equation. The partial standard deviation is
 	calculated as 
     \myequation{s_{X_{i}}^{*}=s_{X_{i}} \var{VIF}(X_i)^{-0.5} (\frac{n-1}{n-p} )^{0.5}
-        }{s*ₓᵢ = sₓᵢ ﹡√(VIFₓᵢ⁻¹) ﹡√((n-1)/(n-p))
+        }{s*ₓᵢ = sₓᵢ √(VIFₓᵢ⁻¹) √((n-1)/(n-p))
         }{sXi* = SXi * sqrt(1/VIF(Xi)) * sqrt((n-1)/(n-p))}, 
     where \var{VIF} is the variance inflation factor,
 	\var{n} is the number of observations and \var{p} number of predictors in
 	the model. Coefficient is then transformed as 
     \myequation{\beta^{*}_i = \beta_i s_{X_{i}}^{*}
-        }{\betaᵢ* = \betaᵢ ﹡s*ₓᵢ
+        }{\betaᵢ* = \betaᵢ s*ₓᵢ
         }{Bi* = Bi * SXi*}.
 
 }
@@ -130,7 +128,7 @@ fmgz <- glm(log(y) ~ z.x1 + z.x2 + z.x3 + z.x4, zGPA, family = fam)
 
 # Coefficients using standardized data:
 coef(fmgz) # (intercept is unchanged because the variables haven't been
-           #  centered)
+           #  centred)
 # Standardized coefficients:
 coef(fmg) * psdg
 

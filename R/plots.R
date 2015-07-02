@@ -9,26 +9,26 @@ function(x,
 	...) {
 	
 	if (is.null(xlab)) xlab <- NA  
-	if (is.null(ylab)) ylab <- expression("Cumulative Akaike weight" ~~
-										  (omega))
+	if (is.null(ylab)) ylab <- expression("Cumulative Akaike weight" ~~(omega))
 
 	op <- par(..., no.readonly = TRUE)
 	on.exit(par(op))
 	
-	cumw <- cumsum(x$weight)
+	cumweight <- cumsum(weight <- Weights(x))
+	stdweight <- weight / max(weight)
+	
 	n <- nrow(x)
 	m <- length(attr(x, "terms"))
 	plot.new()
 	plot.window(xlim = c(0, m), ylim = c(1, 0), xaxs = "i", yaxs = "i")
 
-	stdwt <- x$weight / max(x$weight)
 	pal <- if(is.na(col2)) rbind(col) else 
-		vapply(col, function(x) rgb(colorRamp(c(col2, x))(stdwt),
+		vapply(col, function(x) grDevices::rgb(grDevices::colorRamp(c(col2, x))(stdweight),
 			maxColorValue = 255), character(n))
 	npal <- ncol(pal)
 		
 	for(i in 1L:m)
-		rect(i - 1, c(0, cumw), i, c(cumw, 1),
+		rect(i - 1, c(0, cumweight), i, c(cumweight, 1),
 			col = ifelse(is.na(x[, i]), NA, pal[, 1L + ((i - 1L) %% npal)]),
 			border = border)
 
@@ -52,8 +52,8 @@ function(x,
 	   
 		arg <- c(list(side = 4, las = 2, line = 1, adj = 1), labCommonArg)
 		for(i in names(par.vlab)) arg[i] <- par.vlab[i]
-		ss <- x$weight > -(1.2 * strheight("I", cex = arg$cex))
-		arg[['at']] <- (c(0, cumw[-n]) + cumw)[ss] / 2
+		ss <- weight > -(1.2 * strheight("I", cex = arg$cex))
+		arg[['at']] <- (c(0, cumweight[-n]) + cumweight)[ss] / 2
 		arg[['text']] <- rownames(x)[ss]
 		arg$line <- arg$line + max(strwidth(arg[['text']], cex = arg$cex,
 			units = "in")) / par("mai")[4L] * par("mar")[4L]

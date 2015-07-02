@@ -71,6 +71,8 @@ budworm.lg <- glm(SF ~ sex*ldose, data = budworm, family = binomial)
 dredge(budworm.lg, rank = "QAIC", chat = chat)
 dredge(budworm.lg, rank = "AIC")
 
+
+
 \dontrun{
 # A 'hacked' constructor for quasibinomial family object, that allows for
 # ML estimation

@@ -1,24 +1,26 @@
-# Test support for different classes of models
+## MuMIn tests: support for various model classes
 
 require(MuMIn)
-.checkPkg <- function(package) length(find.package(package, quiet = TRUE)) != 0
+.checkPkg <- function(package) 
+length(find.package(package, quiet = TRUE)) == length(package)
+
 
 options(na.action = "na.fail")
 
-# TEST gls --------------------------------------------------------------------------------
-library(nlme)
+# --------------------------------------------------------------------------------
+# TEST gls
+library(nlme) 
 
-fm1Dial.gls <- gls(rate ~(pressure + I(pressure^2) + I(pressure^3))*QB,
-      Dialyzer, method = "ML")
+fm1Dial.gls <- gls(rate ~ (pressure + I(pressure^2) + I(pressure^3)) * QB, Dialyzer, 
+    method = "ML") 
 
-varying <- list(
-	correlation = alist(
-		AR1_0.771 = corAR1(0.771, form = ~ 1 | Subject),
-		AR1 = corAR1(), NULL),
-	weights = alist(vp.press = varPower(form = ~ pressure), NULL)
-	)
+varying <- list(correlation = alist(AR1_0.771 = corAR1(0.771, form = ~1 | Subject), 
+    AR1 = corAR1(), NULL), weights = alist(vp.press = varPower(form = ~pressure), 
+    NULL)) 
 
-dd <- dredge(fm1Dial.gls, m.max = 2, m.min = 1, fixed=~pressure, varying = varying, extra = "R^2")
+
+dd <- dredge(fm1Dial.gls, m.lim = c(1, 2), fixed = ~pressure, varying = varying, 
+    extra = "R^2") 
 
 models <- get.models(dd, subset = 1:4)
 
@@ -31,85 +33,86 @@ ms <- model.sel(models)
 print(ms, abbr = FALSE)
 print(ms, abbr = TRUE)
 summary(ma)
-predict(ma)[1:10]
+predict(ma)[1:10] 
+
 
 # testing predict replacement:
-fm1 <- lme(rate ~ (pressure + I(pressure^2) + I(pressure^3)) * QB, ~ 1 | Subject, data = Dialyzer)
-MuMIn:::predict.lme(fm1, newdata = Dialyzer[1:5, ], level = 0, se.fit = TRUE)
-
+fm1 <- lme(rate ~ (pressure + I(pressure^2) + I(pressure^3)) * QB, ~1 | Subject, 
+    data = Dialyzer)
+predict(fm1, newdata = Dialyzer[1:5, ], level = 0, se.fit = TRUE)
+ 
 
 detach(package:nlme); rm(list=ls())
 
 # TEST glmmML --------------------------------------------------------------------
-if(.checkPkg("glmmML")) {
-library(glmmML)
+if (.checkPkg("glmmML")) {
+    library("glmmML")
+    
+    set.seed(100)
+    dat <- data.frame(y = rbinom(100, prob = rep(runif(20), rep(5, 20)), size = 1), 
+        x = rnorm(100), x2 = rnorm(100), id = factor(rep(1:20, rep(5, 20))))
+    
+    fm1 <- glmmML(y ~ x * x2, data = dat, cluster = id, x = TRUE)
+    dd <- dredge(fm1)
+    # mod <- get.models(dd, subset = delta <= 4)
+    summary(ma <- model.avg(dd, subset = delta <= 4))
+    # vcov(ma)
+    coefTable(ma)
+    
+    detach("package:glmmML")
+    rm(list = ls())
+} 
 
-set.seed(100)
-dat <- data.frame(y = rbinom(100, prob = rep(runif(20), rep(5, 20)), size = 1),
-	x = rnorm(100), x2 = rnorm(100), id = factor(rep(1:20, rep(5, 20))))
-
-fm1 <- glmmML(y ~ x*x2, data = dat, cluster = id, x = TRUE)
-dd <- dredge(fm1)
-# mod <- get.models(dd, subset = delta <= 4)
-summary(ma <- model.avg(dd, subset = delta <= 4))
-# vcov(ma)
-coefTable(ma)
-
-detach(package:glmmML); rm(list=ls())
-}
 
 # TEST lm ---------------------------------------------------------------------------------
-if(.checkPkg("nlme")) {
-data(Orthodont, package = "nlme")
+if (.checkPkg("nlme")) {
+    data(Orthodont, package = "nlme")
+    
+    fm1 <- lm(distance ~ Sex * age + age * Sex, data = Orthodont)
+    
+    dispersion <- function(object) {
+        wts <- weights(object)
+        if (is.null(wts)) 
+            wts <- 1
+        sum((wts * resid(object, type = "working")^2)[wts > 0])/df.residual(object)
+    }
+    
+    dd <- dredge(fm1, extra = alist(dispersion))
+    gm <- get.models(dd, subset = 1:4)
+    ma <- model.avg(gm, revised = F)
+    
+    vcov(ma)
+    summary(ma)
+    confint(ma)
+    
+    predict(ma)
+    predict(ma, se.fit = TRUE)
+    predict(ma, data.frame(Sex = "Male", age = 8:12))
+    
+    rm(list = ls())
+} 
 
-fm1 <- lm(distance ~ Sex*age + age*Sex, data = Orthodont)
-
-dispersion <- function(object) {
-	wts <- weights(object); if(is.null(wts)) wts <- 1
-	sum((wts * resid(object, type = "working")^2)[wts > 0]) / df.residual(object)
-}
-
-dd <- dredge(fm1, extra = alist(dispersion))
-gm <- get.models(dd, subset = 1:4)
-ma <- model.avg(gm, revised=F)
-
-vcov(ma)
-summary(ma)
-confint(ma)
-
-predict(ma)
-predict(ma, se.fit=TRUE)
-predict(ma, data.frame(Sex="Male", age=8:12))
-
-rm(list=ls())
-}
 
 # TEST glm --------------------------------------------------------------------------------
 data(Cement, package = "MuMIn")
 
-nseq <- function(x, len=length(x)) seq(min(x, na.rm=TRUE), max(x, na.rm=TRUE),
-	length=len)
+nseq <- function(x, len = length(x)) seq(min(x, na.rm = TRUE), 
+    max(x, na.rm = T), length = len)
+	fm1 = glm(y ~ (X1 + X2 + X3)^2, data = Cement)
+	dd <- dredge(fm1)
 
-fm1 <- glm(y ~ (X1+X2+X3)^2, data = Cement)
-
-dd <- dredge(fm1)
-gm <- get.models(dd, subset = 1:10)
+gm = get.models(dd, subset = 1L:10L)
 
 summary(ma <- model.avg(gm))
-#summary(ma1<-model.avg(dd, 1:10))
-#summary(ma2<-model.avg(dd[1:10]))
 
-
-#vcov(fm1)
 vcov(ma)
 
-summary(ma1  <- model.avg(dd[1:10]))
-summary(ma2 <- model.avg(model.sel(dd[1:10], rank = "AICc")))
-
+summary((ma1 = model.avg(dd[1L:10L])))
+summary(ma2 <- model.avg(model.sel(dd[1L:10L], rank = "AICc")))
 all.equal(ma$avg.model, ma1$avg.mode)
 
 predict(ma) == predict(ma, Cement)
-predict(ma, se.fit=T)
+predict(ma, se.fit = T)
 predict(ma, lapply(Cement, nseq))
 
 
@@ -197,7 +200,8 @@ rm(list=ls()); detach(package:mgcv)
 
 # TEST spautolm ---------------------------------------------------------------------------
 
-if (.checkPkg("spdep"))
+# if (require("foreign") && require("spdep"))
+if (.checkPkg(c("foreign", "spdep")))
 if(!is.null(tryCatch(suppressPackageStartupMessages(library(spdep)), error = function(e) NULL))) {
 
 suppressMessages(example(NY_data, echo = FALSE))
@@ -210,7 +214,7 @@ fm1.spautolm <- spautolm(Z ~ PEXPOSURE * PCTAGE65P + PCTOWNHOME,
  data = nydata, listw = listw_NY, family = "SAR", method = method1, verbose = FALSE)
 
 options(warn=1)
-dd <- dredge(fm1.spautolm, m.max=1, fixed = ~PEXPOSURE,
+dd <- dredge(fm1.spautolm, m.lim=c(0,1), fixed = ~PEXPOSURE,
 	varying = list(
 		family = list("CAR", "SAR"),
 		method=list("Matrix_J", method1)
@@ -218,7 +222,7 @@ dd <- dredge(fm1.spautolm, m.max=1, fixed = ~PEXPOSURE,
 options(warn=0)
 
 
-#dd <- dredge(fm1.spautolm, m.max=3, fixed=~PEXPOSURE)
+#dd <- dredge(fm1.spautolm, m.lim=c(0,3), fixed=~PEXPOSURE)
 gm <- get.models(dd, cumsum(weight) <= .99)
 ma <- model.avg(gm)
 summary(ma)

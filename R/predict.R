@@ -86,7 +86,7 @@ function(x, peel = TRUE) {
 		if(hasOff <- !is.null(attr(x, "offset")))
 			z[attr(x, "offset")] <- 2L
 		charvar <- if (peel) sapply(as.list(attr(x, "variables")[-1L]), peelfun) else
-					rownames(factors)
+			rownames(factors)
 		ov <- order(z, charvar)
 		factors <- factors[ov, , drop = FALSE]
 		charvar <- charvar[ov]
@@ -118,9 +118,14 @@ function(x, peel = TRUE) {
 	} else x
 }
 
-get.contrasts <- function(x) UseMethod("get.contrasts")
-get.contrasts.lm <- function(x) x$contrasts
-get.contrasts.averaging <- function(x) {
+get.contrasts <-
+function(x) UseMethod("get.contrasts")
+
+get.contrasts.lm <-
+function(x) x$contrasts
+
+get.contrasts.averaging <-
+function(x) {
 	mergeContrasts(getModelList(x))
 }
 

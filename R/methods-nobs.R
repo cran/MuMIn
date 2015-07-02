@@ -68,7 +68,7 @@ function (object, ...) object$Residual$nrl
 
 
 `nobs.gamm` <-
-	function (object, ...) nobs.glm(object$gam, ...)
+	function (object, ...) getFrom("stats", "nobs.glm")(object$gam, ...)
 
 `nobs.mark` <- 
 function (object, ...) object$results[['n']]
