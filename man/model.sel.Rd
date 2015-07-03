@@ -51,13 +51,17 @@ model.sel(object, ...)
 }
 
 \value{
-An object of class \code{"model.selection"} with columns containing useful
-information about each model: the coefficients, \emph{df}, log-likelihood, the
-value of the information criterion used, 
+An object of class \code{c("model.selection", "data.frame")}, being a 
+\code{data.frame}, where each row represents one model and columns contain 
+useful information about each model: the coefficients, \emph{df}, log-likelihood, the
+value of the information criterion used,  
  \ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC} and \sQuote{Akaike 
- weight}. If any arguments differ between the modelling function calls, the 
+ weight}.
+  If any arguments differ between the modelling function calls, the 
  result will include additional columns showing them (except for formulas and 
  some other arguments).
+
+See \code{\link{model.selection.object}} for its structure. 
 }
 
 \details{

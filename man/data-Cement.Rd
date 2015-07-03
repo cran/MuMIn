@@ -16,12 +16,13 @@ Cement
 variables expressed as a percentage of weight.
 
 \describe{
+   \item{y}{calories of heat evolved per gram of cement after 180 days of
+	hardening}  
    \item{X1}{calcium aluminate}
    \item{X2}{tricalcium silicate}
    \item{X3}{tetracalcium alumino ferrite}
-   \item{X4}{dicalcium silicate}
-   \item{y}{calories of heat evolved per gram of cement after 180 days of
-	hardening.}
+   \item{X4}{dicalcium silicate.}
+
 }}
 
 \source{

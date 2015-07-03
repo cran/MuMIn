@@ -1,8 +1,3 @@
-# Hidden functions
-`.getLogLik` <- function()
-	if(isGeneric("logLik")) getFrom("stats4", "logLik") else
-		getFrom("stats", "logLik")
-	
 fixLogLik <-
 function(ll, object) {
 	if(is.null(attr(ll, "nall")) && is.null(attr(ll, "nobs")))
@@ -12,13 +7,10 @@ function(ll, object) {
 
 `.getLik` <- function(x) {
     if(isGEE(x)) {
-		logLik <- quasiLik
-		lLName <- "qLik"
+		list(logLik = quasiLik, name = "qLik")
 	} else {
-	 	logLik <- .getLogLik()
-		lLName <- "logLik"
+		list(logLik = logLik, name = "logLik")
     }
-	list(logLik = logLik, name = lLName)
 }
 
 
@@ -248,7 +240,6 @@ function(x, ...) {
 	}
 	invisible(res)
 }
-
 
 .checkNaAction <-
 function(x, cl = get_call(x),

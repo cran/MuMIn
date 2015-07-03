@@ -6,6 +6,10 @@
 \newcommand{\Rsqx}{\ifelse{latex}{\eqn{R_{#1}^{2}}{R_#1^2}}{\ifelse{html}{\enc{R_#1²}{R_#1^2}}{R_#1^2}}}
 \newcommand{\Rsq}{\ifelse{latex}{\eqn{R^{2}}{R^2}}{\ifelse{html}{\enc{R²}{R^2}}{R^2}}}
 
+\newcommand{\mydequation}{\ifelse{latex}{\deqn{#1}{#3}}{\ifelse{html}{\enc{\deqn{#2}}{#3}}{#3}}}
+\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#2}}{#3}}{#3}}}
+
+
 
 \title{Pseudo-R-squared for Generalized Mixed-Effect models}
 \description{
@@ -32,29 +36,30 @@ For mixed-effects models, \Rsq can be categorized into two types.
 \bold{Marginal \Rsqx{GLMM}} represents the variance explained by fixed 
 factors, and is defined as:
 
-\deqn{
-R_{GLMM(m)}^{2}= \frac{\sigma_f^2}{\sigma_f^2 + \sum_{l=1}^{u}\sigma_{l}^{2} + 
-\sigma_e^2 + \sigma_d^2}
-}{
-R_GLMM(m)^2 = (\sigma_f^2) / (\sigma_f^2 + sum(\sigma_l^2) + \sigma_e^2 + 
-\sigma_d^2
+\mydequation{
+R_{GLMM(m)}^{2}= \frac{\sigma_f^2}{\sigma_f^2 + \sum_{l=1}^{u}\sigma_{l}^{2} + \sigma_e^2 + \sigma_d^2}
+}{R_GLMM(m)² = (\sigma_f²) / (\sigma_f² + \sum(\sigma_l²) + \sigma_e² + \sigma_d²
+}{R_GLMM(m)^2 = (sigma_f^2) / (sigma_f^2 + sum(sigma_l^2) + sigma_e^2 + sigma_d^2
 }
 
 \bold{Conditional \Rsqx{GLMM}} is interpreted as variance explained by both
 fixed and random factors (i.e. the entire model), and is calculated according
 to the equation:
 
-\deqn{
-R_{GLMM(c)}^{2}= \frac{\sigma_f^2 + \sum_{l=1}^{u}\sigma_{l}^{2}}{\sigma_f^2 +
-\sum_{l=1}^{u}\sigma_{l}^{2} + \sigma_e^2 + \sigma_d^2}
-}{
-R_GLMM(c)^2= (\sigma_f^2 + sum(\sigma_l^2)) / (\sigma_f^2 + sum(\sigma_l^2) +
-\sigma_e^2 + \sigma_d^2 }
+\mydequation{R_{GLMM(c)}^{2}= \frac{\sigma_f^2 + \sum_{l=1}^{u}\sigma_{l}^{2}}{\sigma_f^2 + \sum_{l=1}^{u}\sigma_{l}^{2} + \sigma_e^2 + \sigma_d^2}
+}{R_GLMM(c)²= (\sigma_f² + \sum(\sigma_l²)) / (\sigma_f² + \sum(\sigma_l²) + \sigma_e² + \sigma_d²
+}{R_GLMM(c)^2= (sigma_f^2 + sum(sigma_l^2)) / (sigma_f^2 + sum(sigma_l^2) + sigma_e^2 + sigma_d^2 }
 
-where \eqn{\sigma_f^2} is the variance of the fixed effect components, and
-\eqn{\sum \sigma_{l}^{2}}{sum(\sigma_l^2)} is the sum of all
-\ifelse{latex}{\eqn{u}}{} variance components (group, individual, etc.), 
-\eqn{\sigma_l^2} is the variance due to additive dispersion and \eqn{\sigma_d^2}
+where
+ \myequation{\sigma_f^2}{\sigma_f²}{sigma_f^2}
+ is the variance of the fixed effect components, and
+ \myequation{\sum \sigma_{l}^{2}}{\sum \sigma_l²}{sum(sigma_l^2)} 
+is the sum of all
+\eqn{u}
+variance components (group, individual, etc.), 
+\myequation{\sigma_l^2}{\sigma_l²}{sigma_l^2}
+ is the variance due to additive dispersion and 
+\myequation{\sigma_d^2}{\sigma_d²}{sigma_d^2}
 is the distribution-specific variance. 
 
 }

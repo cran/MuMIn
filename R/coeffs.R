@@ -53,7 +53,6 @@ function (model) coef(model$gam)
 	cf
 }
 
-
 `coeffs.multinom` <- 
 function (model) {
 	cf <- coef(model)
@@ -75,4 +74,5 @@ function (model)
 model@fixef
 
 `coeffs.default` <-
+#function(model) (if(isS4(model)) coef else coef)(model)
 function(model) coef(model)

@@ -1,4 +1,5 @@
 
+# code snippet to handle argument 'beta'
 .expr_beta_arg <- expression({
 	if(is.logical(beta) && beta) {
 		betaMode <- as.integer(beta)
@@ -16,15 +17,14 @@
 
 `dredge` <-
 function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, rank = "AICc",
-		 fixed = NULL, m.max = NA, m.min = 0, subset,
+		 fixed = NULL, m.lim = NULL, m.min, m.max, subset,
 		 trace = FALSE, varying, extra, ct.args = NULL,
 		 ...) {
 	
 	trace <- min(as.integer(trace), 2L)
-	
 	strbeta <- betaMode <- NULL
 	eval(.expr_beta_arg)
-	
+    
 	gmEnv <- parent.frame()
 	gmNobs <- nobs(global.model)
 
@@ -40,7 +40,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		#" must be used directly as an argument to 'dredge'.")
 		# NB: this is unlikely to happen
 		if(!is.function(eval.parent(gmCall[[1L]])))
-			cry(NA, "could not find function '%s'", asChar(gmCall[[1L]]))
+			cry(, "could not find function '%s'", asChar(gmCall[[1L]]))
 	} else {
 		# if 'update' method does not expand dots, we have a problem with
 		# expressions like ..1, ..2 in the call. So try to replace them with
@@ -48,7 +48,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		isDotted <- grep("^\\.\\.", sapply(as.list(gmCall), asChar))
 		if(length(isDotted) != 0L) {
 			if(is.name(substitute(global.model))) {
-				cry(NA, "call stored in 'global.model' contains dotted names and cannot be updated. \n    Consider using 'updateable' on the modelling function")
+				cry(, "call stored in 'global.model' contains dotted names and cannot be updated. \n    Consider using 'updateable' on the modelling function")
 			} else gmCall[isDotted] <-
 				substitute(global.model)[names(gmCall[isDotted])]
 		}
@@ -61,20 +61,19 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 
 	lik <- .getLik(global.model)
 	logLik <- lik$logLik
-	logLikName <- lik$name
 	
 	# *** Rank ***
 	rank.custom <- !missing(rank)
 	
-	if(!rank.custom && logLikName == "qLik") {
+	if(!rank.custom && lik$name == "qLik") {
 		rank <- "QIC"
-		cry(NA, "using 'QIC' instead of 'AICc'", warn = TRUE)
+		cry(, "using 'QIC' instead of 'AICc'", warn = TRUE)
 	}
 	
 	rankArgs <- list(...)
 
 	if(any(badargs <- names(rankArgs) == "marg.ex")) {
-		cry(NA, "argument \"marg.ex\" is defunct and has been ignored",
+		cry(, "argument \"marg.ex\" is defunct and has been ignored",
 			 warn = TRUE)
 		rankArgs <- rankArgs[!badargs]
 	}
@@ -91,14 +90,15 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			"arguments %s are not names of formal arguments of %s"),
 			prettyEnumStr(names(rankArgs[badargs])), "'dredge' or 'rank'", 
 			warn = TRUE)
-	
+		
+
 	ICName <- as.character(attr(IC, "call")[[1L]])
 	
 	if(length(tryCatch(IC(global.model), error = function(e) {
 		stop(simpleError(conditionMessage(e), subst(attr(IC, "call"),
 			x = as.name("global.model"))))
 	})) != 1L) {
-		cry(NA, "result of '%s' is not of length 1", asChar(attr(IC, "call")))
+		cry(, "result of '%s' is not of length 1", asChar(attr(IC, "call")))
 	}
 
 	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,
@@ -109,57 +109,66 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	if(is.null(interceptLabel)) interceptLabel <- "(Intercept)"
 	nIntercepts <- sum(attr(allTerms, "intercept"))
 
-	#XXX: use.ranef <- FALSE
-	#if(use.ranef && inherits(global.model, "mer")) {
-		#allTerms <- c(allTerms, paste0("(", attr(allTerms0, "random.terms"), ")"))
-	#}
-
-
 	# Check for na.omit
 	if(!(gmNaAction <- .checkNaAction(cl = gmCall, what = "'global.model'")))
-		cry(NA, attr(gmNaAction, "message"))
+		cry(, attr(gmNaAction, "message"))
 	
 	if(names(gmCall)[2L] == "") gmCall <-
 		match.call(gmCall, definition = eval.parent(gmCall[[1L]]),
 				   expand.dots = TRUE)
 
-		
+	
 	# TODO: other classes: model, fixed, etc...
     gmCoefNames <- names(coeffs(global.model))
-    if(any(dup <- duplicated(gmCoefNames <- names(coef(global.model)))))
-        cry(NA, "model cannot have duplicated coefficient names: ",
+    if(any(dup <- duplicated(gmCoefNames)))
+        cry(, "model cannot have duplicated coefficient names: ",
              prettyEnumStr(gmCoefNames[dup]))
+		
 	gmCoefNames <- fixCoefNames(gmCoefNames)
 
 	nVars <- length(allTerms)
 
 	if(isTRUE(rankArgs$REML) || (isTRUE(.isREMLFit(global.model)) && is.null(rankArgs$REML)))
-		cry(NA, "comparing models fitted by REML", warn = TRUE)
+		cry(, "comparing models fitted by REML", warn = TRUE)
 
-	if ((betaMode != 0L) && is.null(tryCatch(std.coef(global.model, betaMode == 2L), error = function(e) NULL,
-		warning = function(e) NULL))) {
-		cry(NA, "do not know how to standardize coefficients of '%s', argument 'beta' ignored",
+	if ((betaMode != 0L) && is.null(tryCatch(std.coef(global.model, betaMode == 2L),
+		error = return_null, warning = return_null))) {
+		cry(, "do not know how to standardize coefficients of '%s', argument 'beta' ignored",
 			 class(global.model)[1L], warn = TRUE)
 		betaMode <- 0L
 		strbeta <- "none"
 	}
 
-	m.max <- if (missing(m.max)) (nVars - nIntercepts) else min(nVars - nIntercepts, m.max)
-
+	if(nomlim <- is.null(m.lim)) m.lim <- c(0, NA)
+	## XXX: backward compatibility:
+	if(!missing(m.max) || !missing(m.min)) {
+		warning("arguments 'm.min' and 'm.max' are deprecated, use 'm.lim' instead")
+		if(!nomlim) stop("cannot use both 'm.lim' and 'm.min' or 'm.max'")
+		if(!missing(m.min)) m.lim[1L] <- m.min[1L]
+		if(!missing(m.max)) m.lim[2L] <- m.max[1L]
+	}
+	if(!is.numeric(m.lim) || length(m.lim) != 2L || any(m.lim < 0, na.rm = TRUE))
+		stop("invalid 'm.lim' value")
+	m.lim[2L] <- if (!is.finite(m.lim[2L])) (nVars - nIntercepts) else
+		min(nVars - nIntercepts, m.lim[2L])
+	if (!is.finite(m.lim[1L])) m.lim[1L] <- 0
+	m.min <- m.lim[1L]
+    m.max <- m.lim[2L]
+	
 	# fixed variables:
 	if (!is.null(fixed)) {
 		if (inherits(fixed, "formula")) {
 			if (fixed[[1L]] != "~" || length(fixed) != 2L)
-				cry(NA, "'fixed' should be a one-sided formula", warn = TRUE)
+				cry(, "'fixed' should be a one-sided formula", warn = TRUE)
 			fixed <- as.vector(getAllTerms(fixed))
 		} else if (identical(fixed, TRUE)) {
 			fixed <- as.vector(allTerms[!(allTerms %in% interceptLabel)])
 		} else if (!is.character(fixed)) {
-			cry(NA, paste("'fixed' should be either a character vector with",
+			cry(, paste("'fixed' should be either a character vector with",
 						   " names of variables or a one-sided formula"))
 		}
 		if (!all(i <- (fixed %in% allTerms))) {
-			cry(NA, "some terms in 'fixed' do not exist in 'global.model': %s",
+			cry(, "some terms in 'fixed' do not exist in 'global.model': %s",
 				 prettyEnumStr(fixed[!i]), warn = TRUE)
 			fixed <- fixed[i]
 		}
@@ -220,7 +229,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		applyExtras <- function(x) unlist(lapply(extra, function(f) f(x)))
 		extraResult <- applyExtras(global.model)
 		if(!is.numeric(extraResult))
-			cry(NA, "function in 'extra' returned non-numeric result")
+			cry(, "function in 'extra' returned non-numeric result")
 
 		nextra <- length(extraResult)
 		extraNames <- names(extraResult)
@@ -233,13 +242,13 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	nov <- as.integer(nVars - nFixed)
 	ncomb <- (2L ^ nov) * nVariants
 
-	if(nov > 31L) cry(NA, "number of predictors (%d) exceeds allowed maximum of 31", nov)
+	if(nov > 31L) cry(, "number of predictors (%d) exceeds allowed maximum of 31", nov)
 	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
 	nmax <- ncomb * nVariants
 	rvChunk <- 25L
 	if(evaluate) {
 		rvNcol <- nVars + nVarying + 3L + nextra
-		ret <- matrix(NA_real_, ncol = rvNcol, nrow = rvChunk)
+		rval <- matrix(NA_real_, ncol = rvNcol, nrow = rvChunk)
 		coefTables <- vector(rvChunk, mode = "list")
 	}
 
@@ -295,7 +304,6 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			subset <- as.expression(subset)
 			ssValidNames <- c("comb", "*nvar*")
 
-			#gloFactorTable <- t(attr(terms(global.model), "factors")[-1L, ] != 0)
 			gloFactorTable <- t(attr(terms(reformulate(allTerms0[!(allTerms0
 				%in% interceptLabel)])), "factors") != 0)
 			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
@@ -353,30 +361,31 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		gmEnv = gmEnv,
 		allTerms = allTerms0,
 		gmCoefNames = gmCoefNames,
+		## TODO: is 'gmDataHead' needed anymore?
 		gmDataHead = if(!is.null(gmCall$data)) {
 			if(eval(call("is.data.frame", gmCall$data), gmEnv))
 				eval(call("head", gmCall$data, 1L), gmEnv) else gmCall$data
 			} else NULL,
 		gmFormulaEnv = gmFormulaEnv
 		)
+
+## [[end of common code]]
 	
 	matchCoefCall <- as.call(c(alist(matchCoef, fit1, all.terms = allTerms,
 		  beta = betaMode, allCoef = TRUE), ct.args))
-	
-
 	
 	retColIdx <- if(nVarying) -nVars - seq_len(nVarying) else TRUE
 	
 	if(trace > 1L) {
 		progressBar <- if(.Platform$GUI == "Rgui") {
-			 winProgressBar(max = ncomb, title = "'dredge' in progress")
+			 utils::winProgressBar(max = ncomb, title = "'dredge' in progress")
 		#} else if(capabilities("tcltk") && ("package:tcltk" %in% search())) {
 			 #tkProgressBar(max = ncomb, title = "'dredge' in progress")
-		} else txtProgressBar(max = ncomb, style = 3)
+		} else utils::txtProgressBar(max = ncomb, style = 3)
 		setProgressBar <- switch(class(progressBar),
-			    txtProgressBar = setTxtProgressBar,
+			    txtProgressBar = utils::setTxtProgressBar,
 			   #tkProgressBar = setTkProgressBar,
-			   winProgressBar = setWinProgressBar,
+			   winProgressBar = utils::setWinProgressBar,
 			   function(...) {})
 		on.exit(close(progressBar))
 	}
@@ -386,8 +395,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		varComb <- iComb %% nVariants
 		jComb <- (iComb - varComb) / nVariants
 
-		#if(iComb %% 100L == 0L)
-			#setProgressBar(progressBar, value = iComb, title = sprintf("dredge: %d/%d total", k, iComb))
+		#if(iComb %% 100L == 0L) setProgressBar(progressBar, value = iComb, title = sprintf("dredge: %d/%d total", k, iComb))
 		
 		if(varComb == 0L) {
 			isok <- TRUE
@@ -469,11 +477,9 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 
 			mcoef1 <- eval(matchCoefCall)
 			
-			DebugPrint(mcoef1)
-			
 			ll1 <- logLik(fit1)
 			nobs1 <- nobs(fit1)
-			if(nobs1 != gmNobs) cry(NA, "number of observations in model #%d (%d) different from global model (%d)",
+			if(nobs1 != gmNobs) cry(, "number of observations in model #%d (%d) different from global model (%d)",
 				iComb, nobs1, gmNobs, warn = TRUE)
 
 			row1 <- c(mcoef1[allTerms], extraResult1,
@@ -482,15 +488,15 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			## end -> row1
 
 			k <- k + 1L # all OK, add model to table
-			rvlen <- nrow(ret)
+			rvlen <- nrow(rval)
 			if(retNeedsExtending <- k > rvlen) { # append if necesarry
 				nadd <- min(rvChunk, nmax - rvlen)
-				ret <- rbind(ret, matrix(NA_real_, ncol = rvNcol, nrow = nadd),
+				rval <- rbind(rval, matrix(NA_real_, ncol = rvNcol, nrow = nadd),
 					deparse.level = 0L)
 				addi <- seq.int(rvlen + 1L, length.out = nadd)
 				coefTables[addi] <- vector("list", nadd)
 			}
-			ret[k, retColIdx] <- row1
+			rval[k, retColIdx] <- row1
 			coefTables[[k]] <- attr(mcoef1, "coefTable")
 		} else { # if !evaluate
 			k <- k + 1L
@@ -513,63 +519,67 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	names(calls) <- ord
 	if(!evaluate) return(calls[seq_len(k)])
 
-	if(k < nrow(ret)) {
+	if(k < nrow(rval)) {
 		i <- seq_len(k)
-		ret <- ret[i, , drop = FALSE]
+		rval <- rval[i, , drop = FALSE]
 		ord <- ord[i]
 		calls <- calls[i]
 		coefTables <- coefTables[i]
 	}
-
+	
 	if(nVarying) {
 		varlev <- ord %% nVariants
 		varlev[varlev == 0L] <- nVariants
-		ret[, nVars + seq_len(nVarying)] <- variants[varlev, ]
+		rval[, nVars + seq_len(nVarying)] <- variants[varlev, ]
 	}
 	
-	ret <- as.data.frame(ret)
-	row.names(ret) <- ord
-
+	rval <- as.data.frame(rval)
+	row.names(rval) <- ord
+	
 	# Convert columns with presence/absence of terms to factors
 	tfac <- which(!(allTerms %in% gmCoefNames))
-
-	ret[tfac] <- lapply(ret[tfac], factor, levels = NaN, labels = "+")
-
-	i <- seq_along(allTerms)
-	v <- order(termsOrder)
-	ret[, i] <- ret[, v]
+	rval[tfac] <- lapply(rval[tfac], factor, levels = NaN, labels = "+")
+	rval[, seq_along(allTerms)] <- rval[, v <- order(termsOrder)]
 	allTerms <- allTerms[v]
-	colnames(ret) <- c(allTerms, varyingNames, extraNames, "df", logLikName, ICName)
-
+	
+    colnames(rval) <- c(allTerms, varyingNames, extraNames, "df", lik$name, ICName)
 	if(nVarying) {
 		variant.names <- vapply(variantsFlat, asChar, "", width.cutoff = 20L)
 
 		vnum <- split(seq_len(sum(vlen)), rep(seq_len(nVarying), vlen))
 		names(vnum) <- varyingNames
-		for (i in varyingNames) ret[, i] <-
-			factor(ret[, i], levels = vnum[[i]], labels = variant.names[vnum[[i]]])	
+		for (i in varyingNames) rval[, i] <-
+			factor(rval[, i], levels = vnum[[i]], labels = variant.names[vnum[[i]]])	
 	}
 
-	o <- order(ret[, ICName], decreasing = FALSE)
-	ret <- ret[o, ]
+	rval <- rval[o <- order(rval[, ICName], decreasing = FALSE), ]
 	coefTables <- coefTables[o]
 
-	ret$delta <- ret[, ICName] - min(ret[, ICName])
-	ret$weight <- exp(-ret$delta / 2) / sum(exp(-ret$delta / 2))
-	
-	structure(ret,
-		class = c("model.selection", "data.frame"),
+	rval$delta <- rval[, ICName] - min(rval[, ICName])
+	rval$weight <- exp(-rval$delta / 2) / sum(exp(-rval$delta / 2))
+    mode(rval$df) <- "integer"
+
+	structure(rval,
 		model.calls = calls[o],
 		global = global.model,
 		global.call = gmCall,
 		terms = structure(allTerms, interceptLabel = interceptLabel),
 		rank = IC,
-		rank.call = attr(IC, "call"),
 		beta = strbeta, #eval(formals(sys.function())[["beta"]])[betaMode + 1L],
 		call = match.call(expand.dots = TRUE),
 		coefTables = coefTables,
 		nobs = gmNobs,
-		vCols = varyingNames
+		vCols = varyingNames,
+		column.types = {
+			colTypes <- c(terms = length(allTerms), varying = length(varyingNames), 
+				extra = length(extraNames), df = 1, loglik = 1, ic = 1, delta = 1,
+				weight = 1)
+			column.types <- rep(1L:length(colTypes), colTypes)
+			names(column.types) <- colnames(rval)
+			lv <- 1L:length(colTypes)
+			factor(column.types, levels = lv, labels = names(colTypes)[lv])
+		},
+        class = c("model.selection", "data.frame")
 	)
 } ######
 
@@ -579,10 +589,10 @@ function(global.model, beta = FALSE, ...) {
 	cl$evaluate <- FALSE
 	cl[[1L]] <- as.name("dredge")
 	models <- lapply(eval.parent(cl), eval, parent.frame())
-	ret <- model.sel(models)
-	attr(ret, "modelList") <- models
-	attr(ret, "global") <- global.model
-	attr(ret, "global.call") <- get_call(global.model)
-	attr(ret, "call") <- cl
-	ret
+	rval <- model.sel(models)
+	attr(rval, "modelList") <- models
+	attr(rval, "global") <- global.model
+	attr(rval, "global.call") <- get_call(global.model)
+	attr(rval, "call") <- cl
+	rval
 }

@@ -6,7 +6,6 @@
 \encoding{utf-8}
 
 \newcommand{\Rsq}{\ifelse{latex}{\eqn{R^{2}}{R^2}}{\ifelse{html}{\enc{R²}{R^2}}{R^2}}}
-%% \newcommand{\bq}{\ifelse{latex}{\verb{`}#1\verb{`}}{\ifelse{html}{\code{`#1`}}{`#1`}}}
 \newcommand{\bq}{\verb{`}\code{#1}\verb{`}}
 
 \title{Automated model selection}
@@ -17,7 +16,7 @@ model, with optional rules for model inclusion.
 
 \usage{
 dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
-    rank = "AICc", fixed = NULL, m.max = NA, m.min = 0, subset, 
+    rank = "AICc", fixed = NULL, m.lim = NULL, m.min, m.max, subset, 
     trace = FALSE, varying, extra, ct.args = NULL, ...)
 
 \method{print}{model.selection}(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...)
@@ -41,22 +40,25 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	\item{evaluate}{whether to evaluate and rank the models. If \code{FALSE}, a
 	list of unevaluated \code{call}s is returned. }
 
-	\item{rank}{optional custom rank function (returning an information criterion) to be used
-	instead \code{AICc}, e.g. \code{AIC}, \code{QAIC} or \code{BIC}.
+	\item{rank}{optional custom rank function (returning an information 
+    criterion) to be used instead \code{AICc}, e.g. \code{AIC}, \code{QAIC} or 
+    \code{BIC}.
 	See \sQuote{Details}. }
 
 	\item{fixed}{optional, either a single sided formula or a character vector
 	giving names of terms to be included in all models. See \sQuote{Subsetting}. }
 
-	\item{m.max, m.min}{optionally, the maximum and minimum number of terms in a
-	single model (excluding the intercept), \code{m.max} defaults to the number
-	of terms in \code{global.model}. See \sQuote{Subsetting}. }
+	\item{m.lim, m.max, m.min}{optionally, the limits \code{c(lower, upper)}
+    for number of terms in a single model (excluding the intercept). An 
+    \code{NA} means no limit. See \sQuote{Subsetting}.  
+    Specifying limits as \code{m.min} and \code{m.max} is allowed for backward 
+    compatibility. }
 
 	\item{subset}{ logical expression describing models to keep in the resulting
 		set. See \sQuote{Subsetting}. }
 
 	\item{trace}{if \code{TRUE} or \code{1}, all calls to the fitting function 
-	are printed before actual fitting takes place. If \code{> 1}, a progress bar 
+	are printed before actual fitting takes place. If \code{trace > 1}, a progress bar 
 	is displayed.
 	}
 
@@ -66,7 +68,7 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	list(choice1, choice2, ...), ...)}). Complex elements in the choice list
 	(such as \code{family} objects) should be either named (uniquely) or quoted
 	(unevaluated, e.g. using \code{\link{alist}}, see \code{\link{quote}}),
-	otherwise it may produce rather visually unpleasant effects. See example in
+	otherwise the result may be visually unpleasant. See example in
 	\code{\link{Beetle}}. }
 
 	\item{extra}{ optional additional statistics to include in the result,
@@ -81,14 +83,13 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	\code{\link{r.squaredLR}} directly).
 	}
 
-  \item{x}{
-    a \code{model.selection} object, returned by \code{dredge}. }
+  \item{x}{ a \code{model.selection} object, returned by \code{dredge}. }
 
   \item{abbrev.names}{ should printed term names be abbreviated?
 	(useful with complex models). }
 
   \item{warnings}{ if \code{TRUE}, errors and warnings issued during the model
-	fitting are printed below the table (currently, only with \code{pdredge}).
+	fitting are printed below the table (only with \code{pdredge}).
 	To permanently remove the warnings, set the object's attribute 
 	\code{"warnings"} to \code{NULL}. }
 	
@@ -98,8 +99,8 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 		\code{\link[=model.avg]{model averaging}}).}
 
   \item{\dots}{ optional arguments for the \code{rank} function. Any can be
-    an expression (of mode \code{"call"}), in which case any \code{x} within it
-    will be substituted with a current model. }
+    an unevaluatec expression, in which case any \code{x} within it will be substituted
+	with a current model. }
 }
 
 
@@ -160,14 +161,12 @@ predictors.
 In the form of \code{expression}, the argument \code{subset} acts in a similar
 fashion to that in the function \code{subset} for \code{data.frames}: model
 terms can be referred to by name as variables in the expression, with the
-difference being that they are logical (i.e. equal to \code{TRUE} if the 
-term exists in the model).
+difference being that are interpreted as logical values (i.e. equal to 
+\code{TRUE} if the term exists in the model).
 
-There is also \code{.(x)} and \code{.(+x)} notation that indicate respectively
-any or all model terms including a \emph{variable} \code{x}. This concerns only
-interactions containing a particular main effect \code{x} (e.g. \code{x:z},
-\code{v:x:z}), and \emph{not} a variable in a complex expression, such as
-\code{x} in \code{I(x^2)}, so it is only useful with marginality exceptions.
+There is also \code{.(x)} and \code{.(+x)} notation indicating, respectively, 
+any and all interactions including a \emph{term} \code{x}. It is only useful 
+with marginality exceptions.
 
 The expression can contain any of the \code{global.model} terms
 (\code{getAllTerms(global.model)} lists them), as well as names of the
@@ -193,8 +192,8 @@ To make inclusion of a model term conditional on presence of another model term,
 the function \code{dc} (\dQuote{\bold{d}ependency \bold{c}hain}) can be used in
 the \code{subset} expression. \code{dc} takes any number of term names as
 arguments, and allows a term to be included only if all preceding ones
-are also present (e.g. \code{subset = dc(a, b, c)} allows for models of form
-\code{a}, \code{a+b} and \code{a+b+c} but not \code{b}, \code{c}, \code{b+c} or
+are also present (e.g. \code{subset = dc(a, b, c)} allows for models \code{a}, 
+\code{a+b} and \code{a+b+c} but not \code{b}, \code{c}, \code{b+c} or
 \code{a+c}).
 
 \code{subset} expression can have a form of an unevaluated \code{call},
@@ -216,17 +215,17 @@ Compound model terms (such as interactions, \sQuote{as-is} expressions within
 	\describe{
 	\item{\code{a & b}}{ indicates that model terms \var{a} and \var{b} must be
 	present (see \link[=Logic]{Logical Operators}) }
-    \item{\code{{log(x,2)}} \emph{or} \bq{log(x, 2)}}{ represent a complex 
-		model term \var{log(x, 2)}}
+    \item{\code{{log(x,2)}} or \bq{log(x, 2)}}{ represent a complex 
+		model term \code{log(x, 2)}}
 	\item{\code{V(x)}}{ represents a \code{varying} variable \var{x} }
-	\item{\code{.(x)}}{ indicates that at least one term containing variable
+	\item{\code{.(x)}}{ indicates that at least one term containing the term
 		\var{x} must be present }
-	\item{\code{.(+x)}}{ indicates that all the terms containing variable \var{x} 
+	\item{\code{.(+x)}}{ indicates that all the terms containing the term \var{x} 
 		must be present }
 	\item{\code{dc(a, b, c,...)}}{ \sQuote{dependency chain}: \var{b} is allowed only
 		if \var{a} is present, and \var{c} only if both \var{a} and \var{b} are
 		present, etc. }
-	\item{\code{`*nvar*`}}{ number of variables }
+	\item{\code{`*nvar*`}}{ number of terms. }
 	}
 }
 
@@ -260,25 +259,11 @@ Coefficients can be extracted with \code{coef} or \code{\link{coefTable}}.
 
 
 \value{
-\code{dredge} returns an object of class \code{model.selection}, being a
-\code{data.frame} with models' coefficients (or presence/\code{NA} for factors),
-	\emph{df} - number of parameters, log-likelihood, the information criterion
-	value,  \ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC} and 
-	\sQuote{Akaike weights}. Models are ordered by the value of
-	the information criterion specified by \code{rank} (lowest on top).
-
-The attribute \code{"model.calls"} is a list containing the model calls used 
-(arranged in the same order as in the table). A model call can be retrieved with
-\code{getCall(*, i)} where \var{i} is a vector of model index or name (if given
-as character string).
-
-Other attributes:
-\code{"global"} - the \code{global.model} object,
-\code{"rank"} - the \code{rank} function used, \code{"call"} - the matched
-call, and
-\code{"warnings"} - list of errors and warnings given by the modelling function
-	during the fitting, with model number appended to each. 
+An object of class \code{c("model.selection", "data.frame")}, being a 
+\code{data.frame}, where each row represents one model.
+See \code{\link{model.selection.object}} for its structure. 
 }
+
 
 \author{Kamil Barto\enc{ń}{n}}
 
@@ -354,15 +339,15 @@ dredge(fm1, subset = dc(X1, X2, X3) && xor(X3, X4))
 dredge(fm1, subset = (X1 | !X2) && (X2 | !X3) && xor(X3, X4))
 
 # Include only models with up to 2 terms (and intercept)
-dredge(fm1, m.max = 2)
+dredge(fm1, m.lim = c(0, 2))
 }
 
 # Add R^2 and F-statistics, use the 'extra' argument
-dredge(fm1, m.max = 1, extra = c("R^2", F = function(x)
+dredge(fm1, m.lim = c(NA, 1), extra = c("R^2", F = function(x)
     summary(x)$fstatistic[[1]]))
 
 # with summary statistics:
-dredge(fm1, m.max = 1, extra = list(
+dredge(fm1, m.lim = c(NA, 1), extra = list(
     "R^2", "*" = function(x) {
         s <- summary(x)
         c(Rsq = s$r.squared, adjRsq = s$adj.r.squared,
@@ -371,7 +356,7 @@ dredge(fm1, m.max = 1, extra = list(
 )
 
 # Add other information criterions (but rank with AICc):
-dredge(fm1, m.max = 1, extra = alist(AIC, BIC, ICOMP, Cp))
+dredge(fm1, m.lim = c(NA, 1), extra = alist(AIC, BIC, ICOMP, Cp))
 \dontshow{options(oop)}
 }
 

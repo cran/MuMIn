@@ -217,15 +217,11 @@ function (probs, digits)
 paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits), 
     "%")
 
+return_null <-
+function(...) NULL 
 
-## from stats:::nobs.glm
-`nobs.glm` <-
-function (object, ...) 
-if (!is.null(w <- object$prior.weights)) sum(w != 0) else length(object$residuals)
-	
 ## Cheating RCheck:
 getFrom <-
-.xget <-
 function(pkg, name)
 get(name, envir = asNamespace(pkg), inherits = FALSE)
 
@@ -251,12 +247,16 @@ function(extra, r2nullfit = FALSE) {
 
 	if(any(c("adjR^2", "R^2") %in% extra)) {
 		if(r2nullfit) {
-			extra[extra == "R^2"][[1L]] <- function(x) r.squaredLR(x, null = get("nullfit_", parent.frame()))
+			extra[extra == "R^2"][[1L]] <-
+				function(x) r.squaredLR(x, null =
+					get("nullfit_", parent.frame()))
 			extra[extra == "adjR^2"][[1L]] <-
-				function(x) attr(r.squaredLR(x, null = get("nullfit_", parent.frame())), "adj.r.squared")		
+				function(x) attr(r.squaredLR(x, null =
+					get("nullfit_", parent.frame())), "adj.r.squared")		
 		} else {
 			extra[extra == "R^2"][[1L]] <- r.squaredLR
-			extra[extra == "adjR^2"][[1L]] <- function(x) attr(r.squaredLR(x), "adj.r.squared")
+			extra[extra == "adjR^2"][[1L]] <-
+				function(x) attr(r.squaredLR(x), "adj.r.squared")
 		}
 	}
 	sapply(extra, match.fun, simplify = FALSE)
@@ -276,7 +276,8 @@ function(x, y, diag.only = FALSE) {
 		#for(i in seq.int(n1)) res[i] <- sum(x[i, ] * y[, i])
 	} else {
 		res <- matrix(nrow = n1, ncol = n2)
-		for(i in seq.int(n1)) for(j in seq.int(n2)) res[i, j] <- sum(x[i, ] * y[, j])
+		for(i in seq.int(n1)) for(j in seq.int(n2))
+			res[i, j] <- sum(x[i, ] * y[, j])
 		return(res)
 	}
 }
@@ -289,5 +290,3 @@ function(x, y, ty = t(y)) {
 	return(rowSums(x * ty))
 }
 
-
-	

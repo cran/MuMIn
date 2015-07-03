@@ -37,6 +37,7 @@ function (object, ...) {
 	if (inherits(object$family, "family")) object$family else gaussian()
 }
 
+
 `model.frame.lme` <-
 function (formula, random = FALSE, ...) {
 	x <- formula

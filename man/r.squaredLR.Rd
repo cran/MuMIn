@@ -6,6 +6,11 @@
 \newcommand{\Rsqx}{\ifelse{latex}{\eqn{R_{#1}^{2}}{R_#1^2}}{\ifelse{html}{\enc{R_#1²}{R_#1^2}}{R_#1^2}}}
 \newcommand{\Rsq}{\ifelse{latex}{\eqn{R^{2}}{R^2}}{\ifelse{html}{\enc{R²}{R^2}}{R^2}}}
 
+\newcommand{\mydequation}{\ifelse{latex}{\deqn{#1}{#3}}{\ifelse{html}{\enc{\deqn{#2}}{#3}}{#3}}}
+\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#2}}{#3}}{#3}}}
+
+\newcommand{\logLik}{\myequation{\log\mathcal{L}(#1)}{㏒ℓ(#1)}{logL(#1)}}
+
 \title{Likelihood-ratio based pseudo-R-squared}
 \description{
 Calculate a coefficient of determination based on the likelihood-ratio test
@@ -50,14 +55,15 @@ null.fit(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL)
 This statistic is is one of the several proposed pseudo-\Rsq's for
 nonlinear regression models. It is based on an improvement from \emph{null}
 (intercept only) model to the fitted model, and calculated as
-\deqn{
-	R_{LR}^{2}=1-\exp(-\frac{2}{n}(\log\mathit{Lik}(x)-\log\mathit{Lik}(0)))
-}{
-	R^2 = 1 - exp(-2/n * logLik(x) - logLik(0))
+
+\mydequation{R_{LR}^{2}=1-\exp(-\frac{2}{n}(\log\mathcal{L}(x)-\log\mathcal{L}(0)))
+}{R² = 1 - exp(-2/n * ㏒ℓ(x) - ㏒ℓ(0))
+}{R^2 = 1 - exp(-2/n * logL(x) - logL(0))
 }
-where log\emph{Lik(x)} and log\emph{Lik(0)} are the log-likelihoods of the
+
+where \logLik{x} and \logLik{0} are the log-likelihoods of the
 fitted and the \emph{null} model respectively.
-\acronym{ML} estimates are used for this purpose in when models have been 
+\acronym{ML} estimates are used if models have been 
 fitted by \acronym{RE}stricted \acronym{ML} (by calling \code{logLik} with argument 
 \code{REML = FALSE}). Note that the \emph{null} model can include the random 
 factors of the original model, in which case the statistic represents the 
@@ -67,18 +73,15 @@ For \acronym{OLS} models the value is consistent with classical \Rsq. In some
 cases (e.g. in logistic regression), the maximum \Rsqx{LR} is less than one. 
 The modification proposed by Nagelkerke (1991) adjusts the \Rsqx{LR} to achieve 
 1 at its maximum:
-\eqn{
-	\bar{R}^{2} = R_{LR}^{2} / \max(R_{LR}^{2})
-}{
-	Radj^2 = R^2 / max(R^2)
+\myequation{\bar{R}^{2} = R_{LR}^{2} / \max(R_{LR}^{2})
+}{R̅² = R² / max(R²)
+}{Radj^2 = R^2 / max(R^2)
 }
 where
-\eqn{
-	max(R_{LR}^{2}) = 1 - \exp(\frac{2}{n}\log\mathit{Lik}(\textrm{0}))
-}{
-	max(R^2) = 1 - exp(2 / n * logLik(0))
+\myequation{\max(R_{LR}^{2}) = 1 - \exp(\frac{2}{n}\log\mathcal{L}(\textrm{0}))
+}{max(R²) = 1 - exp(2 / n * ㏒ℓ(0))
+}{max(R^2) = 1 - exp(2 / n * logL(0))
 }.
-
 
 \code{null.fit} tries to guess the \emph{null} model call, given the provided
 fitted model object. This would be usually a \code{glm}. The function will give

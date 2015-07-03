@@ -20,7 +20,7 @@ function(x, center = TRUE, scale = TRUE, ...) {
 	
 	for(i in c("scale", "center")) {
 		if(length(v <- get(i, inherits = FALSE)) > 1L)
-			cry(NA, "only first element of '%s' is used", i)
+			cry(, "only first element of '%s' is used", i)
 		assign(i, v[1L])
 	}
 
@@ -47,7 +47,7 @@ function(x, center = TRUE, scale = TRUE, ...) {
 	
 	for(i in c("scale", "center"))
 		if((nv <- length(v <- get(i, inherits = FALSE))) > 1L && nv != ncol(x))
-			cry(NA, "length of '%s' (%d) not equal to number of columns in 'x' (%d)", i, nv, ncol(x))
+			cry(, "length of '%s' (%d) not equal to number of columns in 'x' (%d)", i, nv, ncol(x))
 	
 	if(is.logical(scale)) scale <- if(scale) apply(x, 2L, scaleFunc) else 1
 	if(is.logical(center)) center <- if(center) colMeans(x, na.rm = TRUE) else 0
@@ -103,7 +103,7 @@ function(x, binary = c("center", "scale", "binary", "half", "omit"),
 	
 	for(i in c("scale", "center"))
 		if((nv <- length(v <- get(i, inherits = FALSE))) > 1L && nv != ncol(x))
-			cry(NA, "length of '%s' (%d) not equal to number of columns in 'x' (%d)", i, nv, ncol(x))
+			cry(, "length of '%s' (%d) not equal to number of columns in 'x' (%d)", i, nv, ncol(x))
 	
 	if(!is.null(source)) {
 		if(!missing(center) || !missing(scale) || !missing(binary))

@@ -1,23 +1,26 @@
 `updateable` <-
 function (FUN, eval.args = NULL, Class) {
-	Fname <- substitute(FUN)
-	FUN <- match.fun(FUN)
-	FUNV <- function() {
-		ocl <- cl <- match.call()
-		parentframe <- parent.frame()
-		for(i in eval.args) ocl[[i]] <- eval(ocl[[i]], parentframe) # [[4]]
-		cl[[1L]] <- Fname
-		res <- eval(cl, parentframe)
-		if(!isS4(res) && is.list(res))
-			res$call <- ocl else
-			attr(res, "call") <- ocl
-		class(res) <- Class  # [[8]]
-		res
+    FUN <- match.fun(FUN)
+	env <- environment(FUN)
+	if(!isNamespace(env) && all(c("Class", "eval.args", "FUN", "FUNV") %in% names(env))) {
+		warning("it looks that 'FUN' is already a result of 'updateable'. Using the original function instead")
+		FUN <- env[['FUN']]
 	}
-	
-	body(FUNV)[c(if(missing(eval.args)) 4L, if(missing(Class)) 8L)] <- NULL
+	rm(env, inherits = FALSE)
+
+    FUNV <- function() {
+		rval <- do.call(FUN, as.list(match.call())[-1L])
+		cl <- match.call()
+		parentframe <- parent.frame()
+        for (i in eval.args) cl[[i]] <- eval(cl[[i]], parentframe)
+        if (!isS4(rval) && is.list(rval)) 
+            rval$call <- cl
+			else attr(rval, "call") <- cl
+        class(rval) <- Class
+        rval
+    }
+    body(FUNV)[c(if (missing(eval.args)) c(4L, 5L), if (missing(Class)) 7L)] <- NULL
     formals(FUNV) <- formals(FUN)
-	rm(FUN, inherits = FALSE)
     FUNV
 }
 
@@ -28,7 +31,7 @@ function (FUN, Class) .Defunct("updateable")
 `get_call` <- function(x) {
 	rval <-
 	if(isS4(x)) {
-		if(any(i <- (sln <- c("call", "CALL", "Call")) %in% slotNames(x)))
+		if(any(i <- (sln <- c("call", "CALL", "Call")) %in% methods::slotNames(x)))
 			slot(x, sln[i][1L]) else
 			if(!is.null(attr(x, "call")))
 				attr(x, "call") else NULL

@@ -15,12 +15,9 @@
 function (object, ..., REML = NULL) {
     # type <- match.arg(type)
     type <- "vcov"
-    loglik <- .getLogLik()
     ret <- sapply(list(object, ...), function(x) {
         ll <- if (!is.null(REML) && inherits(x, c("mer", "lme",
-            "gls", "lm")))
-            loglik(x, REML = REML)
-        else loglik(x)
+            "gls", "lm"))) logLik(x, REML = REML) else logLik(x)
         covmat <- vcov(x)
         k <- nrow(covmat) # attr(ll, "df")
         switch(type, vcov = {
@@ -37,10 +34,8 @@ function (object, ..., REML = NULL) {
         as.vector(-2 * c(ll) + k * log(sum(diag(mat)) / k) - log(det(mat)))
 		# ICOMP = -2 * LL + k * log(tr(IFIM) / k) - log(det(IFIM))
 		# ICOMP = -2 * LL + 2 * C * (sig(model))
-		# 
 		# where C is a complexity measure and sig(model) is the variance-
 		# covariance matrix of the parameters estimated under the model.
-		
     })
     if (length(ret) > 1L) {
         Call <- match.call()
@@ -50,16 +45,14 @@ function (object, ..., REML = NULL) {
     return(ret)
 }
 
-
 # Bozdogans's CAICF (C denoting "consistent" and F denoting the use of the Fisher
 # information matrix),
 
 `CAICF` <-
 function (object, ..., REML = NULL) {
-	loglik <- .getLogLik()
     ret <- sapply(list(object, ...), function(x) {
         ll <- if (!is.null(REML) && inherits(x, c("mer", "lme",
-            "gls", "lm"))) loglik(x, REML = REML) else loglik(x)
+            "gls", "lm"))) logLik(x, REML = REML) else logLik(x)
         covmat <- vcov(x)
         k <- attr(ll, "df")
 		n <- attr(ll, "nobs")
@@ -74,6 +67,3 @@ function (object, ..., REML = NULL) {
     }
     return(ret)
 }
-
-
-# Inverse of variance-covariance matrix is the observed (not Fisher) information matrix

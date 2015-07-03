@@ -41,7 +41,7 @@ function(obj, termNames, comb, opt, ...) {
 		coefNames <- fixCoefNames(.getCoefNames(f, opt$gmDataHead,
 			opt$gmCall$contrasts, envir = opt$gmEnv))
 		idx <- match(coefNames, opt$gmCoefNames)
-		if(any(is.na(idx))) reportProblems <-
+		if(anyNA(idx)) reportProblems <-
 			append(reportProblems, "cannot subset 'start' argument. Coefficients in model do not exist in global.model")
 		else ret$start <- substitute(start[idx], list(start = opt$gmCall$start,
 			idx = idx))

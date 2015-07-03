@@ -45,7 +45,7 @@ if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) {
 
 	# varying <- list(family = list("CAR", "SAR"), method=list("Matrix_J", "full"))
 
-	# dd <- dredge(esar1f, m.max=1,  fixed=~PEXPOSURE, varying = varying, trace=FALSE)
+	# dd <- dredge(esar1f, m.lim=c(0, 1),  fixed=~PEXPOSURE, varying = varying, trace=FALSE)
 
 	} else # if(inherits(clust, "try-error"))
 	message("Could not set up the cluster")

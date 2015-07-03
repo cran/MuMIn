@@ -4,7 +4,7 @@
 \docType{data}
 \title{Flour beetle mortality data}
 \description{
-Mortality of flour beetles (\emph{Tribolium confusu}) due to exposure to gaseous
+Mortality of flour beetles (\emph{Tribolium confusum}) due to exposure to gaseous
 carbon disulfide CS\eqn{_{2}}{2}, from Bliss (1935).
 }
 
@@ -16,11 +16,11 @@ Beetle
 \code{Beetle} is a data frame with 5 elements.
 
 \describe{
-   \item{dose}{The dose of CS\eqn{_{2}}{2} in mg/L}
-   \item{n.tested}{Number of beetles tested}
-   \item{n.killed}{Number of beetles killed}
-   \item{Prop}{A matrix with two columns named \bold{n.killed} and \bold{n.survived}}
-   \item{mortality}{Observed mortality rate.}
+   \item{Prop}{a matrix with two columns named \bold{nkilled} and \bold{nsurvived}}
+   \item{mortality}{observed mortality rate}  
+   \item{dose}{the dose of CS\eqn{_{2}}{2} in mg/L}
+   \item{n.tested}{number of beetles tested}
+   \item{n.killed}{number of beetles killed.}
 }}
 
 \source{

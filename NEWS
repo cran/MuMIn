@@ -1,5 +1,34 @@
 MuMIn package news:
 
+Version: 1.15.1 (2015-07-02)
+added imports from all the default packages added to NAMESPACE in order to 
+    satisfy CRAN's new stricter RCheck.
+
+Version: 1.50.0 (2015-07-01)
+(added) arm.glm: implements model averaging with weights calculated via ARM 
+    ("adaptive regression by mixing") algorithm.
+"averaging" object: the elements "coef.shrinkage" and "coefTable" are
+    replaced by matrix named "coefficients". The "Pval-tables" are accessed via 
+    summary(averaging)'s elements "coefmat.full" and "coefmat.subset". Objects 
+    created with previous versions will be automatically converted if needed.
+[p]dredge: argument 'm.lim' replaces 'm.min' and 'm.max' (which are still 
+    present, but deprecated).
+"model.selection" object: changing or removing essential columns (i.e. 
+    everything except 'varying' and 'extra') converts the object to a plain 
+    "data.frame" and drops all additional attributes. 
+(added) rbind.model.selection: combine multiple "model.selection" objects.
+(added) 'xtable' methods for "averaging" and "model.selection" objects.
+(fixed) updateable: does not cause infinite recursion when the resulting wrapper
+    has the same name as the wrapped function.
+(fixed) exprApply: now can deal with function expressions and 'expression's 
+    longer than one.
+
+Version: 1.14.1 (2015-06-12)
+(fixed) [p]dredge no longer gives coefficient values as NA with [g]lmer 
+    (reported by Aitor Cevidanes).
+Some tidying-up of manual and data (response in 'Cement' and 'Beetle' moved to 
+    first column so that formula(data) is correct).
+
 Version: 1.14.0 (2015-06-03)
 (added) partial.sd, std.coef: calculate partial std. deviation and standardize 
     model coefficients. 'beta.weights' is now deprecated in favour of 
@@ -12,8 +41,8 @@ coefTable, coeffs: method for class 'aodml' (package 'aod3') no longer return
 Removed all methods for 'mer' objects (used in lme4 < 1.0.0)
 
 Version: 1.13.10 (2015-06-01)
-(fixed) compatibility with lme4-1.1.8, 'null.fit' now works properly with gamm 
-    models.
+(fixed) compatibility with lme4-1.1.8, 'null.fit' now works properly with 'gamm' 
+    objects.
 
 Version: 1.13.9 (2015-05-28)
 stdize: improved interpretation of the argument "scale".

@@ -120,7 +120,7 @@ nseq <- function(x, len = length(x)) seq(min(x, na.rm = TRUE),
 
 # New predictors: X1 along the range of original data, other
 # variables held constant at their means
-newdata <- as.data.frame(lapply(lapply(Cement[1:4], mean), rep, 25))
+newdata <- as.data.frame(lapply(lapply(Cement[, -1], mean), rep, 25))
 newdata$X1 <- nseq(Cement$X1, nrow(newdata))
 
 n <- length(confset.95p)

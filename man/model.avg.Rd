@@ -68,20 +68,15 @@ model.avg(object, ..., revised.var = TRUE)
 
 An object of class \code{"averaging"} is a list with components:
 
-\item{msTable}{ 
-a \code{data.frame} with log-likelihood, \emph{IC}, 
+\item{msTable}{ a \code{data.frame} with log-likelihood, \emph{IC}, 
 \ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC} and
 	\sQuote{Akaike weights} for the component models.
-	"df", "logLik", "AICc", "delta", "weight". Its attribute \code{"term.codes"}
-	is a named vector with numerical representation of the terms in 
-	the row names of \code{msTable}. 
+	Its attribute \code{"term.codes"} is a named vector with numerical 
+    representation of the terms in the row names of \code{msTable}. 
 }
-\item{coefTable}{the model averaged parameters. A \code{matrix} with rows for
-	model terms, columns for averaged coefficient, unconditional standard error,
-	adjusted SE (\code{NA} if \emph{df}s are not available), \emph{z}-test 
-	statistic and associated \emph{p}-value. }
-\item{coef.shrinkage}{a vector of \dQuote{full} model-averaged coefficients, see
-	\sQuote{Note}. }
+\item{coefficients}{a \code{matrix} of model-averaged coefficients. 
+    \dQuote{full}  coefficients in first row, \dQuote{subset} coefficients in
+    second row. See \sQuote{Note} }
 \item{coefArray}{ a 3-dimensional \code{array} of component models' coefficients,
 	their standard errors and degrees of freedom. }
 \item{importance}{ object of class \code{importance} containing relative 
@@ -96,7 +91,8 @@ a \code{data.frame} with log-likelihood, \emph{IC},
 
 The object has following attributes:
 \item{rank}{the rank function used. }
-\item{modelList}{ a list of all component model objects. }
+\item{modelList}{ optionally, a list of all component model objects. Only if
+    the object was created with model objects (and not model selection table).}
 \item{beta}{ Corresponds to the function argument. }
 \item{nobs}{number of observations. }
 \item{revised.var}{ Corresponds to the function argument. }
@@ -118,7 +114,6 @@ The object has following attributes:
 
 For a list of model types that are accepted see \link[=MuMIn-models]{list of
 	supported models}.
-
 
 \code{rank} is found by a call to \code{\link[base]{match.fun}} and typically is
 	specified as a function or a symbol or a character string specifying a 
@@ -143,7 +138,6 @@ Several standard methods for fitted model objects exist for class
 %	vcov(object, full = FALSE, ...) 
 %	coefTable(model, full = FALSE, ...)
 %	}	
-	
 	
 \code{logLik} returns a list of \code{\link[stats]{logLik}} objects
 	for the component models.
