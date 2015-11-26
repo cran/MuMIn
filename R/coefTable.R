@@ -43,7 +43,7 @@ function(model, ...) {
 
 `coefTable.survreg` <-
 function(model, ...)
-        .makeCoefTable(c(coef(model),model$scale), sqrt(diag(vcov(model, ...))), model$df.residual)
+        .makeCoefTable(c(coef(model),log(model$scale)), sqrt(diag(vcov(model, ...))), model$df.residual)
 
 `coefTable.lm` <-
 function(model, ...)
