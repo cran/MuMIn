@@ -96,7 +96,11 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 		residuals = NULL,
 		formula = if(!is.null(attr(object, "global")))
 			formula(attr(object, "global")) else NULL,
-		call = match.call()
+		call = {
+			cl <- match.call()
+			cl[[1L]] <- as.name(.Generic)
+			cl
+		}
 	)
 
 	attr(ret, "rank") <- attr(object, "rank")
@@ -133,6 +137,8 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 	nModels <- length(models)
 	if(nModels == 1L) stop("only one model supplied. Nothing to do")
 	.checkModels(models)
+	
+	testSmoothKConsistency(models) # for gam, if any
 
 	ICname <- asChar(attr(rank, "call")[[1L]])
 
@@ -275,7 +281,11 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 		x = mmxs,
 		residuals = NULL, # no residuals
 		formula = frm,
-		call = match.call()
+		call = {
+			cl <- match.call()
+			cl[[1L]] <- as.name(.Generic)
+			cl
+		}
 	)
 
 	attr(ret, "rank") <- rank
@@ -287,11 +297,20 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 	return(ret)
 }
 
+.checkFull <- function(object, full, warn = TRUE) {
+	if(isTRUE(attr(object, "arm")) && !full) {
+		if(warn) cry(-1L, "'subset' averaged coefficients are not available with ARM algorithm",
+					 warn = TRUE)
+		return(TRUE)
+	} else return(full)
+}
+
 `coef.averaging` <-
 function(object, full = FALSE, ...) {
 	## XXX: backward compatibility:
 	object <- upgrade_averaging_object(object)
-	object$coefficients[if(full) "full" else "subset", ]
+	full <- .checkFull(object, full) 
+	object$coefficients[if(full) 1L else 2L, ]
 }
 
 `predict.averaging` <-
@@ -300,6 +319,8 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 	full = TRUE, ...) {
 	## XXX: backward compatibility:
 	object <- upgrade_averaging_object(object)
+	full <- .checkFull(object, full) 
+
 
 	if (!missing(interval)) .NotYetUsed("interval", error = FALSE)
 	
@@ -463,6 +484,8 @@ function (object, ...) {
 function (object, parm, level = 0.95, full = FALSE, ...) {
 	## XXX: backward compatibility:
 	object <- upgrade_averaging_object(object)
+	full <- .checkFull(object, full) 
+
 
     a2 <- 1 - level
     a <- a2 / 2
@@ -560,6 +583,8 @@ function(x, ...) {
 `vcov.averaging` <- function (object, full = FALSE, ...) {
 	## XXX: backward compatibility:
 	object <- upgrade_averaging_object(object)
+	full <- .checkFull(object, full) 
+
 	full <- as.logical(full)[1L]
 
 	models <- attr(object, "modelList")
@@ -607,6 +632,9 @@ function(x, ...) {
 
 `coefTable.averaging` <-
 function (model, full = FALSE, adjust.se = TRUE, ...) {
+	full <- .checkFull(model, full) 
+	
+	
     no.ase <- any(is.na(model$coefArray[,3L,]) & !is.na(model$coefArray[,1L,]))
 	if(!missing(adjust.se) && adjust.se && no.ase) 
         warning("adjusted std. error not available for this type of model")

@@ -73,6 +73,20 @@ function (model) {
 function (model) 
 model@fixef
 
+
+`coeffs.survreg` <-
+function (model) {
+	  rval <- coef(model)
+	  if (nrow(vcov(model)) > length(rval)) { # scale was estimated
+			lgsc <- log(model$scale)
+			names(lgsc) <- if(is.null(names(lgsc)))
+				  "Log(scale)" else			  
+				  paste0("Log(scale):", names(lgsc))
+			rval <- c(rval, lgsc)
+	  }
+	  rval
+}
+
 `coeffs.default` <-
 #function(model) (if(isS4(model)) coef else coef)(model)
 function(model) coef(model)

@@ -61,6 +61,8 @@ Complex model terms need to be enclosed within curly brackets
  also possible, but then the name must match exactly (including whitespace) 
  the term name as returned by \code{getAllTerms}.
 
+Enclosing in \code{I} prevents a name from being interpreted as column name.
+ 
 To select rows where one variable can be present conditional on the presence of 
 other variable(s), the function \code{dc} (\bold{d}ependency \bold{c}hain) can 
 be used. 

@@ -2,10 +2,11 @@ fixLogLik <-
 function(ll, object) {
 	if(is.null(attr(ll, "nall")) && is.null(attr(ll, "nobs")))
 		attr(ll, "nobs") <- nobs(object)
-	ll	
+	ll
 }
 
-`.getLik` <- function(x) {
+`.getLik` <-
+function(x) {
     if(isGEE(x)) {
 		list(logLik = quasiLik, name = "qLik")
 	} else {
@@ -14,7 +15,8 @@ function(ll, object) {
 }
 
 
-`.getRank` <- function(rank = NULL, rank.args = NULL, object = NULL, ...) {
+`.getRank` <-
+function(rank = NULL, rank.args = NULL, object = NULL, ...) {
 	rank.args <- c(rank.args, list(...))
 
 	if(is.null(rank)) {
@@ -34,7 +36,7 @@ function(ll, object) {
 	ICName <- switch(mode(srank), call = as.name("IC"), character = as.name(srank), name=, srank)
 	ICarg <- c(list(as.name("x")), rank.args)
 	ICCall <- as.call(c(ICName, ICarg))
-	IC <- as.function(c(alist(x =), list(substitute(do.call("rank", ICarg), 
+	IC <- as.function(c(alist(x =), list(substitute(do.call("rank", ICarg),
 		list(ICarg = ICarg)))))
 
 	if(!is.null(object)) {
@@ -48,7 +50,8 @@ function(ll, object) {
 	IC
 }
 
-`matchCoef` <- function(m1, m2,
+`matchCoef` <-
+function(m1, m2,
 	all.terms = getAllTerms(m2, intercept = TRUE),
 	beta = 0L,
 	terms1 = getAllTerms(m1, intercept = TRUE),
@@ -61,7 +64,7 @@ function(ll, object) {
 		coef1 <- ct[, 1L]
 		names(coef1) <- rownames(ct)
 	} else if(allCoef) stop("'coef1' is given and 'allCoef' is not FALSE")
-	
+
 	if(any((terms1 %in% all.terms) == FALSE)) stop("'m1' is not nested within 'm2'")
 	row <- structure(rep(NA_real_, length(all.terms)), names = all.terms)
 
@@ -81,7 +84,7 @@ function(ll, object) {
 # sorts alphabetically interaction components in model term names
 # if 'peel', tries to remove coefficients wrapped into function-like syntax
 # (this is meant mainly for 'unmarkedFit' models with names such as "psi(a:b:c)")
-# TODO: this function is ugly, do something with it.
+# FIXME: this function is ugly
 `fixCoefNames` <-
 function(x, peel = TRUE) {
 	if(!length(x)) return(x)
@@ -100,7 +103,7 @@ function(x, peel = TRUE) {
 			k <- grepl("^\\w+\\(.+\\)$", x, perl = TRUE)
 			fname <- substring(x[k], 1L, attr(regexpr("^\\w+(?=\\()", x[k],
 				perl = TRUE),"match.length"))
-			
+
 			# do not peel off if a function
 			k[k] <- !vapply(fname, exists, FALSE, mode = "function", envir = .GlobalEnv)
 			if(any(k)) {
@@ -119,7 +122,7 @@ function(x, peel = TRUE) {
 			suffix <- ")"
 		}
 	} else	k <- FALSE
-	
+
 	## prepare = replace multiple ':' to avoid splitting by '::' and ':::'
 	spl <- expr.split(ret, ":", prepare = function(x) gsub("((?<=:):|:(?=:))", "_", x, perl = TRUE))
 	ret <- vapply(lapply(spl, base::sort), paste0, "", collapse = ":")
@@ -132,13 +135,13 @@ function(x, peel = TRUE) {
 }
 
 ## like 'strsplit', but ignores split characters within quotes and matched
-## parentheses 
+## parentheses
 expr.split <-
 function(x, split = ":",
 	paren.open = c("(", "[", "{"), paren.close = c(")", "]", "}"),
 	quotes = c("\"", "'", "`"), esc = "\\",
 	prepare = NULL) {
-	
+
 	## error checking:
 	#if(length(paren.open) != length(paren.close))
 	#	stop("'paren.open' and 'paren.close' are not of the same length")
@@ -149,7 +152,7 @@ function(x, split = ":",
 	#		"arguments %s are not single character") , prettyEnumStr(names(test)[test])),
 	#		 domain = "R-MuMIn")
 	#}
-	
+
 	x0 <- x
 	if(is.function(prepare)) x <- prepare(x)
 	m <- length(x)
@@ -166,7 +169,7 @@ function(x, split = ":",
 				if(chprv == esc && ch == esc) ch <- " " else
 					if(chprv != esc && ch == inquote)	inquote <- ""
 			} else {
-				inparen[j] <- inparen[j <- (inparen != 0L) & (ch == paren.close)] - 1L 
+				inparen[j] <- inparen[j <- (inparen != 0L) & (ch == paren.close)] - 1L
 				if(ch %in% quotes)
 					inquote <- ch else if (any(j <- (ch == paren.open)))
 					inparen[j] <- inparen[j] + 1L else if (all(inparen == 0L) && ch == split)
@@ -195,9 +198,9 @@ function(x, ...) {
 }
 
 get.response.lm <-
-function(x, ...) 
+function(x, ...)
 if((family(x)$family != "binomial") && !is.null(x$y)) x$y else NextMethod()
-# NOTE: for 'binomial' 'y' is a vector not nmatrix2  
+# NOTE: for 'binomial' 'y' is a vector not nmatrix2
 
 get.response.averaging <-
 function(x, ...) {
@@ -208,8 +211,9 @@ function(x, ...) {
 
 
 #Tries to find out whether the models are fitted to the same data
-.checkModels <- function(models, error = TRUE) {
-	#
+.checkModels <-
+function(models, error = TRUE) {
+
 	cl <- sys.call(sys.parent())
 	err <-  if (error) 	function(x) stop(simpleError(x, cl))
 		else function(x) warning(simpleWarning(x, cl))
@@ -226,12 +230,12 @@ function(x, ...) {
 	# XXX: need to compare deparse'd 'datas' due to ..1 bug(?) in which dotted
 	#  arguments (..1 etc) passed by lapply are not "identical"
 	datas <- vapply(lapply(models, function(x) get_call(x)$data), asChar, "")
-		
+
 	# XXX: when using only 'nobs' - seems to be evaluated first outside of MuMIn
-	# namespace which e.g. gives an error in glmmML - the glmmML::nobs method 
+	# namespace which e.g. gives an error in glmmML - the glmmML::nobs method
 	# is faulty.
 	nresid <- vapply(models, function(x) nobs(x), 1) # , nall=TRUE
-	
+
 	if(!all(sapply(datas[-1L], identical, datas[[1L]])) ||
 		!all(nresid[-1L] == nresid[[1L]])) {
 		# XXX: na.action checking here
@@ -256,15 +260,15 @@ function(x, cl = get_call(x),
 			naact <- getOption("na.action")
 			if(is.function(naact)) {
 				statsNs <- getNamespace("stats")
-				for(i in naomi) if(identical(get(i, envir = statsNs), naact, 
+				for(i in naomi) if(identical(get(i, envir = statsNs), naact,
 					ignore.environment = TRUE)) {
 					naact <- i
 					break
 					}
 			}
-			
+
 			if (is.character(naact) && (naact %in% naomi))
-				msg <- sprintf("%s's 'na.action' argument is not set and options('na.action') is \"%s\"", 
+				msg <- sprintf("%s's 'na.action' argument is not set and options('na.action') is \"%s\"",
 					what, naact)
 		} else if (!is.null(naact)) {
 			naact <- as.character(naact)
@@ -339,12 +343,12 @@ function(models = NULL, allTerms, uqTerms, use.letters = FALSE, ...) {
 	if(missing(allTerms)) allTerms <- lapply(models, getAllTerms)
 	if(missing(uqTerms) || is.null(uqTerms))
 		uqTerms <- unique(unlist(allTerms, use.names = FALSE))
-	
+
 	n <- length(uqTerms)
-	
+
 	if(use.letters && n > length(LETTERS)) stop("more terms than there are letters")
 	sep <- if(!use.letters && n > 9L) "/" else ""
-	
+
 	labels <- if (use.letters) LETTERS[seq_len(n)] else as.character(seq_len(n))
 	ret <- sapply(allTerms, function(x) paste(labels[sort(match(x, uqTerms))],
 		collapse = sep))
@@ -445,7 +449,7 @@ function(x, fam = x$family, link = x$link) {
 
 `commonCallStr` <-
 function(models, calls = lapply(models, get_call)) {
-	
+
 	x <- lapply(calls, as.list)
 	alln <- unique(unlist(lapply(x, names)))
 	uniq <- vector("list", length(alln))
@@ -465,14 +469,14 @@ function(models, calls = lapply(models, get_call)) {
 	rval <- paste(rval[[1L]], "(", paste(names(rval[-1L]), "=", rval[-1L], collapse = ", "), ")", sep = "")
 	rval <- sub("`__(\\d+)-rhsform__`", "<\\1 unique rhs>", rval, perl = TRUE)
 	rval
-	
+
 }
 
 updateDeps <-
 function(expr, deps) {
 	ret <- list()
 	env <- sys.frame(sys.nframe())
-	expr <- .exprapply(expr, "dc", function(z) {
+	expr <- exprapply0(expr, "dc", function(z) {
 		v <- vapply(as.list(z[-1L]), asChar, "")
 		n <- length(v)
 		k <- match(v, colnames(deps))
@@ -481,5 +485,78 @@ function(expr, deps) {
 		TRUE
 	})
 	list(deps = deps, expr = expr)
+}
+
+# tests if smooth terms for variables in gam/gamm models have the same 'k'
+testSmoothKConsistency <-
+function(models) {
+
+	# method 2: guess from coefficient names:
+	if(inherits(models, "model.selection")) {
+
+		x <- lapply(attr(models, "coefTables"), rownames)
+		# XXX: add label 'te(x1,x2)'
+
+		res <- unlist(unname(lapply(x, function(x) {
+			s <- grep("^(s|t[ei2])\\(.+\\)\\.\\d+$", x, perl = TRUE)
+			if(length(s) != 0L) {
+				m <- regexpr("^(?:s|t[ei2])\\((.+)\\)\\.\\d+$",  x[s], perl = TRUE)
+				cst <- attr(m, "capture.start")[, 1L]
+				y <- substring(x[s], cst, cst + attr(m, "capture.length")[, 1L] - 1L)
+				tapply(y, y, length)
+			} else NULL
+		})), recursive = FALSE)
+		names(res) <- sapply(lapply(expr.split(names(res), ","), sort),
+			paste0, collapse = ",")
+
+
+	} else {
+
+		# use information stored in gam objects:
+		.getSmoothK <-
+		function(x) {
+			if(inherits(x, "gamm") || (is.list(x) &&
+				(length(x) >= 2L) && identical(names(x)[2L], "gam"))) {
+				x <- x[[2L]]
+			} else if(!inherits(x, "gam")) return(NULL)
+			n <- length(x$smooth)
+			rval <- vector("list", n)
+			nmv <- character(n)
+			for(i in 1L:n) {
+				y <- x$smooth[[i]]
+				if(is.null(y$margin)) {
+					nmv[i] <- y$term
+					rval[[i]] <- y$bs.dim
+				} else {
+					nm1 <- vapply(y$margin, `[[`, "", "term")
+					o <- order(nm1)
+					nmv[i] <- paste0(nm1[o], collapse = ",")
+					rval[[i]] <- sapply(y$margin, `[[`, "bs.dim")[o]
+				}
+				nmv[i] <- paste0(sub("\\(.*", "", y$label), "(", nmv[i], ")")
+			}
+			names(rval) <- nmv
+			print(rval)
+			rval
+		}
+
+		res <- unlist(unname(lapply(models, .getSmoothK)), recursive = FALSE)
+	}
+
+	if(!is.null(res)) {
+		res <- vapply(split(res, names(res)), function(x) {
+			k1 <- x[[1L]]
+			for(i in 1L:length(x)) if(!identical(x[[i]], k1)) return(TRUE)
+			return(FALSE)
+		}, FALSE)
+
+
+		if(any(res))
+			warning("smooth term dimensions differ between models for variables ",
+				prettyEnumStr(names(res)[res], quote = "'"),
+				". Related coefficients are incomparable"
+			)
+	}
+	invisible()
 }
 

@@ -24,8 +24,8 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 	maxtrials <- 10L
 	weight.by <- switch(match.arg(weight.by), aic = 1L, loglik = 2L)
 	allterms <- getAllTerms(object)
-	o <- attr(allterms, "order")
-	deps <- attr(allterms, "deps")[o, o]
+	ordtrm <- attr(allterms, "order")
+	deps <- attr(allterms, "deps")[ordtrm, ordtrm]
 	nterms <- length(allterms)
 	mm <- model.matrix(object)
 	n1 <- ceiling((nall <- nrow(mm))/2)
@@ -121,40 +121,46 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 	}
 	msTable[, 4L] <- msTable[, 3L] - min(msTable[, 3L])
 	msTable[, 5L] <- Weights(msTable[, 3L])
-	msTable[, 6L] <- wtsmean 
-
+	msTable[, 6L] <- wtsmean
+	
 	cfmat <- coefArray[, 1L, ]
 	cfmat[is.na(cfmat)]<- 0
 	coefMat <- array(dim = c(2L, ncol(cfmat)),
 		dimnames = list(c("full", "subset"), colnames(cfmat)))
 	coefMat[1L, ] <- drop(wtsmean %*% cfmat)
 	
+	#debug <- list(wtsmean = wtsmean, cfmat = cfmat, coefArray = coefArray)
+	
 	ass <- attr(mm, "assign")
 	bp <- !is.na(coefArray[, 1L, ass != 0L & !duplicated(ass)])
-	tenm <- allterms[o]
+	tenm <- allterms[ordtrm]
 	allmodelnames <- .modelNames(allTerms = apply(bp, 1L, function(z) tenm[z]),
 						uqTerms = tenm)
 	rownames(msTable) <- c(allmodelnames)
-	msTable <- msTable[order(msTable[,4L], decreasing = FALSE), ]
+	
+	ordmod <- order(msTable[,4L], decreasing = FALSE)
 		
 	rval <- list(
-		msTable = structure(as.data.frame(msTable),
+		msTable = structure(as.data.frame(msTable[ordmod, ]),
 			term.codes = attr(allmodelnames, "variables")),
 		coefficients = coefMat,
-		coefArray = coefArray,
+		coefArray = coefArray[ordmod, , ],
 		importance = {
 			structure(wtsmean %*% bp,
 				n.models = structure(colSums(bp), names = tenm),
 				names = tenm, class = "importance")
 		 },
 		formula = object$formula,
-		call = match.call()
+		call = match.call() 
+	    #, debug = debug
 	)
 		
 	attr(rval, "rank") <- .getRank(AIC)  ## TODO
 	attr(rval, "nobs") <- nrow(x)
 	attr(rval, "beta") <- "none"
 	attr(rval, "revised.var") <- TRUE
+	attr(rval, "arm") <- TRUE
+
 	class(rval) <- "averaging"
 	rval 
 }

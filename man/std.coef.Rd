@@ -83,9 +83,8 @@ Fox.
 
 \references{
 
-Cade, B.S. (in press) Model averaging and muddled multimodel inference.
-\emph{Ecology}. \cr Online: 
-\url{http://dx.doi.org/10.1890/14-1639.1}
+Cade, B.S. (2015) Model averaging and muddled multimodel inferences. 
+    \emph{Ecology} 96, 2370-2382.
 
 Afifi A., May S., Clark V.A. (2011) \emph{Practical Multivariate Analysis},
 Fifth Edition. CRC Press.

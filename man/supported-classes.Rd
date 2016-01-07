@@ -28,6 +28,7 @@ functions include those produced by:
 \item \lxcode{glmmML}{glmmML} (\CRANpkg{glmmML});
 \item \code{glmmadmb} (\href{http://glmmadmb.r-forge.r-project.org/}{\pkg{glmmADMB}}
 	from R-Forge);
+\item \lxcode{MCMCglmm}{MCMCglmm}* (\CRANpkg{MCMCglmm});
 \item \code{asreml} (non-free commercial package \pkg{asreml}; allows only for 
 	\acronym{REML} comparisons);
 \item \lxcode{hurdle}{pscl}, \lxcode{zeroinfl}{pscl} (\CRANpkg{pscl});
@@ -53,15 +54,13 @@ functions include those produced by:
 	intact.
 }
 
-Generalized Estimation Equation model implementations: \lxcode{geeglm}{geepack}
-from package \CRANpkg{geepack}, \lxcode{gee}{gee} from \CRANpkg{gee}, 
-\lxcode{geem}{geeM} from \CRANpkg{geeM}, and \code{yags} from 
-\href{http://yags.r-forge.r-project.org/}{\pkg{yags}} (from 
+Generalized Estimation Equation model implementations: 
+\lxcode{geeglm}{geepack} from package \CRANpkg{geepack}, 
+\lxcode{gee}{gee} from \CRANpkg{gee}, 
+\lxcode{geem}{geeM} from \CRANpkg{geeM}, 
+and \code{yags} from  \href{http://yags.r-forge.r-project.org/}{\pkg{yags}} (from 
 R-Forge) can be used with \code{\link{QIC}} as the selection criterion.
 
-\lxcode{MCMCglmm}{MCMCglmm}* models (package \CRANpkg{MCMCglmm}) with e.g. 
-\code{\link{DIC}} as the \code{rank} function are accepted by \code{model.sel} 
-and \code{dredge}.
 
 Other classes are also likely to be supported, in particular if they inherit
 from one of the above classes. In general, the models averaged with

@@ -24,6 +24,7 @@ function(x) {
 
 `Weights.numeric` <-
 function(x) {
+	x <- x - min(x)
 	d <- exp(-x / 2)
 	d / sum(d)
 }

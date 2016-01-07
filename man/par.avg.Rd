@@ -4,8 +4,8 @@
 
 \title{Parameter averaging}
 \description{
-Average a single model coefficient based on provided weights. It is mostly intended for 
-	internal use.
+Average a coefficient with standard errors based on provided weights. 
+    This function is intended chiefly for internal use.
 }
 
 \usage{

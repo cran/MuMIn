@@ -180,6 +180,8 @@ ops <- options(warn = -1)
 gam1 <- gam(y ~ s(x0) + s(x1) + s(x2) +  s(x3) + (x1+x2+x3)^2,
 	data = dat, method = "GCV.Cp", family = binomial)
 
+
+
 dd <- dredge(gam1, subset=!`s(x0)` & (!`s(x1)` | !x1) & (!`s(x2)` |
 	!x2) & (!`s(x3)` | !x3), fixed = "x1")
 	
@@ -264,15 +266,22 @@ rm(list=ls()); detach(package:spdep)
 
 # TEST glm.nb ---------------------------------------------------------------------------
 if (.checkPkg("MASS")) {
-require(MASS)
+
+require("MuMIn")
+options(na.action = na.fail)
+require("MASS")
 
 quine.nb1 <- glm.nb(Days ~ 0 + Sex/(Age + Eth*Lrn), data = quine)
 #quine.nb1 <- glm.nb(Days ~ Sex/(Age + Eth*Lrn), data = quine)
 
 ms <- dredge(quine.nb1)
 
+models <- get.models(ms, subset = TRUE)
 models <- get.models(ms, subset = NA)
+
 summary(model.avg(models))
+
+
 
 #dredge(quine.nb1) # OK
 #dredge(quine.nb1x = NA) # OK
@@ -354,82 +363,23 @@ ms <- dredge(fmcph, fixed=c("cluster(id)", "strata(enum)"), extra = list(R2="r.s
 fits <- get.models(ms, delta < 5)
 summary(model.avg(fits))
 
-
 fmsrvrg <- survreg(Surv(futime, fustat) ~ ecog.ps + rx, ovarian, dist='weibull',
     scale = 1)
+
 summary(model.avg(dredge(fmsrvrg), delta  < 4))
+
+fmsrvrg2 <- survreg(Surv(futime, fustat) ~ ecog.ps + rx, ovarian, dist='weibull')
+
+fmsrvrg3 <- survreg(Surv(time, status) ~ ph.ecog + age + strata(sex), lung,
+	  na.action = "na.omit")
+
+
+coefTable(fmsrvrg)
+coefTable(fmsrvrg2)
+coefTable(fmsrvrg3)
+
 
 rm(list=ls())
 detach(package:survival)
 
 # END TESTS
-
-###model1 <- glm(cbind(ncases, ncontrols) ~ agegp + tobgp * alcgp,
-###              data = esoph, family = binomial())
-###model1 <- glm(cbind(ncases, ncontrols) ~ agegp,
-###              data = esoph, family = binomial())
-###model2 <- update(model1, contrasts = list(agegp="contr.treatment"))
-###model3 <- update(model1, .~. + tobgp, contrasts = list(agegp="contr.treatment"))
-###model3$contrasts
-###
-###models <- list(model1, model2, model3)
-###x <- rbindDataFrameList(lapply(sapply(models, getElement, "contrasts"), as.data.frame))
-###
-###as.list(x)
-###
-###any(apply(x, 2, function(x) length(na.omit(unique(x)))) > 1)
-###
-####system.time(for(i in 1:5000) lapply(lapply(lapply(x, unique), na.omit), length))
-####system.time(for(i in 1:5000) lapply(x, function(x) length(na.omit(unique(x)))))
-###
-###summary(model.avg(model1, model2, model3))
-###
-###
-###model1$contrasts
-###
-###model2$contrasts
-###
-###
-###ms1 <- dredge(model1, rank=Cp)
-###
-####plot(dredge(model1, rank=ICOMP))
-###dredge(model1, rank=BIC, extra="R^2")
-###
-###model1$contrasts
-###summary(model.avg(ms1, delta <=10))
-###
-###summary(model2 <- glm(case ~ age+parity+education+spontaneous+induced,
-###                data=infert, family = binomial()))
-###
-###dredge(model2, rank=BIC, extra="nobs")
-
-# require(survival)
-# model3 <- clogit(case~spontaneous+induced+strata(stratum),data=infert)
-# model3 <- clogit(case~spontaneous+strata(stratum),data=infert)
-
-#require(quantreg)
-#data(stackloss)
-#fm1 <- rq(stack.loss ~ Water.Temp + Acid.Conc. + Air.Flow, tau = .5, data = stackloss)
-#ms <- dredge(fm1, varying = list(tau=list(.75, .5, .25)), extra="R^2")
-#fm1 <- lm(stack.loss ~ Water.Temp + Acid.Conc. + Air.Flow,  data = stackloss)
-#models <- get.models(ms, delta <= 4)
-#model.avg(ms, delta <= 4)
-#plot(ms)
-
-#
-#library(brglm)
-#data(lizards)
-#lizg <- glm(cbind(grahami, opalinus) ~ (height + diameter +
-#    light + time)^2, family = binomial(logit), data=lizards)
-#
-#glm(cbind(grahami, opalinus) ~ (height + diameter +
-#    light + time)^3, family = poisson("log"), data=lizards)
-#dd <- dredge(lizg)
-#plot(dd, col=6:7)
-
-#brglm(cbind(grahami, opalinus) ~ height + diameter + light + time,
-#	family = binomial(logit), data=lizards, method = "brglm.fit")
-#
-#lizards.brglm <- brglm(cbind(grahami, opalinus) ~ height + diameter +
-#                  light + time, family = binomial(logit), data=lizards,
-#                  method = "brglm.fit")

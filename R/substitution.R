@@ -4,13 +4,19 @@ evalExprInEnv <- function(expr, env, enclos, ...) {
 	eval(expr, envir = env, enclos = enclos)
 }
 
-# substitute names for varName[1], varName[2], ... in expression
-`.subst4Vec` <- function(expr, names, varName, n = length(names), fun = "[") {
-	varName <- as.name(varName)
-	eval(call("substitute", expr,
-		env = structure(lapply(seq_len(n), function(i) call(fun, varName, i)),
-						names = names)),
-		envir = NULL)
+# change `names[]` for varName[1], varName[2], ... in expression
+# Not using `substitute` anymore to omit function calls.
+# Ignore also expressions within I(), elements extracted with $ or @
+`.subst4Vec` <-
+function(expr, names, varName, n = length(names), fun = "[") {
+	exprApply(expr, names, symbols = TRUE,
+		function(x, v, fun, varName, parent) {
+			if(is.call(parent) && any(parent[[1L]] == c("I", "$", "@")))
+				return(x)
+			if(length(x) == 1L)
+				return(call(fun, varName, match(asChar(x), v)))
+			x
+		}, v = names, fun = fun, varName = as.name(varName))
 }
 
 # like substitute, but does evaluate 'expr'.
@@ -19,7 +25,7 @@ function(expr, envir = NULL, ...) {
 	eval.parent(call("substitute", expr, c(envir, list(...))))
 }
 
-asChar <- function(x, control = NULL, nlines = 1L, ...) 
+asChar <- function(x, control = NULL, nlines = 1L, ...)
 	if(is.character(x)) x[1L:nlines] else
 	deparse(x, control = control, nlines = nlines, ...)
 
@@ -40,15 +46,8 @@ asChar <- function(x, control = NULL, nlines = 1L, ...)
 	}
 	dn <- dimnames(fac)
 	if(!(sx %in% dn[[2L]])) cry(x, "unknown variable name '%s'", sx)
-	as.call(c(as.name(fun), call("[", vName, as.call(c(as.name("c"), 
+	as.call(c(as.name(fun), call("[", vName, as.call(c(as.name("c"),
 		match(dn[[1L]][fac[, sx]], at))))))
-}
-
-.sub_dc_has <- function(e, fname) {
-		#e[[1L]] <- call(":::", as.name(.packageName), fname)
-		e[[1L]] <- fname
-		for(i in 2L:length(e)) e[[i]] <- call("has", e[[i]])
-		e
 }
 
 .sub_args_as_vars <- function(e) {
@@ -70,6 +69,12 @@ asChar <- function(x, control = NULL, nlines = 1L, ...)
 	call("(", res)
 }
 
+
+.sub_dc_has <- function(e) {
+		for(i in 2L:length(e)) e[[i]] <- call("has", e[[i]])
+		e
+}
+
 .sub_V <- function(x, cVar, fn) {
 	if(length(x) > 2L) cry(x, "discarding extra arguments", warn = TRUE)
 	i <- which(fn == x[[2L]])[1L]
@@ -79,17 +84,24 @@ asChar <- function(x, control = NULL, nlines = 1L, ...)
 }
 
 # substitute function calls in 'e'. 'func' must take care of the substitution job.
-`.exprapply` <- function(e, name, func, ...) 
+`exprapply0` <- function(e, name, func, ...)
 exprApply(e, name, func, ..., symbols = FALSE)
 
-
 `exprApply` <-
-function (expr, what, FUN = print, ..., symbols = FALSE) {
+function (expr, what, FUN, ..., symbols = FALSE) {
     FUN <- match.fun(FUN)
+	funcl <- as.call(c(as.name("FUN"), as.name("expr"), list(...)))
+	if(all(names(formals(FUN)) != "parent"))
+		formals(FUN)[["parent"]] <- NA
+	.exprapply(expr, what, FUN, ..., symbols = symbols)
+}
+
+`.exprapply` <-
+function (expr, what, FUN, ..., symbols = FALSE, parent = NULL) {
 	self <- sys.function()
 	if((ispairlist <- is.pairlist(expr)) || is.expression(expr)) {
 		for (i in seq_along(expr))	expr[i] <-
-			list(self(expr[[i]], what, FUN, ..., symbols = symbols))
+			list(self(expr[[i]], what, FUN, ..., symbols = symbols, parent = expr))
 		return(if(ispairlist) as.pairlist(expr) else expr)
 	}
     n <- length(expr)
@@ -97,8 +109,8 @@ function (expr, what, FUN = print, ..., symbols = FALSE) {
 		return(expr) else
 	if (n == 1L) {
 		if (!is.call(expr)) {
-            if (symbols && (is.na(what) || any(expr == what))) 
-                expr <- FUN(expr, ...)
+            if (symbols && (is.na(what) || any(expr == what)))
+                expr <- FUN(expr, ..., parent = parent)
             return(expr)
         }
     } else {
@@ -107,12 +119,14 @@ function (expr, what, FUN = print, ..., symbols = FALSE) {
 				n <- 3L
 				expr[[4L]] <- NULL ## remove srcref
 			}
-		} 
+		}
         for (i in seq.int(2L, n)) {
-			y <- self(expr[[i]], what, FUN, symbols = symbols, ...)
-			expr[i] <- list(y)
+			y <- self(expr[[i]], what, FUN, ..., symbols = symbols, parent = expr)
+			if(!missing(y)) expr[i] <- list(y)
 		}
     }
-    if (is.na(what) || any(expr[[1L]] == what)) expr <- FUN(expr, ...)
+    if (is.na(what) || (length(expr[[1L]]) == 1L && any(expr[[1L]] == what)))
+		expr <- FUN(expr, ..., parent = parent)
     return(expr)
 }
+

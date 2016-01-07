@@ -1,7 +1,7 @@
 # 'makeArgs' internal generic to generate arguments from combination of
 # term names (a character vector), additional list of arbitrary options is accepted.
 # This is much a reverse action to getAllTerms
-makeArgs <- function(obj, termNames, comb, opt, ...) UseMethod("makeArgs", obj)
+makeArgs <- function(obj, termNames, opt, ...) UseMethod("makeArgs", obj)
 
 # opt == argsOptions
 
@@ -28,12 +28,11 @@ function(formula, data, contrasts, envir = parent.frame()) {
 		object = formula, data = data, contrasts.arg = contrasts), envir = envir))
 }
 
-
 makeArgs.default <- 
-function(obj, termNames, comb, opt, ...) {
+function(obj, termNames, opt, ...) {
 	reportProblems <- character(0L)
 	termNames[termNames %in% opt$interceptLabel] <- "1"
-	## XXX: what if 'opt$intercept' is of length > 1 ???
+	## XXX: what if length(opt$intercept) > 1 ???
 	f <- reformulate(c(if(!opt$intercept) "0", termNames), response = opt$response)
 	environment(f) <- opt$gmFormulaEnv
 	ret <- list(formula = f)
@@ -42,18 +41,18 @@ function(obj, termNames, comb, opt, ...) {
 			opt$gmCall$contrasts, envir = opt$gmEnv))
 		idx <- match(coefNames, opt$gmCoefNames)
 		if(anyNA(idx)) reportProblems <-
-			append(reportProblems, "cannot subset 'start' argument. Coefficients in model do not exist in global.model")
+			append(reportProblems, "cannot subset 'start' argument. Coefficients in model do not exist in 'global.model'")
 		else ret$start <- substitute(start[idx], list(start = opt$gmCall$start,
 			idx = idx))
 	}
-	attr(ret, "formulaList") <- list(f)
+	#attr(ret, "formulaList") <- list(f)
 	attr(ret, "problems") <- reportProblems
 	ret
 }
 
 makeArgs.gls <- 
-function(obj, termNames, comb, opt, ...) {
-	ret <- makeArgs.default(obj, termNames, comb, opt)
+function(obj, termNames, opt, ...) {
+	ret <- makeArgs.default(obj, termNames, opt)
 	names(ret)[1L] <- "model"
 	ret
 }
@@ -61,8 +60,8 @@ function(obj, termNames, comb, opt, ...) {
 `makeArgs.asreml` <- 
 makeArgs.MCMCglmm <-
 makeArgs.lme <- 
-function(obj, termNames, comb, opt, ...) {
-	ret <- makeArgs.default(obj, termNames, comb, opt)
+function(obj, termNames, opt, ...) {
+	ret <- makeArgs.default(obj, termNames, opt)
 	names(ret)[1L] <- "fixed"
 	ret
 }
@@ -72,8 +71,8 @@ function(obj, termNames, comb, opt, ...) {
 `makeArgs.clmm` <- 		## Class 'clmm'  from package 'ordinal':
 `makeArgs.merMod` <-    ## since lme4-0.99999911-0
 `makeArgs.mer` <- 
-function(obj, termNames, comb, opt, ...) {
-	ret <- makeArgs.default(obj, termNames, comb, opt)
+function(obj, termNames, opt, ...) {
+	ret <- makeArgs.default(obj, termNames, opt)
 	if(!is.null(opt$random)) ret[['formula']] <-
 		update.formula(ret[['formula']], opt$random)
 	ret
@@ -105,7 +104,7 @@ function(termNames, opt, fnames) {
 # provided to the function, so the methods for child classes are commented out.
 
 `makeArgs.unmarkedFit` <- 
-function(obj, termNames, comb, opt,
+function(obj, termNames, opt,
 	fNames = sapply(obj@estimates@estimates, slot, "short.name"),
 	formula.arg = "formula",
 	...) {
@@ -119,7 +118,7 @@ function(obj, termNames, comb, opt,
 		i <- sapply(zarg, is.null)
 		zarg[i] <- rep(list(~ 1), sum(i))
 		ret <- list(formula = call("~", zarg[[2L]], zarg[[1L]][[2L]]))
-		attr(ret, "formulaList") <- zarg
+		#attr(ret, "formulaList") <- zarg
 		ret
 	} else {
 		names(zarg) <- formula.arg
@@ -128,22 +127,22 @@ function(obj, termNames, comb, opt,
 }
 
 `makeArgs.unmarkedFitDS` <-
-function(obj, termNames, comb, opt, ...)  {
+function(obj, termNames, opt, ...)  {
 	termNames <- sub("^p\\(sigma(.+)\\)", "p(\\1)", termNames, perl = TRUE)
 	termNames[termNames == "p((Intercept))"] <- "p(1)"
-	makeArgs.unmarkedFit(obj, termNames, comb, opt, c("lam", "p"),
+	makeArgs.unmarkedFit(obj, termNames, opt, c("lam", "p"),
 		"formula")
 }
 
 `makeArgs.coxph` <- 
-function(obj, termNames, comb, opt, ...) {
-	ret <- makeArgs.default(obj, termNames, comb, opt)
+function(obj, termNames, opt, ...) {
+	ret <- makeArgs.default(obj, termNames, opt)
 	ret$formula <- update.formula(ret$formula, . ~ . + 1)
 	ret
 }
 
 `makeArgs.betareg` <- 
-function(obj, termNames, comb, opt, ...) {
+function(obj, termNames, opt, ...) {
 	i <- termNames %in% opt$interceptLabel
 	termNames[i] <- gsub("(Intercept)", "1", termNames[i], fixed = TRUE)
 	j <- grepl("^\\(phi\\)_", termNames)
@@ -159,13 +158,13 @@ function(obj, termNames, comb, opt, ...) {
 	if(!is.null(zarg$phi)) fexpl <- call("|", fexpl, zarg$phi[[2L]])
 		else zarg$phi <- NULL
 	ret <- list(formula = call("~", opt$response, fexpl))
-	attr(ret, "formulaList") <- zarg
+	#attr(ret, "formulaList") <- zarg
 	ret
 }
 
 `makeArgs.hurdle` <- 
 `makeArgs.zeroinfl` <-
-function(obj, termNames, comb, opt, ...) {
+function(obj, termNames, opt, ...) {
 
 	intType <- substring(opt$interceptLabel, 0,
 		regexpr("_", opt$interceptLabel, fixed = TRUE) - 1L)
@@ -191,41 +190,41 @@ function(obj, termNames, comb, opt, ...) {
 	if(!is.null(zarg$zero)) fexpl <-
 		call("|", fexpl, zarg$zero[[2L]]) else zarg$zero <- NULL
 	ret <- list(formula = call("~", opt$response, fexpl))
-	attr(ret, "formulaList") <- zarg
+	#attr(ret, "formulaList") <- zarg
 	ret
 }
 
-#`makeArgs.unmarkedFitColExt` <- function(obj, termNames, comb, opt, ...)
-#	makeArgs.unmarkedFit(obj, termNames, comb, opt, c("psi", "col", "ext", "p"),
+#`makeArgs.unmarkedFitColExt` <- function(obj, termNames, opt, ...)
+#	makeArgs.unmarkedFit(obj, termNames, opt, c("psi", "col", "ext", "p"),
 #		c("psiformula", "gammaformula", "epsilonformula", "pformula"))
 #
 #
-#`makeArgs.unmarkedFitGMM` <- function(obj, termNames, comb, opt, ...)
-#	makeArgs.unmarkedFit(obj, termNames, comb, opt,
+#`makeArgs.unmarkedFitGMM` <- function(obj, termNames, opt, ...)
+#	makeArgs.unmarkedFit(obj, termNames, opt,
 #		c("lambda", "phi", "p"),
 #		c("lambdaformula", "phiformula", "pformula") )
 #
-#`makeArgs.unmarkedFitPCO` <- function(obj, termNames, comb, opt, ...)
-#	makeArgs.unmarkedFit(obj, termNames, comb, opt,
+#`makeArgs.unmarkedFitPCO` <- function(obj, termNames, opt, ...)
+#	makeArgs.unmarkedFit(obj, termNames, opt,
 #		c("lam", "gamConst", "omega", "p"),
 #		c("lambdaformula", "gammaformula", "omegaformula", "pformula"))
 #
-#`makeArgs.unmarkedFitOccu` <- function(obj, termNames, comb, opt, ...)
-#	makeArgs.unmarkedFit(obj, termNames, comb, opt, c("psi", "p"),
+#`makeArgs.unmarkedFitOccu` <- function(obj, termNames, opt, ...)
+#	makeArgs.unmarkedFit(obj, termNames, opt, c("psi", "p"),
 #		"formula")
 
 
 `makeArgs.coxme` <-
 `makeArgs.lmekin` <-
-function(obj, termNames, comb, opt, ...) {
-	ret <- makeArgs.default(obj, termNames, comb, opt)
+function(obj, termNames, opt, ...) {
+	ret <- makeArgs.default(obj, termNames, opt)
 	ret$formula <- update.formula(update.formula(ret$formula, . ~ . + 1),
 		opt$random)
 	ret
 }
 
 `makeArgs.mark` <- 
-function(obj, termNames, comb, opt, ...) {
+function(obj, termNames, opt, ...) {
 	interceptLabel <- "(Intercept)"
 	termNames <- sub(interceptLabel, "1", termNames, fixed = TRUE)
 	rxres <- regexpr("^([a-zA-Z]+)\\((.*)\\)$", termNames, perl = TRUE)
@@ -234,20 +233,20 @@ function(obj, termNames, comb, opt, ...) {
 	parname <- substring(termNames, cs[, 1L], cs[, 1L] + cl[,1L] - 1L)
 	parval <- substring(termNames, cs[, 2L], cs[, 2L] + cl[,2L] - 1L)
 	
-	formulaList <- lapply(split(parval, parname), function(x) {
-		int <- x == "1"
-		x <- x[!int]
-		res <- if(!length(x))
-				if(int) ~ 1 else ~ 0 else 
-			reformulate(x, intercept = any(int))
-		environment(res) <- opt$gmFormulaEnv
-		res
-	})
+	#formulaList <- lapply(split(parval, parname), function(x) {
+	#	int <- x == "1"
+	#	x <- x[!int]
+	#	res <- if(!length(x))
+	#			if(int) ~ 1 else ~ 0 else 
+	#		reformulate(x, intercept = any(int))
+	#	environment(res) <- opt$gmFormulaEnv
+	#	res
+	#})
 	
 	mpar <- if(is.null(obj$model.parameters))
 		eval(opt$gmCall$model$parameters) else
 		obj$model.parameters
-	for(i in names(mpar)) mpar[[i]]$formula <- formulaList[[i]]
+	#for(i in names(mpar)) mpar[[i]]$formula <- formulaList[[i]]
 	#ret <- list(model.parameters = mpar)
 	
 	if(opt$gmCall[[1L]] == "run.mark.model") {
@@ -258,18 +257,18 @@ function(obj, termNames, comb, opt, ...) {
 		ret <- list(model.parameters = mpar)
 	}
 	
-	attr(ret, "formulaList") <- formulaList
+	#attr(ret, "formulaList") <- formulaList
 	ret
 }
 
 
 `makeArgs.aodml` <-
-function(obj, termNames, comb, opt, ...) {
+function(obj, termNames, opt, ...) {
 	if(sys.nframe() > 2L && (parent.call <- sys.call(-2L))[[1L]] == "dredge" &&
 	   !is.null(get_call(obj)$fixpar))
 		stop(simpleError("'aodml' models with constant parameters cannot be handled by 'dredge'",
 						 call = parent.call))
-	makeArgs.default(obj, termNames, comb, opt, ...)
+	makeArgs.default(obj, termNames, opt, ...)
 }
 
 

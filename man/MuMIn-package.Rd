@@ -30,18 +30,16 @@ The collection of functions includes:
 		criterion. }
 }
 
-
 For a complete list of functions, use \code{library(help = "MuMIn")}.
 
 By default, AIC\eqn{_{c}}{c} is used to rank the models and to obtain model
-selection probabilities, though any other information criteria can be
-utilised. At least the following ones are currently implemented in \R:
+weights, though any other information criteria can be utilised. At least the 
+following ones are currently implemented in \R:
 \code{\link{AIC}} and \code{\link{BIC}} in package \pkg{stats}, and
 \code{\link{QAIC}}, \code{\link{QAICc}}, \code{\link{ICOMP}},
 \code{\link{CAICF}}, and \link{Mallows' Cp} in \pkg{MuMIn}. There is also
 \code{\link{DIC}} extractor for \acronym{MCMC} models, and \code{\link{QIC}} for
 \acronym{GEE}.
-
 
 Most of \R's common modelling functions are supported, for a full inventory
 see \link[=MuMIn-models]{list of supported models}.
