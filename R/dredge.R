@@ -58,6 +58,14 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			gmCall <- call("run.mark.model", model = gmCall, invisible = TRUE)
 		}
 	}
+	
+	
+	thiscall <- sys.call()
+	exprApply(gmCall[["data"]], NA, function(expr) {
+		if(is.symbol(expr[[1L]]) && all(expr[[1L]] != c("@", "$")))
+			cry(thiscall, "'global.model' uses \"data\" that is a function value: use a variable instead")
+	})
+	
 
 	lik <- .getLik(global.model)
 	logLik <- lik$logLik
@@ -186,7 +194,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	allTerms <- allTerms[termsOrder]
 
 	di <- match(allTerms, rownames(deps))
-	deps <- deps[di, di]
+	deps <- deps[di, di, drop = FALSE]
 
 	gmFormulaEnv <- environment(as.formula(formula(global.model), env = gmEnv))
 	# TODO: gmEnv <- gmFormulaEnv ???
@@ -242,8 +250,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	nov <- as.integer(nVars - nFixed)
 	ncomb <- (2L ^ nov) * nVariants
 
-	if(nov > 31L) cry(, "number of predictors [%d] exceeds allowed maximum of 31", nov)
-	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
+	if(nov > 30L) cry(, "number of predictors [%d] exceeds allowed maximum of 30", nov)
 	nmax <- ncomb * nVariants
 	rvChunk <- 25L
 	if(evaluate) {
@@ -320,7 +327,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 				# diag(gloFactorTable[offsetNames, offsetNames, drop = FALSE]) <- TRUE
 			}
 			
-			DebugPrint(gloFactorTable)
+			.DebugPrint(gloFactorTable)
 
 			# fix interaction names in rownames:
 			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
@@ -434,11 +441,9 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 				isok <- FALSE
 				next
 			}
-
+			
 			newArgs <- makeArgs(global.model, allTerms[comb], argsOptions) # comb
-			#formulaList <- if(is.null(attr(newArgs, "formulaList"))) newArgs else
-			#    attr(newArgs, "formulaList")
-
+				
 			if(!is.null(attr(newArgs, "problems"))) {
 				print.warnings(structure(vector(mode = "list",
 					length = length(attr(newArgs, "problems"))),
@@ -574,9 +579,9 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	coefTables <- coefTables[o]
 
 	rval$delta <- rval[, ICName] - min(rval[, ICName])
-	rval$weight <- exp(-rval$delta / 2) / sum(exp(-rval$delta / 2))
+	rval$weight <- Weights(rval$delta)
     mode(rval$df) <- "integer"
-
+	
 	structure(rval,
 		model.calls = calls[o],
 		global = global.model,

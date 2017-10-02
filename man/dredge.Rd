@@ -10,8 +10,8 @@
 
 \title{Automated model selection}
 \description{
-Generate a set of models with combinations (subsets) of terms in the global
-model, with optional rules for model inclusion.
+Generate a set of models with combinations (subsets) of fixed effect terms in
+the global model, with optional rules for model inclusion.
 }
 
 \usage{
@@ -107,15 +107,18 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 \details{
 Models are fitted through repeated evaluation of modified call extracted from
 the \code{global.model} (in a similar fashion as with \code{update}). This
-approach, while robust in that it can be applied to most model types is not
-the most efficient and may be computationally-intensive.
+approach, while robust in that it can be applied to most model types, 
+is inefficient because of its considerable computational overhead.
 
 Note that the number of combinations grows exponentially with number of
 predictors (\ifelse{latex}{\eqn{2^{N}}}{\ifelse{html}{2ⁿ}{2^N}}, less when
 interactions are present, see below).
 
-The fitted model objects are not stored in the result. To get (a subset of)
-models, use \code{\link{get.models}} on the object returned by \code{dredge}.
+The fitted model objects are not stored in the result. To get (possibly a subset of)
+the models, use \code{\link{get.models}} on the object returned by \code{dredge}.
+Another way of getting all the models is to run 
+\code{lapply(dredge(..., evaluate = FALSE), eval)}, 
+which avoids fitting the models twice.
 
 For a list of model types that can be used as a \code{global.model} see
 \link[=MuMIn-models]{list of supported models}.

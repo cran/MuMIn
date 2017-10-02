@@ -66,6 +66,14 @@ function(global.model, cluster = NA,
 		}
 	}
 
+	
+	thiscall <- sys.call()
+	exprApply(gmCall[["data"]], NA, function(expr) {
+		if(is.symbol(expr[[1L]]) && all(expr[[1L]] != c("@", "$")))
+			cry(thiscall, "'global.model' uses \"data\" that is a function value: use a variable instead")
+	})
+	
+
 	lik <- .getLik(global.model)
 	logLik <- lik$logLik
 
@@ -108,7 +116,7 @@ function(global.model, cluster = NA,
 	}
 
 	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,
-		data = eval(gmCall$data, envir = gmEnv))
+		data = eval(gmCall$data, envir = gmEnv)) ### TODO: data needed?
 
 	# Intercept(s)
 	interceptLabel <- attr(allTerms, "interceptLabel")
@@ -197,7 +205,7 @@ function(global.model, cluster = NA,
 	allTerms <- allTerms[termsOrder]
 
 	di <- match(allTerms, rownames(deps))
-	deps <- deps[di, di]
+	deps <- deps[di, di, drop = FALSE]
 
 	gmFormulaEnv <- environment(as.formula(formula(global.model), env = gmEnv))
 	# TODO: gmEnv <- gmFormulaEnv ???
@@ -253,7 +261,7 @@ function(global.model, cluster = NA,
 	nov <- as.integer(nVars - nFixed)
 	ncomb <- (2L ^ nov) * nVariants
 
-	if(nov > 31L) cry(, "number of predictors [%d] exceeds allowed maximum of 31", nov)
+	if(nov > 30L) cry(, "number of predictors [%d] exceeds allowed maximum of 30", nov)
 	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
 	nmax <- ncomb * nVariants
 	rvChunk <- 25L
@@ -329,7 +337,7 @@ function(global.model, cluster = NA,
 				# diag(gloFactorTable[offsetNames, offsetNames, drop = FALSE]) <- TRUE
 			}
 
-			DebugPrint(gloFactorTable)
+			.DebugPrint(gloFactorTable)
 
 			# fix interaction names in rownames:
 			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
@@ -517,7 +525,7 @@ function(global.model, cluster = NA,
 		} # if isok
 
 		#if(evaluate && qi && (qi + nvariants > qlen || iComb == ncomb)) {
-		if(evaluate && qi && (qi > qlen || (iComb + 1L) == ncomb)) {
+		if(evaluate && qi && (qi > qlen || (iComb + 1) == ncomb)) {
 			qseq <- seq_len(qi)
 			qresult <- .getRow(queued[qseq])
 			utils::flush.console()
@@ -624,7 +632,7 @@ function(global.model, cluster = NA,
 	coefTables <- coefTables[o]
 
 	rval$delta <- rval[, ICName] - min(rval[, ICName])
-	rval$weight <- exp(-rval$delta / 2) / sum(exp(-rval$delta / 2))
+	rval$weight <- Weights(rval$delta)
     mode(rval$df) <- "integer"
 
 	rval <- 

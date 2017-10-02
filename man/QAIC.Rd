@@ -41,9 +41,9 @@ account for estimating the overdispersion parameter. Without overdispersion,
 \eqn{\hat{c} = 1}{c-hat = 1} and QAIC is equal to AIC.
 
 Note that \code{glm} does not compute maximum-likelihood estimates in models
-within the \emph{quasi-} family. In case it is justified, and with a proper
-caution, a workaround could be used by \sQuote{borrowing} the \code{aic}
-element from the corresponding \sQuote{non-quasi} family (see \sQuote{Example}).
+within the \emph{quasi-} family. In case it is justified, it can be worked 
+around by \sQuote{borrowing} the \code{aic} element from the corresponding
+\sQuote{non-quasi} family (see \sQuote{Example}).
 }
 
 \seealso{
@@ -74,14 +74,14 @@ dredge(budworm.lg, rank = "AIC")
 
 
 \dontrun{
-# A 'hacked' constructor for quasibinomial family object, that allows for
+# A 'hacked' constructor for quasibinomial family object that allows for
 # ML estimation
-x.quasibinomial <- function(...) {
+hacked.quasibinomial <- function(...) {
     res <- quasibinomial(...)
     res$aic <- binomial(...)$aic
     res
 }
-QAIC(update(budworm.lg, family = x.quasibinomial), chat = chat)
+QAIC(update(budworm.lg, family = hacked.quasibinomial), chat = chat)
 }
 \dontshow{options(oop)}
 }

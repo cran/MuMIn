@@ -12,7 +12,8 @@ function(x) {
 	z <- x[, tt, drop = FALSE]
 	z <- !is.na(z[, !apply(apply(z, 2L, is.na), 2, all) & !(tt %in% attr(tt, "interceptLabel")),
 		drop = FALSE])
-	wt <- x[, "weight"]
+
+	wt <- x[, type2col(x, "weight")]
 	res <- apply(z, 2L, function(y) sum(wt[y]))
 	o <- order(res, decreasing = TRUE)
 	res <- res[o]

@@ -1,21 +1,3 @@
-glmfit_aicloglik <-
-function(object, y, x, wt) {
-    fam <- object$family
-    nobs <- NROW(x)
-    n <- if (NCOL(y) == 1) 
-        rep.int(1, nobs) else rowSums(y)
-    mu <- fam$linkinv((x %*% object$coefficients)[, 1L])
-    dev <- sum(fam$dev.resids(y, mu, wt))
-    aic <- fam$aic(y, n, mu, wt, dev) + 2 * object$rank
-    p <- object$rank
-    if (fam$family %in% c("gaussian", "Gamma", "inverse.gaussian")) 
-        p <- p + 1
-    ll <- p - aic/2
-    # c(aic = aic, loglik = ll, nobs = nobs, df = p)
-    c(aic, ll, p)
-} 
-
-
 arm.glm <-
 function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 	if(!inherits(object, c("glm", "lm")))
@@ -31,7 +13,7 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 	n1 <- ceiling((nall <- nrow(mm))/2)
 	n2 <- nall - n1 
 
-	combinTerms <- lapply(0L:(2^nterms - 1L), function(j)
+	combinTerms <- lapply(seq.int(0L, 2^nterms - 1L), function(j)
 		as.logical(intToBits(j)[1L:nterms]))
 	combinTerms <- combinTerms[vapply(combinTerms,
 		formula_margin_check, FALSE, deps)]
@@ -41,10 +23,11 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 		assign = attr(mm, "assign"))
 	combin <- combin[, i <- colSums(combin) < min(n1, n2) - 1L, drop = FALSE]
 	combinTerms <- combinTerms[i]
-
+	
 	nModels <- ncol(combin)
 	fam <- family(object)
 	y <- object$y
+	off <- object$offset
 	if(is.null(y)) y <- get.response(object)
 
 	prwt <- weights(object, "prior")
@@ -70,9 +53,11 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 	wts <- matrix(NA_real_, ncol = nModels, nrow = R)
 	for(iter in 1L:R) {
 		traceinfo("iteration=", iter, "\n")
-		for (u in 1L:maxtrials) {
+		for (u in seq.int(maxtrials)) {
 			traceinfo("  trial=", u, "\n    ")
-			i <- sample(nall, n1)
+			i <- sample.int(nall, n1)
+			i <- 1:n1 ## DEBUG
+			
 			y1 <- Z[i, jresp, drop = FALSE]
 			y2 <- Z[-i, jresp, drop = FALSE]
 			vy2 <- yvectorize(y2)
@@ -83,22 +68,24 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 			ic <- numeric(nModels)
 			for (k in seq.int(nModels)) {
 				traceinfo("k=", k, " ")
-				fit1 <- glm.fit(x1[, combin[, k], drop = FALSE], y1, family = fam, weights = prwts1)
+				fit1 <- glm.fit(x1[, combin[, k], drop = FALSE], y1, family = fam, weights = prwts1,
+								offset = off)
 				if (problem <- (any(is.na(fit1$coefficients)) || !fit1$converged)) {
 					traceinfo("<!>")
 					break
 				}
-				ic[k] <- glmfit_aicloglik(fit1, vy2, x2[, combin[, k], drop = FALSE], 
-					prwts2)[1L]
+				ic[k] <- aicloglik_glm_fit(fit1, vy2, x2[, combin[, k], drop = FALSE], 
+					prwts2, off)[weight.by]
 			}
 			traceinfo("\n")
 			if (!problem) 
 				break
 		}
-		d <- exp(-ic/2)
+		d <- exp(-ic / 2)
 		wts[iter, ] <- d/sum(d)
-	} 
-
+	}
+	
+	
 	wts[!is.finite(wts)] <- NA_real_
 	wts <- wts[round(rowSums(wts, na.rm = TRUE)) == 1, ]
 	wts <- wts/rowSums(wts, na.rm = TRUE)
@@ -113,11 +100,11 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 	coefArray <- array(NA_real_, dim = c(nModels, 3L, length(cfnames)), dimnames = list(1L:nModels, 
 		c("Estimate", "Std. Error", "df"), cfnames))
 	for (k in seq.int(nModels)) {
-		fit1 <- glm.fit(x[, combin[, k], drop = FALSE], y, family = fam)
+		fit1 <- glm.fit(x[, combin[, k], drop = FALSE], y, family = fam, offset = off)
 		coefArray[k, , combin[, k]] <- rbind(t(summary.glm(fit1)$coefficients[, 1L:2L, 
 			drop = FALSE]), fit1$df.residual)
-		msTable[k, c(3L, 2L, 1L)] <- glmfit_aicloglik(fit1, fit1$y, x[, combin[, k], 
-			drop = FALSE], fit1$prior.weights)
+		msTable[k, c(3L, 2L, 1L)] <- aicloglik_glm_fit(fit1, fit1$y, x[, combin[, k], 
+			drop = FALSE], fit1$prior.weights, off)
 	}
 	msTable[, 4L] <- msTable[, 3L] - min(msTable[, 3L])
 	msTable[, 5L] <- Weights(msTable[, 3L])
@@ -160,7 +147,65 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 	attr(rval, "beta") <- "none"
 	attr(rval, "revised.var") <- TRUE
 	attr(rval, "arm") <- TRUE
+	attr(rval, "model.weights") <- "ARM"
 
 	class(rval) <- "averaging"
 	rval 
 }
+
+
+armWeights <-
+function(object, ..., data, weight.by = c("aic", "loglik"), R = 1000) {
+	weight.by <- switch(match.arg(weight.by), aic = 1L, loglik = 2L)
+    
+    models <- getModelArgs()
+    m <- length(models)
+    if(m < 2) stop("need more than one model")
+		
+	p <- 0.5
+		
+	if(!all(vapply(models, inherits, TRUE, "lm")))
+	   stop("'models' must inherit from \"lm\" class")
+  
+    R <- as.integer(R[1L])
+    if(R <= 1) stop("'R' must be positive")
+
+    n <- nrow(data)
+    nt <- ceiling(n * p)
+	
+	maxtrials <- 3L
+	
+    wmat <- array(dim = c(R, m))
+	r <- counter <- 1L
+    counterLimit <- R * maxtrials # 	
+    mode(R) <- mode(counterLimit) <- "integer"
+    while(counter < counterLimit && r <= R) {
+        counter <- counter + 1L
+        k <- sample.int(n, size = nt)
+		k <- 1:nt ## DEBUG
+		#print(k)
+		data.test <- data[-k, , drop = FALSE]
+		data.train <- data[k, , drop = FALSE]
+		y.test <- get.response(models[[1L]], data.test)
+        for(j in seq.int(m)) {
+			fit <- models[[j]]
+            tf <- terms(fit)
+            fam <- family(fit)
+			off <- fit$offset
+			if(is.null(off)) off <- rep(0, n)
+            wts <- fit$weights
+			if(is.null(wts)) wts <- rep(1, n)
+			fit1 <- do_glm_fit(tf, data.train, family = fam, weights = wts[k], offset = off[k])
+			if(!fit1$converged) break
+			wmat[r, j] <- aicloglik_glm_fit(fit1, y.test, model.matrix(tf, data.test), fit1$prior.weights, off[-k])[weight.by]
+        }
+		if(!any(is.na(wmat[r, ])))
+			r <- r + 1L
+    }
+	
+	wmat <- exp(-wmat / 2)
+    wts <- colMeans(wmat)
+    wts <- wts / sum(wts)
+	structure(wts, wt.type = "ARM", names = names(models), class = c("model.weights", "numeric"))
+}
+

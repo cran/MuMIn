@@ -70,8 +70,8 @@ function(object, ...) {
 	# yags/yags.cc: p140 of Hardin and Hilbe
 	if(fam == "gaussian") ql <- (n * log(-2 * ql / n)) / -2
 	AIinv <- solve(vbeta.naiv.i)
-	tr <- sum(matmult(AIinv, vbeta, diag.only = TRUE)) ## TODO: use matmult
-	## tr <- sum(diag(AIinv %*% vbeta)) ## TODO: use matmult
+	tr <- sum(matmult(AIinv, vbeta, diag.only = TRUE)) 
+	## tr <- sum(diag(AIinv %*% vbeta))
 	px <- length(mu)
 	## When all modelling specifications in GEE are correct tr = px.
 	c(2 * (c(QIC = tr, QICu = px) - ql), n = n)

@@ -24,7 +24,7 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 
 \arguments{
     \item{FUN}{function to be modified, found via \code{\link{match.fun}}. }
-	\item{eval.args}{optionally a character vector of function arguments names
+	\item{eval.args}{optionally a character vector of function arguments' names
 	      to be evaluated in the stored call. See \sQuote{Details}. }
 	
 	\item{Class}{optional character vector naming class(es) to be set onto the
@@ -44,7 +44,7 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 	Some functions (such as \code{gamm} or \code{MCMCglmm}) do not provide their
 	result with the \code{call} element. To work that around, \code{updateable} 
 	can be used on that function to store the call. The resulting
-	wrapper should be used in exactly the same way as the original function.
+	\dQuote{wrapper} should be used in exactly the same way as the original function.
 	
 	Argument \code{eval.args} specifies names of function arguments that should
 	be evaluated in the stored call. This is useful when, for example, the model

@@ -1,12 +1,12 @@
 Package: MuMIn
 Type: Package
 Title: Multi-Model Inference
-Version: 1.15.6
-Date: 2015-12-21
+Version: 1.40.0
+Date: 2017-09-30
 Encoding: UTF-8
 Author: Kamil Bartoń
 Maintainer: Kamil Bartoń <kamil.barton@go2.pl>
-Description: Model selection and model averaging based on information criteria
+Description: Model selection and model averaging based on information criteria 
              (AICc and alike).
 License: GPL-2
 Depends: R (>= 3.0.0)
@@ -14,14 +14,14 @@ Imports: graphics, methods, Matrix, stats, stats4
 Suggests: lme4 (>= 1.1.0), nlme, mgcv (>= 1.7.5), gamm4, MASS, nnet,
         survival, geepack
 Enhances: aod, aods3, betareg, caper, coxme, cplm, gee, glmmML,
-        logistf, MCMCglmm, ordinal, pscl, spdep, splm, unmarked, geeM
-        (>= 0.7.5)
+        logistf, MCMCglmm, ordinal, pscl, spdep, splm, unmarked(>=
+        0.12.2), geeM (>= 0.7.5)
 LazyData: yes
 ByteCompile: yes
 Repository: CRAN
 Repository/R-Forge/Project: mumin
-Repository/R-Forge/Revision: 389
-Repository/R-Forge/DateTimeStamp: 2016-01-07 00:55:20
-Date/Publication: 2016-01-07 10:42:47
+Repository/R-Forge/Revision: 409
+Repository/R-Forge/DateTimeStamp: 2017-10-01 11:16:09
+Date/Publication: 2017-10-02 12:39:13 UTC
 NeedsCompilation: no
-Packaged: 2016-01-07 01:05:33 UTC; rforge
+Packaged: 2017-10-01 11:25:08 UTC; rforge

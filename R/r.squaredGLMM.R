@@ -36,10 +36,11 @@ function(x) {
 }
 
 ## extracts random effect formula. e.g:
-## ~ ... + (a | ...) + (b + c | ...) --> ~ a + b + c
 ranform <- function (form) {
+	### XXX: would give an error: values must be length 1 ...
+	###      for very long RE formulas
 	ans <- update.formula(reformulate(vapply(lapply(.findbars(form),
-		"[[", 2L), deparse, "")), ~ . + 1)
+		"[[", 2L), deparse, "",  width.cutoff = 500L)), ~ . + 1)
 	environment(ans) <- environment(form)
 	ans
 }
@@ -82,6 +83,9 @@ function(x) {
 	
 	if (useObsLevVar) {
         vname <- names(x@flist)[sapply(x@flist, nlevels) == n][1L]
+
+		if(! vname %in% names(vc)) vname <- make.names(vname)
+		stopifnot(vname %in% names(vc))
         varResid <- vc[[vname]][1L]
         beta0 <- mean(fxpred)
         vc <- vc[names(vc) != vname]

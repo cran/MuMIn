@@ -6,42 +6,84 @@
 # http://web.archiveorange.com/archive/v/rOz2zbtjRgntPMuIDoIl
 
 # based on the original 'predict.gls' in package 'nlme'
+#`predict.gls` <-
+#function (object, newdata, se.fit = FALSE, na.action = na.fail, ...) {
+#    if (missing(newdata) && missing(se.fit)) return(fitted(object))
+#	
+#    form <- formula(object)[-2L]
+#	if(length(form[[2L]]) == 3L && form[[2L]][[1L]] == "|" )
+#		form[[2L]] <- form[[2L]][[2L]] 
+#	
+#	dataMod <- model.frame(object, data = newdata, na.action = na.action,
+#										drop.unused.levels = TRUE)
+#	contr <- object$contrasts
+#	for(i in names(contr)) {
+#		levs <- levels(dataMod[, i])
+#		if (any(wch <- is.na(match(levs, rownames(contr[[i]]))))) {
+#                stop(sprintf(ngettext(sum(wch), "level %s not allowed for %s", 
+#                  "levels %s not allowed for %s"), paste(levs[wch], 
+#                  collapse = ",")), domain = NA)
+#            }
+#		attr(dataMod[[i]], "contrasts") <- contr[[i]][levs, , drop = FALSE]
+#	}
+#	X <- model.matrix(terms(form), data = dataMod)
+#	
+#    cf <- coef(object)
+#    val <- c(X[, names(cf), drop = FALSE] %*% cf)
+#	if(se.fit) {
+#		# se <- sqrt(diag(X %*% vcov(object) %*% t(X)))
+#		# se <- sqrt(rowSums((X %*% vcov(object)) * X))
+#		se <- sqrt(matmultdiag(X %*% vcov(object), ty = X))
+#		val <- list(fit = val, se.fit = unname(se))
+#	}
+#	attr(val, "label") <- "Predicted values"
+#    if (!is.null(aux <- attr(object, "units")$y)) {
+#        attr(val, "label") <- paste(attr(val, "label"), aux)
+#    }
+#	val
+#}
+
 `predict.gls` <-
 function (object, newdata, se.fit = FALSE, na.action = na.fail, ...) {
-    if (missing(newdata) && missing(se.fit)) return(fitted(object))
-	
-    form <- formula(object)[-2L]
-	if(length(form[[2L]]) == 3L && form[[2L]][[1L]] == "|" )
-		form[[2L]] <- form[[2L]][[2L]] 
-	
-	dataMod <- model.frame(object, data = newdata, na.action = na.action,
-										drop.unused.levels = TRUE)
-	contr <- object$contrasts
-	for(i in names(contr)) {
-		levs <- levels(dataMod[, i])
-		if (any(wch <- is.na(match(levs, rownames(contr[[i]]))))) {
+    if (missing(newdata) && !se.fit) {
+        return(fitted(object))
+    }
+    form <- getFrom("nlme", "getCovariateFormula")(object)
+    mfArgs <- list(formula = form, data = newdata, na.action = na.action)
+    mfArgs$drop.unused.levels <- TRUE
+    dataMod <- do.call(model.frame, mfArgs)
+    contr <- object$contrasts
+    for (i in names(dataMod)) {
+        if (inherits(dataMod[, i], "factor") && !is.null(contr[[i]])) {
+            levs <- levels(dataMod[, i])
+            levsC <- dimnames(contr[[i]])[[1]]
+            if (any(wch <- is.na(match(levs, levsC)))) {
                 stop(sprintf(ngettext(sum(wch), "level %s not allowed for %s", 
-                  "levels %s not allowed for %s"), paste(levs[wch], 
-                  collapse = ",")), domain = NA)
+                  "levels %s not allowed for %s"), paste(levs[wch], collapse = ",")), domain = NA)
             }
-		attr(dataMod[[i]], "contrasts") <- contr[[i]][levs, , drop = FALSE]
-	}
-	X <- model.matrix(terms(form), data = dataMod)
-	
+            attr(dataMod[, i], "contrasts") <- contr[[i]][levs, , drop = FALSE]
+        }
+    }
+    N <- nrow(dataMod)
+    if (length(all.vars(form)) > 0) {
+        X <- model.matrix(form, dataMod)
+    } else {
+        X <- array(1, c(N, 1), list(row.names(dataMod), "(Intercept)"))
+    }
     cf <- coef(object)
     val <- c(X[, names(cf), drop = FALSE] %*% cf)
 	if(se.fit) {
-		# se <- sqrt(diag(X %*% vcov(object) %*% t(X)))
-		# se <- sqrt(rowSums((X %*% vcov(object)) * X))
 		se <- sqrt(matmultdiag(X %*% vcov(object), ty = X))
 		val <- list(fit = val, se.fit = unname(se))
-	}
-	attr(val, "label") <- "Predicted values"
+	}	
+    lab <- "Predicted values"
     if (!is.null(aux <- attr(object, "units")$y)) {
-        attr(val, "label") <- paste(attr(val, "label"), aux)
+        lab <- paste(lab, aux)
     }
-	val
+    structure(val, label = lab)
 }
+
+
 
 `predict.lme` <-
 function (object, newdata, level, asList = FALSE,

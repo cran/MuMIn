@@ -25,21 +25,25 @@ function(x,
 	pal <- if(is.na(col2)) rbind(col) else 
 		vapply(col, function(x) grDevices::rgb(grDevices::colorRamp(c(col2, x))(stdweight),
 			maxColorValue = 255), character(n))
-	npal <- ncol(pal)
 		
+	pal <- matrix(pal, ncol = length(col))
+
+	npal <- ncol(pal)
+	
 	for(i in 1L:m)
 		rect(i - 1, c(0, cumweight), i, c(cumweight, 1),
 			col = ifelse(is.na(x[, i]), NA, pal[, 1L + ((i - 1L) %% npal)]),
 			border = border)
 
 	if(ann) {
-		labCommonArg <- list(col = par("col.axis"), font = par("font.axis"), cex = par("cex.axis"))
+		labCommonArg <- list(col = par("col.axis"), font = par("font.axis"),
+							 cex = par("cex.axis"))
 		if(labAsExpr) {
 			labels <- gsub(":", "%*%", labels, perl = TRUE)
 				labels <- gsub("\\B_?(\\d+)(?![\\w\\._])", "[\\1]", labels, perl = TRUE)
 			labels <- parse(text = labels)
 		}	
-		arg <- c(list(side = 3L, padj = 0.5, line = 1, las = 2), labCommonArg)
+		arg <- c(list(side = 3L, padj = 0.5, line = 1L, las = 2L), labCommonArg)
 		for(i in names(par.lab)) arg[i] <- par.lab[i]
 		
 		if(is.expression(labels)) {
@@ -50,7 +54,7 @@ function(x,
 			do.call("mtext", c(list(text = labels, at = 1L:m - 0.5), arg))
 		}
 	   
-		arg <- c(list(side = 4, las = 2, line = 1, adj = 1), labCommonArg)
+		arg <- c(list(side = 4L, las = 2L, line = 1L, adj = 1L), labCommonArg)
 		for(i in names(par.vlab)) arg[i] <- par.vlab[i]
 		ss <- weight > -(1.2 * strheight("I", cex = arg$cex))
 		arg[['at']] <- (c(0, cumweight[-n]) + cumweight)[ss] / 2

@@ -27,7 +27,12 @@ The collection of functions includes:
 	\item{\code{\link{model.avg}}}{ calculates model averaged parameters,
 		with standard errors and confidence intervals. }
 	\item{\code{\link{AICc}}}{calculates second-order Akaike information
-		criterion. }
+		criterion. Some other criterions are provided, see below. }
+		
+	\item{\code{\link{stdize}}, \code{\link{stdizeFit}}, \code{\link{std.coef}},
+		\code{\link{partial.sd}}}{can be used for standardization of data and
+		model coefficients by Standard Deviation or Partial Standard Deviation.
+		}
 }
 
 For a complete list of functions, use \code{library(help = "MuMIn")}.
@@ -43,6 +48,17 @@ following ones are currently implemented in \R:
 
 Most of \R's common modelling functions are supported, for a full inventory
 see \link[=MuMIn-models]{list of supported models}.
+
+Apart from the \dQuote{regular} information criteria, model averaging can be performed
+  using various types of model weighting algorithms:
+  \link[=BGWeights]{Bates-Granger},
+  \link[=BGWeights]{bootstrapped},
+  \link[=cos2Weights]{cos-squared},
+  \link[=jackknifeWeights]{jackknife},
+  \link[=stackingWeights]{stacking}, or
+  \link[=armWeights]{ARM}. 
+  These weighting functions apply mostly to \code{glm}s.
+
 }
 
 \author{ Kamil Barto\enc{ń}{n} }

@@ -26,7 +26,7 @@ function(models) {
 }
 
 mergeMF <-
-function(models) {
+function(models, check = TRUE) {
 	mf <- model.frame(models[[1L]])
 	mfNames <- colnames(mf)
 	lhs <- asChar(getResponseFormula(mf))
@@ -35,8 +35,10 @@ function(models) {
 	#m <- models[[2]]
 	for(m in models[-1L]) {
 		mf1 <- model.frame(m)
-		if(!identical(lhs, lhs1 <- asChar(getResponseFormula(terms(mf1)))))
+		
+		if(check && !identical(lhs, lhs1 <- asChar(getResponseFormula(mf1))))
 			stop("response differs between models: ", sQuote(c(asChar(lhs), lhs1)))
+		
 		mf <- cbind(mf, mf1[, !(colnames(mf1) %in% mfNames), drop = FALSE])
 		tt1 <- fixTermsObject(terms(mf1))
 		f <- c(f, attr(tt1, "term.labels"))

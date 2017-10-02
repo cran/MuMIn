@@ -4,7 +4,7 @@ export(
 	"model.avg", "par.avg", 
 	"model.sel",
 	"getAllTerms", "coeffs", "coefTable", 
-	"importance", "Weights", 
+	"importance", "Weights", "Weights<-",
 	"AICc", "QAIC", "QAICc", "Cp", "ICOMP", "CAICF", "DIC", 
 	"r.squaredLR", "null.fit", "r.squaredGLMM",
 	"QIC", "quasiLik",
@@ -17,21 +17,31 @@ export(
 	"get_call",
 	"std.coef", "beta.weights", 
 	"partial.sd",
-	"arm.glm",
+	"arm.glm", "armWeights",
+	
+	"BGWeights", "cos2Weights", "jackknifeWeights", "stackingWeights", 
+	"bootWeights",
+	"loo",
+	
     # defunct and deprecated:
 	"mod.sel",  "tTable", "updateable2"
 )
+
 
 # Imports:
 importFrom("graphics", "axis", "box", "mtext", "par", "plot.new", "plot.window",
 	"rect",	"strheight", "strwidth", "title")
 #importFrom(grDevices, colorRamp, rgb)
-importFrom("methods", ".hasSlot", "isGeneric", "slot", "slotNames")
+importFrom("methods", ".hasSlot", "isGeneric", "slot", "slotNames", "is")
 importFrom("stats", ".checkMFClasses", ".getXlevels", ".MFclass", "AIC",
-	"as.formula", "delete.response", "deviance", "df.residual",
+	"as.formula",
+	"BIC",
+	"delete.response", "deviance", "df.residual",
 	"family", "fitted", "formula", "getCall", "glm.fit",  "make.link",
+	"median", 
 	"model.frame", "model.matrix", "model.response", "na.fail", "nobs", "pnorm",
 	"power", "predict", "printCoefmat", "qnorm", "qt", "reformulate", "resid",
+	"rbinom", "rgamma", "rpois", # for .simulateData
 	"sd", "summary.glm", "terms", "terms.formula", "update", "update.default",
 	"update.formula", "var", "weighted.mean", "weights",
     "gaussian", "binomial", "Gamma", "inverse.gaussian", "quasi", 
@@ -44,6 +54,9 @@ importFrom("stats4", "logLik", "coef", "vcov")
 importFrom("Matrix", "t", "rowSums", "det", "diag", "solve")
 importFrom("grDevices", "n2mfrow")
 importFrom("graphics", "abline", "lines", "matplot")
+
+# model-averaging related functions:
+importFrom("stats", "cor", "cov", "rnorm", "runif", "optim")
 
 
 # Methods:
@@ -98,6 +111,10 @@ S3method(Weights, averaging)
 S3method(Weights, data.frame)
 S3method(Weights, numeric)
 S3method(Weights, default)
+
+
+S3method("Weights<-", averaging)
+S3method("Weights<-", default)
 
 S3method(getAllTerms, default)
 S3method(coeffs, default)
@@ -167,7 +184,7 @@ S3method(getAllTerms, unmarkedFit)
 S3method(coeffs, unmarkedFit)
 S3method(coefTable, unmarkedFit)
 S3method(nobs, unmarkedFit)
-S3method(getAllTerms, unmarkedFitDS)
+# S3method(getAllTerms, unmarkedFitDS)
 # this is done by setting S4 method with an .onLoad hook:
 # S3method(logLik, unmarkedFit)
 
@@ -347,9 +364,13 @@ S3method(stdize, matrix)
 S3method(get.response, default)
 S3method(get.response, lm)
 S3method(get.response, averaging)
+S3method(get.response, formula)
 
 S3method(coefTable, bic.glm)
 
-#S3method("xtable", "summary.averaging")
-#S3method("xtable", "averaging")
-#S3method("xtable", "model.selection")
+S3method(loo, default)
+S3method(loo, lm)
+
+S3method(print, model.weights)
+S3method("[", model.weights)
+

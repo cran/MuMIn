@@ -1,4 +1,4 @@
-\newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}} 
+\newcommand{\CRANpkg}{\href{https://cran.r-project.org/package=#1}{\pkg{#1}}} 
 \newcommand{\lxcode}{\code{\link[#2]{#1}}}
 \newcommand{\lcode}{\code{\link{#1}}}
 

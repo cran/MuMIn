@@ -112,7 +112,7 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 
 		if(addrandcol <- length(unique(colran)) > 1L) {
 			k <- which(colnames(x) == "df")[1L]
-			x <- cbind(x[, 1L:(k - 1L)], random = colran, x[, k:ncol(x)])
+			x <- cbind(x[, 1L:(k - 1L), drop = FALSE], random = colran, x[, k:ncol(x), drop = FALSE], deparse.level = 0L)
 		}
 
 		if(nrow(x) == 0L) {

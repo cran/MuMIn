@@ -62,11 +62,13 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 
 	cfarr <- coefArray(ct)
 	weight <- Weights(object)
+	
 
-	cfmat <- cfarr[, 1L, ]
+	cfmat <- as.matrix(cfarr[, 1L, ])
 	cfmat[is.na(cfmat)]<- 0
 	coefMat <- array(dim = c(2L, ncol(cfmat)),
-		dimnames = list(c("full", "subset"), colnames(cfmat)))
+		dimnames = list(c("full", "subset"), dimnames(cfarr)[[3L]]))
+	
 	coefMat[1L, ] <- drop(weight %*% cfmat)
 	coefMat[2L, ] <- coefMat[1L, ] / colSums(array(weight *
 		as.numeric(!is.na(cfarr[, 1L, ])), dim = dim(cfmat)))
@@ -77,7 +79,7 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 			#lme=, lme.formula= "fixed", gls= "model", "formula")]])))
 	all.terms <- attr(object, "terms")
 	all.vterms <- all.terms[!(all.terms %in% attr(all.terms, "interceptLabel")
-		| apply(is.na(object[, all.terms]), 2L, all))]
+		| apply(is.na(object[, all.terms, drop = FALSE]), 2L, all))]
 	#allterms1 <- apply(!is.na(object[, all.vterms, drop = FALSE]), 1L, function(x) all.vterms[x])
 	allterms1 <- applyrns(!is.na(object[, all.vterms, drop = FALSE]), function(x) all.vterms[x])
 	allmodelnames <- .modelNames(allTerms = allterms1, uqTerms = all.vterms)
@@ -85,6 +87,7 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 	mstab <- itemByType(object, c("df", "loglik", "ic", "delta", "weight"))
 	rownames(mstab) <- allmodelnames
 	
+	.Debug(.Generic <- "model.avg")
 
 	ret <- list(
 		msTable = structure(as.data.frame(mstab),
@@ -164,7 +167,7 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 		coefTableCall[['partial.sd']] <- TRUE
 	}
 	
-	DebugPrint(coefTableCall)
+	.DebugPrint(coefTableCall)
 
 	# check if models are unique:
 	if(!is.null(dispersion)) dispersion <- rep(dispersion, length.out = nModels)
@@ -208,10 +211,11 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 				apply(model.matrix(models[[i]]), 2L, sd) / response.sd
 	}
 
+
 	cfarr <- coefArray(coefTables)
-	cfmat <- cfarr[, 1L, ]
+	cfmat <- array(cfarr[, 1L, ], dim = dim(cfarr)[-2L], dimnames = dimnames(cfarr)[-2L])
 	cfmat[is.na(cfmat)]<- 0
-	coefMat <- array(dim = c(2L, ncol(cfmat)),
+	coefMat <- array(NA_real_, dim = c(2L, ncol(cfmat)),
 		dimnames = list(c("full", "subset"), colnames(cfmat)))
 	coefMat[1L, ] <- drop(weight %*% cfmat)
 	coefMat[2L, ] <- coefMat[1L, ] / colSums(array(weight *
@@ -225,17 +229,21 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 	# Benchmark: 3.7x faster
 	#system.time(for(i in 1:10000) t(array(unlist(p), dim=c(length(all.terms),length(models)))))
 	#system.time(for(i in 1:10000) do.call("rbind", p))
-
+	
 	vpresent <- do.call("rbind", lapply(models, function(x)
 		all.terms %in% getAllTerms(x)))
-
-	importance <- apply(weight * vpresent, 2L, sum)
-	names(importance) <- all.terms
-	o <- order(importance, decreasing = TRUE)
-	importance <- importance[o]
-	attr(importance, "n.models") <- structure(colSums(vpresent)[o], names = all.terms)
-	class(importance) <- c("importance", "numeric") 
-
+	
+	if(all(dim(vpresent) > 0L)) {
+		importance <- apply(weight * vpresent, 2L, sum)
+		names(importance) <- all.terms
+		o <- order(importance, decreasing = TRUE)
+		importance <- importance[o]
+		attr(importance, "n.models") <- structure(colSums(vpresent)[o], names = all.terms)
+		class(importance) <- c("importance", "numeric")
+	} else {
+		importance <- structure(integer(0L), n.models = integer(0L), class = c("importance", "numeric"))
+	}
+	
 	mmxs <- tryCatch(cbindDataFrameList(lapply(models, model.matrix)),
 					 error = return_null, warning = return_null)
 
@@ -271,7 +279,9 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 			))[[1L]]
 	} else NA
 	
-
+	
+	.Debug(.Generic <- "model.avg")
+	
 	ret <- list(
 		msTable = structure(as.data.frame(mstab),
 			term.codes = attr(allmodelnames, "variables")),
@@ -325,7 +335,7 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 	if (!missing(interval)) .NotYetUsed("interval", error = FALSE)
 	
 	if(backtransform && !is.na(type) && type == "response")
-		warning("back-transforming predictions that are already on response scale")
+		warning("back-transforming predictions already on response scale")
 
 	models <- attr(object, "modelList")
 	if(is.null(models)) stop("can predict only from 'averaging' object containing model list")
@@ -392,7 +402,7 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 			
 			if (!is.null(links)) {
 				if(any(links[1L] != links[-1L]))
-					cry(sys.call(-1L), "cannot inverse-transform averaged prediction of models using different link functions")
+					cry(-1L, "cannot inverse-transform averaged prediction of models using different link functions")
 				fam1 <- family(models[[1L]])
 				if(is.null(se.fit)) return(fam1$linkinv(fit))
 				else return(list(fit = fam1$linkinv(fit),
@@ -460,7 +470,7 @@ function (object, ...) {
 		no.ase <- all(is.na(cf[, 3L]))
 		z <- abs(cf[, 1L] / cf[, if(no.ase) 2L else 3L])
 		pval <- 2 * pnorm(z, lower.tail = FALSE)
-		cbind(cf[, if(no.ase) 1L:2L else 1L:3L],
+		cbind(cf[, if(no.ase) 1L:2L else 1L:3L, drop = FALSE],
 			`z value` = z, `Pr(>|z|)` = zapsmall(pval))
 	}
 	
@@ -475,7 +485,7 @@ function (object, ...) {
 		.makecoefmat(.coefarr.avg(object$coefArray, weight,
 			attr(object, "revised.var"), FALSE, 0.05))
 	
-	object$coef.nmod <- colSums(!is.na(object$coefArray[, 1L,]))
+	object$coef.nmod <- colSums(!is.na(object$coefArray[, 1L, , drop = FALSE]))
 
 	structure(object, ARM = is.arm, class = c("summary.averaging", "averaging"))
 }
@@ -529,7 +539,12 @@ function (x, digits = max(3L, getOption("digits") - 3L),
 	}		
 		
     cat("\nComponent models: \n")
-	print(round(as.matrix(x$msTable), 2L), na.print = "")
+	msTable <- x$msTable
+	wi <- ncol(msTable)
+	if(!isTRUE(attr(x, "ARM")) && names(msTable)[wi] != "weight")
+		msTable <- msTable[, c(1L, wi), drop = FALSE]
+		
+	print(round(as.matrix(msTable), 2L), na.print = "")
 
 	if(!is.null(attr(x$msTable, "term.codes"))) {
 		cat("\nTerm codes: \n")
@@ -541,7 +556,7 @@ function (x, digits = max(3L, getOption("digits") - 3L),
 			"component models)", sep = "")
 
 	hasPval <- TRUE
-	coefTitles <- if(attr(x, "ARM"))
+	coefTitles <- if(isTRUE(attr(x, "ARM")))
 		c(coefmat.full = "(ARM average)") else
 		c(coefmat.full = "(full average)",
 		  coefmat.subset = "(conditional average)")
@@ -634,7 +649,6 @@ function(x, ...) {
 function (model, full = FALSE, adjust.se = TRUE, ...) {
 	full <- .checkFull(model, full) 
 	
-	
     no.ase <- any(is.na(model$coefArray[,3L,]) & !is.na(model$coefArray[,1L,]))
 	if(!missing(adjust.se) && adjust.se && no.ase) 
         warning("adjusted std. error not available for this type of model")
@@ -642,7 +656,7 @@ function (model, full = FALSE, adjust.se = TRUE, ...) {
 	weight <- model$msTable[, ncol(model$msTable)]
 
     cols <- c(1L, if(!adjust.se || no.ase) 2L else 3L)
-	ct <- .coefarr.avg(model$coefArray, weight, TRUE, full, .05)[, cols] 
+	ct <- .coefarr.avg(model$coefArray, weight, TRUE, full, .05)[, cols, drop = FALSE] 
 	.makeCoefTable(ct[,1L], ct[,2L], NA, rownames(ct))
 }
 

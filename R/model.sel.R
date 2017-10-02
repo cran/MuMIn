@@ -98,7 +98,7 @@ function(object, ..., rank = NULL, rank.args = NULL,
     
     lapply(models, function(fit) {
         if(any(dup <- duplicated(cfn <- names(coeffs(fit)))))
-        cry(sys.call(-2L), "models cannot have duplicated coefficient names: %s",
+        cry(-2L, "models cannot have duplicated coefficient names: %s",
              prettyEnumStr(cfn[dup]))
     })
 
@@ -122,6 +122,8 @@ function(object, ..., rank = NULL, rank.args = NULL,
 
 	d[,j] <- lapply(d[,j, drop = FALSE], function(x) factor(is.nan(x),
 		levels = TRUE, labels = "+"))
+	
+
 
 	rval <- vapply(models, function(x) {
 		ll <- logLik(x)
@@ -147,31 +149,33 @@ function(object, ..., rank = NULL, rank.args = NULL,
 	if(nlevels(descrf$family) == 1L) descrf$family <- NULL
 	if(ncol(descrf)) {
 		i <- seq_len(length(all.terms))
-		rval <- cbind(rval[, i], descrf, rval[, -i])
+		rval <- cbind(rval[, i, drop = FALSE], descrf, rval[, -i, drop = FALSE],
+			deparse.level = 0L)
 	}
 	
 	if(!missing(extra) && length(extra) != 0L) {
 		# a cumbersome way of evaluating a non-exported function in a parent frame:
 		#extra <- eval.parent(call(".get.extras", substitute(extra)))
-		extra <- eval.parent(as.call(list(call("get", ".get.extras", envir = call("asNamespace",
-			.packageName), inherits = FALSE), substitute(extra), r2nullfit = TRUE)))
-	
+		extra <- eval.parent(as.call(list(call("get", ".get.extras",
+			envir = call("asNamespace",
+			.packageName), inherits = FALSE), substitute(extra),
+			r2nullfit = TRUE)))
 		res <- lapply(models, function(x) unlist(lapply(extra, function(f) f(x))))
 		extraResultNames <- unique(unlist(lapply(res, names)))
 		nextra <- length(extraResultNames)
 		i <- seq_len(length(all.terms))
-		rval <- cbind(rval[, i], do.call("rbind", lapply(res, function(x) {
+		rval <- cbind(rval[, i, drop = FALSE], do.call("rbind", lapply(res, function(x) {
 			if(length(x) < nextra) {
 				tmp <- rep(NA_real_, nextra)
 				tmp[match(names(x), extraResultNames)] <- x
 				tmp
 			} else x
-		})), rval[, -i])
+		})), rval[, -i, drop = FALSE])
 	} else nextra <- 0L
 	row.names(rval) <- names(models)
 	
 	rval <- structure(
-		rval[o, ],
+		rval[o, , drop = FALSE],
 		terms = structure(all.terms, interceptLabel =
 			unique(unlist(lapply(allTermsList, attr, "interceptLabel")))),
 		model.calls = lapply(models, get_call)[o],

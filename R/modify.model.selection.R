@@ -26,7 +26,8 @@ function(x, attrib, modif = NULL, rowchange = TRUE) {
 	excludeattr <- c("names", "row.names", "class")
 	column.types <- attrib[["column.types"]]
 	keepattr <- names(attrib)[!(names(attrib) %in% excludeattr)]
-	.setattr <- function(x, newattr = NULL, which = keepattr) {
+	.setattr <-
+	function(x, newattr = NULL, which = keepattr) {
 		attributes(x)[which] <- if(is.null(newattr)) NULL else newattr[which]
 		x
 	}

@@ -1,15 +1,20 @@
 `get.models` <-
 function(object, subset, cluster = NA, ...) {
-    if (!inherits(object, "model.selection"))
-		stop("'object' must be a 'model.selection' object")
+    if (!any(ok <- inherits(object, c("model.selection", "averaging"), which = TRUE)))
+		stop("'object' must be a \"model.selection\" or \"averaging\" object")
 
 	hasModelList <- is.list(attr(object, "modelList"))
+	
+	isAveraging <- ok[2L] == 1L
+	
+	if(isAveraging && !hasModelList) stop("need \"averaging\" object with a model list")
+
 	calls <- attr(object, "model.calls")
 	if((hasNoCalls <- is.null(calls)) && !hasModelList)
-		stop("'object' has no 'model.calls' attribute")
+		stop("'object' has no \"model.calls\" attribute")
 
 	if(!missing(subset)) {
-		r <- subset_eval(substitute(subset), object, parent.frame())
+		r <- subset_eval(substitute(subset), if(isAveraging) object$msTable else object, parent.frame())
 
 		if(!isTRUE(r) && !is.na(r)) {
 			if(is.character(r)) r <- match(r, dimnames(object)[[1L]])
@@ -24,13 +29,13 @@ function(object, subset, cluster = NA, ...) {
 	naNames <- names(newargs)
 
 	if(hasModelList) {
-		DebugPrint(hasModelList)
+		.DebugPrint(hasModelList)
 		if(length(newargs) == 0L) {
 			models <- attr(object, "modelList")[r]
 			attr(models, "rank") <- attr(object, "rank")
 			return(models)
 		}
-		DebugPrint("refitting...")
+		.DebugPrint("refitting...")
 		if(hasNoCalls) calls <- lapply(attr(object, "modelList")[r], get_call)
 	} else calls <- calls[r]
 

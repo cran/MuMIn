@@ -37,8 +37,8 @@
 
 \value{
 A \code{model.selection} object containing only the selected models (rows).
-If columns are selected (via argument \code{select} or second index 
-\code{x[, j]}) and not all if not all essential columns (i.e. all except 
+If columns are selected (via argument \code{select} or the second index 
+\code{x[, j]}) and not all essential columns (i.e. all except 
 "varying" and "extra") are present in the result, a plain \code{data.frame} is 
 returned. Similarly, modifying values in the essential columns with \code{[<-}, 
 \code{[[<-} or \code{$<-} produces a regular data frame. 

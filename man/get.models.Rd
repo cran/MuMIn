@@ -37,11 +37,23 @@ a potentially long list of models is not fitted unintentionally. To evaluate all
  models, set \code{subset} to \code{NA} or \code{TRUE}. 
 
 If \code{subset} is a character vector, it is interpreted as names of rows to be
-selected. 
+selected.
 
 }
 
 \note{
+
+Alternatively, \code{getCall} and \code{eval} can be used to compute a model out of the 
+\code{"model.selection"} table (e.g. \code{eval(getCall(<model.selection>, i))}, where 
+\code{i} is the model index or name). 
+
+Using \code{get.models} following \code{dredge} is not efficient as the requested models 
+have to be fitted again. If the number of generated models is reasonable, consider using \cr
+\code{lapply(dredge(..., evaluate = FALSE), eval)}, which generates a list of all model 
+calls and evaluates them into a list of model objects. This avoids fitting the 
+models twice.
+
+
 \code{pget.models} is still available, but is deprecated.
 }
 
@@ -50,7 +62,7 @@ selected.
 \seealso{
 \code{\link{dredge}} and \code{\link{pdredge}}, \code{\link{model.avg}}
 
-\code{\link{makeCluster}} in packages \pkg{parrallel} and \pkg{snow}
+\code{\link{makeCluster}} in packages \pkg{parallel} and \pkg{snow}
 
 }
 

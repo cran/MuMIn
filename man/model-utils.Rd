@@ -38,14 +38,14 @@ These functions extract or calculate various values from provided fitted model
 coeffs(model)
 
 getAllTerms(x, ...)
-\method{getAllTerms}{terms}(x, offset = TRUE, intercept = FALSE, ...)
+\method{getAllTerms}{terms}(x, intercept = FALSE, offset = TRUE, ...)
 
 coefTable(model, ...)
 \method{coefTable}{averaging}(model, full = FALSE, adjust.se = TRUE, ...)
 \method{coefTable}{lme}(model, adjustSigma, ...)
 \method{coefTable}{gee}(model, ..., type = c("naive", "robust"))
 
-get.response(x, ...)
+get.response(x, data = NULL, ...)
 
 model.names(object, ..., labels = NULL, use.letters = FALSE)
 
@@ -74,12 +74,23 @@ model.names(object, ..., labels = NULL, use.letters = FALSE)
 	order of the models leads to different names. Providing \code{labels}
 	prevents that. }
     
-  \item{\dots}{for \code{model.names}, more fitted model objects.
-	For \code{coefTable} arguments that are passed to appropriate \code{\link{vcov}}
+  \item{\dots}{in \code{model.names}, more fitted model objects.
+	In \code{coefTable} arguments that are passed to appropriate \code{\link{vcov}}
 	or \code{summary} method (e.g. \code{dispersion} parameter for \code{glm} may
-	be used here). In other functions often not used.
+	be used here).
+	In \code{get.response}, if \code{data} is given, arguments to be passed to
+	\code{\link{model.frame}}.
+	In other functions may be silently ignored.
   }
-  \item{use.letters}{logical, whether letters should be used instead of numeric codes. }
+  
+  \item{data}{a \code{data.frame}, \code{list} or \code{environment} (or object
+	coercible to a \code{data.frame}), containing the variables in \code{x}.
+	Required only if \code{x} is a \code{formula}, otherwise it can be used to
+	get the response variable for a different data set.
+	}
+
+  \item{use.letters}{logical, whether letters should be used instead of numeric
+	codes. }
  }
 
 \details{

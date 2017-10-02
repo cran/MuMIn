@@ -57,7 +57,7 @@ where
 is the sum of all
 \eqn{u}
 variance components (group, individual, etc.), 
-\myequation{\sigma_l^2}{\sigma_l²}{sigma_l^2}
+\myequation{\sigma_e^2}{\sigma_e²}{sigma_e^2}
  is the variance due to additive dispersion and 
 \myequation{\sigma_d^2}{\sigma_d²}{sigma_d^2}
 is the distribution-specific variance. 
