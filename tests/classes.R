@@ -348,6 +348,7 @@ rm(list=ls())
 # TEST coxph -------------------------------------------------------------------
 
 library(survival)
+options(na.action = na.fail)
 
 bladder1 <- bladder[bladder$enum < 5, ]
 
@@ -362,6 +363,22 @@ ms <- dredge(fmcph, fixed=c("cluster(id)", "strata(enum)"), extra = list(R2="r.s
 
 fits <- get.models(ms, delta < 5)
 summary(model.avg(fits))
+
+
+####
+
+
+library(MuMIn)
+library(survival)
+options(na.action = na.fail)
+lung <- na.omit(lung)
+fm <- coxph(Surv(time, status) ~ ph.ecog + tt(age), data=lung,
+     tt=function(x,t,...) pspline(x + t/365.25))
+ma <- model.avg(dredge(fm))
+coef(ma)
+coefTable(ma)
+####
+
 
 fmsrvrg <- survreg(Surv(futime, fustat) ~ ecog.ps + rx, ovarian, dist='weibull',
     scale = 1)

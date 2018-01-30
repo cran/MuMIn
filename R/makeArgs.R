@@ -33,7 +33,6 @@ function(obj, termNames, opt, ...) {
 	termNames[termNames %in% opt$interceptLabel] <- "1"
 	## XXX: what if length(opt$intercept) > 1 ???
 	f <- reformulate(c(if(!opt$intercept) "0" else if (!length(termNames)) "1", termNames), response = opt$response)
-	
 
 	environment(f) <- opt$gmFormulaEnv
 	ret <- list(formula = f)
@@ -142,26 +141,6 @@ function(obj, termNames, opt, ...) {
 	ret
 }
 
-#`makeArgs.unmarkedFitColExt` <- function(obj, termNames, opt, ...)
-#	makeArgs.unmarkedFit(obj, termNames, opt, c("psi", "col", "ext", "p"),
-#		c("psiformula", "gammaformula", "epsilonformula", "pformula"))
-#
-#
-#`makeArgs.unmarkedFitGMM` <- function(obj, termNames, opt, ...)
-#	makeArgs.unmarkedFit(obj, termNames, opt,
-#		c("lambda", "phi", "p"),
-#		c("lambdaformula", "phiformula", "pformula") )
-#
-#`makeArgs.unmarkedFitPCO` <- function(obj, termNames, opt, ...)
-#	makeArgs.unmarkedFit(obj, termNames, opt,
-#		c("lam", "gamConst", "omega", "p"),
-#		c("lambdaformula", "gammaformula", "omegaformula", "pformula"))
-#
-#`makeArgs.unmarkedFitOccu` <- function(obj, termNames, opt, ...)
-#	makeArgs.unmarkedFit(obj, termNames, opt, c("psi", "p"),
-#		"formula")
-
-
 `makeArgs.coxme` <-
 `makeArgs.lmekin` <-
 function(obj, termNames, opt, ...) {
@@ -220,6 +199,3 @@ function(obj, termNames, opt, ...) {
 						 call = parent.call))
 	makeArgs.default(obj, termNames, opt, ...)
 }
-
-
-

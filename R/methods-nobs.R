@@ -73,12 +73,15 @@ function (object, ...) object$Residual$nrl
 `nobs.mark` <- 
 function (object, ...) object$results[['n']]
 
-`nobs.coxph` <- 
 `nobs.pgls` <-
 `nobs.logistf` <-
 `nobs.phylolm` <- 
 function (object, ...)
 object$n
+
+`nobs.coxph` <- 
+function (object, ...)
+object$nevent
 
 `nobs.caic` <-
 function (object, ...)

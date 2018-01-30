@@ -3,12 +3,12 @@
 function(x, ...) getAllTerms.terms(terms(as.formula(formula(x))), ...)
 
 `getAllTerms.gam` <-
-function(x, intercept = FALSE, ...)
-	getAllTerms.terms(terms(formula(x), ...), intercept = intercept)
+function(x, intercept = FALSE, offset = TRUE, ...)
+	getAllTerms.terms(terms(formula(x), ...), intercept = intercept, offset = offset)
 
 `getAllTerms.lm` <-
-function(x, intercept = FALSE, ...)
-	getAllTerms.terms(terms(x, ...), intercept = intercept)
+function(x, intercept = FALSE, offset = TRUE, ...)
+	getAllTerms.terms(terms(x, ...), intercept = intercept, offset = offset)
 
 `getAllTerms.terms` <-
 function(x, intercept = FALSE, offset = TRUE, ...) {
@@ -292,12 +292,11 @@ function (x, intercept = FALSE, ...) {
 
 `getAllTerms.asreml`  <-
 function(x, intercept = FALSE, ...)
-getAllTerms.terms(terms(formula(x), ...), intercept = intercept)
+getAllTerms.terms(terms(formula(x)), intercept = intercept, ...)
 
 `getAllTerms.cpglmm` <-
 function (x, intercept = FALSE, ...) 
-getAllTerms(x@formula, intercept = intercept)
-
+getAllTerms(x@formula, intercept = intercept, ...)
 
 `getAllTerms` <-
 function(x, ...)

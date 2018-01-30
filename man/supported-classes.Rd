@@ -28,6 +28,7 @@ functions include those produced by:
 \item \lxcode{glmmML}{glmmML} (\CRANpkg{glmmML});
 \item \code{glmmadmb} (\href{http://glmmadmb.r-forge.r-project.org/}{\pkg{glmmADMB}}
 	from R-Forge);
+\item \lxcode{glmmTMB}{glmmTMB} (\CRANpkg{glmmTMB});
 \item \lxcode{MCMCglmm}{MCMCglmm}* (\CRANpkg{MCMCglmm});
 \item \code{asreml} (non-free commercial package \pkg{asreml}; allows only for 
 	\acronym{REML} comparisons);

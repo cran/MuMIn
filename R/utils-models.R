@@ -481,23 +481,32 @@ function(models, calls = lapply(models, get_call)) {
 	names(uniq) <- alln
 	uniq[[1L]] <- lapply(x, "[[", 1L)
 	for(i in alln[-1]) uniq[[i]] <- lapply(x, "[[", i)
+	uniq <- rapply(uniq, classes = "formula", function(x) {
+		environment(x)  <- .GlobalEnv
+		x
+	}, how = "replace")
 	uniq <- lapply(uniq, unique)
 	nu <- sapply(uniq, length)
 	strvarious <- "<*>"
+	
 	rval <- lapply(uniq, '[[', 1L)
-	j <- sapply(rval, inherits, "formula")
-	for(i in which(j))
-		rval[[i]] <- call("~", getResponseFormula(rval[[i]]), as.name(sprintf("__%d-rhsform__", nu[i])))
-	j <- nu > 1 & !j
-	rval[j] <- paste("<", nu[j], " unique values>", sep = "")
+	j <- sapply(rval, inherits, "formula") & nu > 1L
+	for(i in which(j)) {
+		response <- getResponseFormula(rval[[i]])
+		rval[[i]] <- if(identical(response, 0))
+			call("~", as.name(sprintf("__%d-rhsform__", nu[i]))) else
+			call("~", getResponseFormula(rval[[i]]), as.name(sprintf("__%d-rhsform__", nu[i])))
+	}
+	
+	notj <- !j & nu > 1
+	rval[notj] <- paste0("<", nu[notj], " unique values>")
 	if(nu[1L] > 1) rval[[1L]] <- paste(sapply(uniq[[1L]], asChar), collapse = "|")
 		
 	rval <- paste(deparse(rval[[1L]], control = NULL),
 		"(", paste(names(rval[-1L]), "=", rval[-1L], collapse = ", "), ")", sep = "")
 	
-	rval <- sub("`__(\\d+)-rhsform__`", "<\\1 unique rhs>", rval, perl = TRUE)
+	rval <- gsub("`__(\\d+)-rhsform__`", "<\\1 unique rhs>", rval, perl = TRUE)
 	rval
-
 }
 
 updateDeps <-

@@ -43,6 +43,7 @@
 #	val
 #}
 
+
 `predict.gls` <-
 function (object, newdata, se.fit = FALSE, na.action = na.fail, ...) {
     if (missing(newdata) && !se.fit) {

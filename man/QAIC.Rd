@@ -47,7 +47,7 @@ around by \sQuote{borrowing} the \code{aic} element from the corresponding
 }
 
 \seealso{
-\code{\link{AICc}}, \code{\link[stats]{quasi}} family used for models with
+\code{\link{AICc}}, \code{\link[stats:family]{quasi}} family used for models with
 over-dispersion
 }
 
