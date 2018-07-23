@@ -1,3 +1,4 @@
+
 cos2Weights <- 
 function(object, ..., data, eps = 1E-6, maxit = 100, predict.args = list()) {
 	models <- getModelArgs()

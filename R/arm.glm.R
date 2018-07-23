@@ -56,8 +56,6 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 		for (u in seq.int(maxtrials)) {
 			traceinfo("  trial=", u, "\n    ")
 			i <- sample.int(nall, n1)
-			i <- 1:n1 ## DEBUG
-			
 			y1 <- Z[i, jresp, drop = FALSE]
 			y2 <- Z[-i, jresp, drop = FALSE]
 			vy2 <- yvectorize(y2)
@@ -174,7 +172,6 @@ function(object, ..., data, weight.by = c("aic", "loglik"), R = 1000) {
     nt <- ceiling(n * p)
 	
 	maxtrials <- 3L
-	
     wmat <- array(dim = c(R, m))
 	r <- counter <- 1L
     counterLimit <- R * maxtrials # 	
@@ -182,8 +179,6 @@ function(object, ..., data, weight.by = c("aic", "loglik"), R = 1000) {
     while(counter < counterLimit && r <= R) {
         counter <- counter + 1L
         k <- sample.int(n, size = nt)
-		k <- 1:nt ## DEBUG
-		#print(k)
 		data.test <- data[-k, , drop = FALSE]
 		data.train <- data[k, , drop = FALSE]
 		y.test <- get.response(models[[1L]], data.test)
@@ -197,7 +192,7 @@ function(object, ..., data, weight.by = c("aic", "loglik"), R = 1000) {
 			if(is.null(wts)) wts <- rep(1, n)
 			fit1 <- do_glm_fit(tf, data.train, family = fam, weights = wts[k], offset = off[k])
 			if(!fit1$converged) break
-			wmat[r, j] <- aicloglik_glm_fit(fit1, y.test, model.matrix(tf, data.test), fit1$prior.weights, off[-k])[weight.by]
+			wmat[r, j] <- aicloglik_glm_fit(fit1, y.test, model.matrix(tf, data.test), wts[-k], off[-k])[weight.by]
         }
 		if(!any(is.na(wmat[r, ])))
 			r <- r + 1L

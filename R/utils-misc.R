@@ -1,11 +1,25 @@
 
+.MuMInEnv <- new.env(parent = baseenv())
+
+warnonce <- function(id, ...) {
+	if(!isTRUE(get0(flag <- paste0("warned.", as.character(id)[1L]), .MuMInEnv,
+					ifnotfound = FALSE))) {
+		assign(flag, TRUE, envir = .MuMInEnv)
+		cl <- match.call()
+		cl$id <- NULL
+		cl[[1L]] <- as.name("warning")
+		eval.parent(cl)
+	}
+}
+
 `cry` <-
 function(Call = NA, Message, ..., warn = FALSE, domain = paste0("R-", .packageName)) {
 	if (is.character(Call)) {
 		Call <- call(Call[1L], sys.call(-1L)[[1L]])
 	} else if(is.numeric(Call)) {
 		Call <- sys.call(Call - 1L)
-	} else if(!is.call(Call)) Call <- sys.call(-1L)
+	} else if (!is.call(Call) && !is.null(Call))
+		Call <- sys.call(-1L)
 	if(warn) warning(simpleWarning(gettextf(Message, ..., domain = domain), Call)) else
 		stop(simpleError(gettextf(Message, ..., domain = domain), Call))
 }

@@ -149,6 +149,7 @@ term(s) to all models with \code{fixed}, and more complex rules can be applied
 using argument \code{subset}. To be included in the selection table, the model
 formulation must satisfy all these conditions.
 
+
 %%Terms in \code{fixed} argument are applied before the combinations are
 %%generated, therefore more efficient than \code{subset}.
 
@@ -160,6 +161,11 @@ columns and rows correspond to \code{global.model} terms. Value
 \code{demo(dredge.subset)} has examples of using the \code{subset} matrix in
 conjunction with correlation matrices to exclude models containing collinear
 predictors.
+
+The term names in \code{fixed} and \code{subset} must be given in the
+form returned by \code{getAllTerms(global.model)}, which can differ from
+the original term names (e.g. the interaction term components are ordered 
+alphabetically).
 
 In the form of \code{expression}, the argument \code{subset} acts in a similar
 fashion to that in the function \code{subset} for \code{data.frames}: model
@@ -180,7 +186,7 @@ precedence when identical to names of \code{varying}, so to avoid ambiguity
 \code{varying} is something like \code{list(family = c(..., "Gamma"))}).
 
 If item names in \code{varying} are missing, the items themselves are coerced to
-names. Call and symbol elements are represented as character values (via
+names. Call and symbol elements are represented as character values (\emph{via}
 \code{deparse}), and everything except numeric, logical, character and
 \code{NULL} values is replaced by item numbers (e.g. \code{varying =}
 \code{list(family =} \code{list(..., Gamma)} should be referred to as
@@ -211,7 +217,7 @@ Compound model terms (such as interactions, \sQuote{as-is} expressions within
  \code{`s(x, k = 2)`}
  }).
  Backticks-quoted names must match exactly (including whitespace) the term names
- as given by \code{getAllTerms}.
+ as returned by \code{getAllTerms}.
 
 \subsection{\code{subset} expression syntax summary}{
 

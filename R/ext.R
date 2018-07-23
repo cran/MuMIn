@@ -123,14 +123,6 @@ function (object, ...) object$X.b
 function (formula, ...)
 model.frame(formula$formula, data = formula$dat)
 
-##------------------------------------------------------------------------------
-## package 'unmarked'
-##------------------------------------------------------------------------------
-
-#setMethod("logLik", "unmarkedFit", logLik.unmarkedFit)
-
-`formula.unmarkedFit` <- function (x, ...) x@formula
-
 
 ##------------------------------------------------------------------------------
 ## package 'geepack'

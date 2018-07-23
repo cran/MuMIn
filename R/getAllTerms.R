@@ -85,7 +85,11 @@ function(x, ...) getAllTerms.terms(terms.formula(x), ...)
 
 `getAllTerms.lme` <-
 function(x, ...) {
-	ret <- getAllTerms.terms(terms(x), ...)
+	termsobj <- if(inherits(x, "glmmPQL"))
+	   terms(formula(x), data = x$data) else
+	   terms(x)
+	
+	ret <- getAllTerms.terms(termsobj, ...)
 	attr(ret, "random") <- . ~ .
 
 	# Code from nlme:::print.reStruct, modified slightly

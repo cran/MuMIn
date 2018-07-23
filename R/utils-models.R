@@ -50,36 +50,6 @@ function(rank = NULL, rank.args = NULL, object = NULL, ...) {
 	IC
 }
 
-`matchCoef` <-
-function(m1, m2,
-	all.terms = getAllTerms(m2, intercept = TRUE),
-	beta = 0L,
-	terms1 = getAllTerms(m1, intercept = TRUE),
-	coef1 = NULL,
-	allCoef = FALSE,
-	...
-	) {
-	if(is.null(coef1)) {
-		ct <- if (beta != 0L) std.coef(m1, beta == 2L, ...) else coefTable(m1, ...)
-		coef1 <- ct[, 1L]
-		names(coef1) <- rownames(ct)
-	} else if(allCoef) stop("'coef1' is given and 'allCoef' is not FALSE")
-
-	if(any((terms1 %in% all.terms) == FALSE)) stop("'m1' is not nested within 'm2'")
-	row <- structure(rep(NA_real_, length(all.terms)), names = all.terms)
-
-	fxdCoefNames <- fixCoefNames(names(coef1))
-	row[terms1] <- NaN
-	pos <- match(terms1, fxdCoefNames, nomatch = 0L)
-	row[fxdCoefNames[pos]] <- coef1[pos]
-	if(allCoef) {
-		i <- match(names(coef1), rownames(ct))
-		j <- !is.na(i)
-		rownames(ct)[i[j]] <- fxdCoefNames[j]
-		attr(row, "coefTable") <- ct
-	}
-	row
-}
 
 # sorts alphabetically interaction components in model term names
 # if 'peel', tries to remove coefficients wrapped into function-like syntax
@@ -190,53 +160,9 @@ function(f) {
 		0 else f[[2L]]
 }
 
-get.response <-
-function(x, data = NULL, ...)
-UseMethod("get.response")
-
-get.response.formula <-
-function(x, data = NULL, ...) {
-	x <- terms(x)
-	if(!inherits(attr(data, "terms"), "terms")) 
-		data <- model.frame(x, data = data, ...)
-	data[, asChar(attr(x, "variables")[[attr(x, "response") + 1L]])]
-}
-
-get.response.lm <-
-function(x, data = NULL, ...) {
-	if(missing(data) && (family(x)$family != "binomial") && !is.null(x$y))
-		x$y else
-		#get.response.default(x, data = data, ...)
-		NextMethod()
-}
-# NOTE: for 'binomial' 'y' is a vector not nmatrix2
-
-get.response.averaging <-
-function(x, data = NULL, ...) {
-	if(is.null(attr(x, "modelList")))
-		stop("'x' has no model list")
-	get.response(attr(x, "modelList")[[1L]], data = data, ...)
-}
-
-get.response.default <-
-function(x, data = NULL, ...) {
-	if(is.null(data)) {
-		# model frame:
-		if(is.data.frame(x) && !is.null(tf <- attr(x, "terms"))) {
-			tf <- terms(x)
-			return(x[, asChar(attr(tf, "variables")[[attr(tf, "response") + 1L]])])
-		} else data <- model.frame(x)
-	}
-	#model.frame(x)[, asChar(getResponseFormula(x))]
-	if(is.null(data)) data <- model.frame(x)
-	get.response(terms(x), data = data, ...)
-}
-
-
-
 
 #Tries to find out whether the models are fitted to the same data
-.checkModels <-
+checkIsModelDataIdentical <-
 function(models, error = TRUE) {
 
 	cl <- sys.call(sys.parent())
@@ -275,8 +201,27 @@ function(x, cl = get_call(x),
 		 naomi = c("na.omit", "na.exclude"), what = "model") {
 	naact <- NA_character_
 	msg <- NA_character_
+
+	# handles strings, symbols and calls (let's naively assume no one tries to pass
+	# anything else here)
+	.getNAActionString <- function(x) {
+		if(is.symbol(x)) {
+			x <- as.character(x)
+		} else if(is.call(x)) {
+			x <- eval.parent(x, 2L)
+			if(is.symbol(x)) x <- as.character(x)
+		}
+		return(x)
+	}
+	# TEST:
+	#.checkNaAction(list(call = as.call(alist(fun, na.action = getOption("na.action", default = na.fail)))))
+	#.checkNaAction(list(call = as.call(alist(fun, na.action = na.fail))))
+	#.checkNaAction(list(call = as.call(alist(fun, na.action = na.omit))))
+
+
+	
 	if (!is.null(cl$na.action)) {
-		naact <- as.character(cl$na.action)
+		naact <- .getNAActionString(cl$na.action)
 		if (naact %in% naomi)
 			msg <- sprintf("%s uses 'na.action' = \"%s\"", what, naact)
 	} else {
@@ -292,11 +237,12 @@ function(x, cl = get_call(x),
 					}
 			}
 
+			naact <- .getNAActionString(naact)
 			if (is.character(naact) && (naact %in% naomi))
 				msg <- sprintf("%s's 'na.action' argument is not set and options('na.action') is \"%s\"",
 					what, naact)
 		} else if (!is.null(naact)) {
-			naact <- as.character(naact)
+			naact <- .getNAActionString(naact)
 			if (naact %in% naomi)
 				msg <- sprintf("%s uses the default 'na.action' = \"%s\"", what, naact)
 		}
@@ -350,47 +296,6 @@ function(x, minlength = 4, minwordlen = 1,
 	structure(unlist(s), names = x, variables = av[i])
 }
 
-model.names <-
-function(object, ..., labels = NULL, use.letters = FALSE) {
-	if (missing(object) && length(models <- list(...)) > 0L) {
-		object <- models[[1L]]
-	} else if (inherits(object, "list")) {
-		if(length(object) ==  0L) stop("at least one model must be given")
-		models <- object
-		object <- models[[1L]]
-	} else models <- list(object, ...)
-	if(length(models) == 0L) stop("at least one model must be given")
-	.modelNames(models = models, uqTerms = labels, use.letters = use.letters)
-}
-
-.modelNames <-
-function(models = NULL, allTerms, uqTerms, use.letters = FALSE, ...) {
-	if(missing(allTerms)) allTerms <- lapply(models, getAllTerms)
-	if(missing(uqTerms) || is.null(uqTerms))
-		uqTerms <- unique(unlist(allTerms, use.names = FALSE))
-
-	n <- length(uqTerms)
-
-	if(use.letters && n > length(LETTERS)) stop("more terms than there are letters")
-	sep <- if(!use.letters && n > 9L) "/" else ""
-
-	labels <- if (use.letters) LETTERS[seq_len(n)] else as.character(seq_len(n))
-	ret <- sapply(allTerms, function(x) paste(labels[sort(match(x, uqTerms))],
-		collapse = sep))
-
-	dup <- table(ret)
-	dup <- dup[dup > 1L]
-
-	if(length(dup) > 0L) {
-		idup <- which(ret %in% names(dup))
-		ret[idup] <- sapply(idup, function(i) paste0(ret[i],
-			letters[sum(ret[seq.int(i)] == ret[i])]))
-	}
-	ret[ret == ""] <- "(Null)"
-	attr(ret, "variables") <- structure(seq_along(uqTerms), names = uqTerms)
-	ret
-}
-
 `modelDescr` <-
 function(models, withModel = FALSE, withFamily = TRUE,
 	withArguments = TRUE, remove.cols = c("formula", "random", "fixed", "model",
@@ -410,26 +315,31 @@ function(models, withModel = FALSE, withFamily = TRUE,
 			collapse = "+"))
 	} else abvtt <- variables <- NULL
 
-
 	if(withFamily) {
 		fam <- sapply(models, function(x) tryCatch(unlist(family(x)[c("family",
-			"link")]), error = function(e) character(2L)) )
+			"link")]), error = function(e) character(2L)))
 
 		f <- fam[1L, ]
 		f[is.na(f)] <- ""
-		f <- vapply(strsplit(f, "(", fixed = TRUE), "[", "", 1L)
-		f[f == "Negative Binomial"] <- "negative.binomial"
-
-		fam[2L, fam[2L, ] == vapply(unique(f), function(x) if(is.na(x))
-									NA_character_ else formals(get(x))$link,
-			FUN.VALUE = "")[f]] <- NA_character_
-
-		j <- !is.na(fam[2L,])
-		fnm <- fam[1L, j]
-		fnm <- ifelse(substring(fnm, nchar(fnm)) != ")",
-			paste0(fnm, "("), paste0(substring(fnm, 1, nchar(fnm) - 1),
-				", "))
-		fam[1L, j] <- paste0(fnm, fam[2L, j], ")")
+		#f <- vapply(strsplit(f, "(", fixed = TRUE), "[", "", 1L)
+		#f[f == "Negative Binomial"] <- "negative.binomial"
+		#fam <- cbind(fam, unlist(MASS::negative.binomial(1.345)[c("family", "link")]))
+	    f <- sub("(?:\\((.*)\\))?$", "(\\1", f)
+		f <- paste0(f, ifelse(substring(f, nchar(f)) == "(", "", ","), fam[2, ], ")")
+		fam <- f		
+		
+		#fam[2L, fam[2L, ] ==
+			#vapply(unique(f),
+				#function(x) {
+					#rval <- if(is.na(x)) NA_character_ else formals(get(x))$link[1L]
+					#if(!is.character(rval)) NA_character_ else rval
+					#}, FUN.VALUE = "")[f]] <- NA_character_
+		#j <- !is.na(fam[2L,])
+		#fnm <- fam[1L, j]
+		#fnm <- ifelse(substring(fnm, nchar(fnm)) != ")",
+		#paste0(fnm, "("), paste0(substring(fnm, 1, nchar(fnm) - 1),
+				#", "))
+		#fam[1L, j] <- paste0(fnm, fam[2L, j], ")")
 	}
 
 	if(withArguments) {
@@ -456,11 +366,12 @@ function(models, withModel = FALSE, withFamily = TRUE,
 		arg <- arg[, apply(arg, 2L, function(x) length(unique(x))) != 1L, drop = FALSE]
 		if(ncol(arg)) arg <- gsub("([\"'\\s]+|\\w+ *=)","", arg, perl = TRUE)
 	}
-	ret <- as.data.frame(cbind(model = abvtt, family = if(withFamily) fam[1L, ] else NULL,
+	ret <- as.data.frame(cbind(model = abvtt, family = if(withFamily) fam else NULL,
 		arg, deparse.level = 0L))
 	attr(ret, "variables") <- variables
 	ret
 }
+
 
 family2char <-
 function(x, fam = x$family, link = x$link) {
@@ -471,6 +382,7 @@ function(x, fam = x$family, link = x$link) {
 		paste0(fam, "(", link, ")")
 	}
 }
+
 
 `commonCallStr` <-
 function(models, calls = lapply(models, get_call)) {
@@ -545,10 +457,7 @@ function(models) {
 		})), recursive = FALSE)
 		names(res) <- sapply(lapply(expr.split(names(res), ","), sort),
 			paste0, collapse = ",")
-
-
 	} else {
-
 		# use information stored in gam objects:
 		.getSmoothK <-
 		function(x) {
@@ -559,7 +468,7 @@ function(models) {
 			n <- length(x$smooth)
 			rval <- vector("list", n)
 			nmv <- character(n)
-			for(i in 1L:n) {
+			for(i in seq_len(n)) {
 				y <- x$smooth[[i]]
 				if(is.null(y$margin)) {
 					nmv[i] <- y$term
@@ -573,10 +482,8 @@ function(models) {
 				nmv[i] <- paste0(sub("\\(.*", "", y$label), "(", nmv[i], ")")
 			}
 			names(rval) <- nmv
-			print(rval)
 			rval
 		}
-
 		res <- unlist(unname(lapply(models, .getSmoothK)), recursive = FALSE)
 	}
 
@@ -596,4 +503,3 @@ function(models) {
 	}
 	invisible()
 }
-

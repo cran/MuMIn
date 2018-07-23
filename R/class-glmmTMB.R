@@ -1,3 +1,10 @@
+#wrapCoefficients <-
+#function(x, pfx = names(x), empty = "") {
+#	i <- pfx != empty
+#	if(any(i)) x[i] <- paste0(pfx[i], "(", x[i], ")")
+#	x
+#}
+
 `getAllTerms.glmmTMB` <-
 function(x, intercept = FALSE, offset = TRUE, ...) {
 	
@@ -7,6 +14,9 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
     deps <- termdepmat_combine(lapply(at, attr, "deps"))
     attrInt <- sapply(at, attr, "intercept")
 	
+	#rval <- unlist(at)
+	#rval <- wrapCoefficients(rval, rep(names(at), vapply(at, length, 0)))
+		
 	rval <- unlist(lapply(names(at), function(i)
 		if (length(at[[i]])) paste0(i, "(", at[[i]], ")")
 		else character(0L)))
@@ -26,7 +36,7 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 	
 	dimnames(deps) <- list(depnames, depnames)
     intLabel <- paste0(names(attrInt[attrInt != 0L]), "((Int))")
-		
+
 	ord <- lapply(at, attr, "order")
 	ordl <- vapply(ord, length, 0, USE.NAMES = FALSE)
 	ord <- unlist(ord, use.names = FALSE) + rep(c(0, ordl[-length(ordl)]), ordl)
@@ -37,8 +47,17 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 	}
 	
 	if(hasOffset) attr(rval, "offset") <- offsetTerm
-	attr(rval, "random.terms") <- attr(at$cond, "random.terms")
-	attr(rval, "random") <- attr(at$cond, "random") 
+		
+	rt <- lapply(at, "attr", "random.terms")
+    if(!all(vapply(rt, is.null, FALSE))) {
+		rt <- paste0(rep(names(rt), vapply(rt, length, 0L)), "(", unlist(rt), ")")
+		random <- reformulate(c(".", rt), response = ".")
+		environment(random) <- environment(x$modelInfo$allForm$combForm)
+	} else
+		rt <- random <- NULL
+
+	attr(rval, "random.terms") <- rt
+	attr(rval, "random") <- random
 	attr(rval, "response") <- attr(at$cond, "response") 
 	attr(rval, "order") <- ord
     attr(rval, "intercept") <- attrInt
@@ -46,6 +65,7 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
     attr(rval, "deps") <- deps
     return(rval)
 }
+
 
 coefTable.glmmTMB <-
 function (model, ...) {
@@ -64,13 +84,36 @@ function(model) {
 
 `makeArgs.glmmTMB` <- 
 function(obj, termNames, opt, ...) {
-    fnm <- c("cond", "zi", "disp")
+	
+	.addRanTermToFormula <- function(f, r) {
+		if(is.null(r)) return(f)
+		dot <- as.symbol(".")
+		rflhs <- call("+", dot, call("(", r))
+		if(is.null(f)) f <- ~ 1
+		update.formula(f, as.formula(if(length(f) == 2L) call("~", rflhs) else call("~", dot, rflhs)))
+	}
+	
+	fnm <- c("cond", "zi", "disp")
+
+	randomterms <- attr(opt$allTerms, "random.terms")
+	randomterms <- lapply(randomterms, function(x) parse(text = x)[[1L]])
+	names(randomterms) <- vapply(lapply(randomterms, "[[", 1L), as.character, "")
+	randomterms <- lapply(randomterms, "[[", 2L)
+	rval <- umf_terms2formulalist(termNames, opt, replaceInt = "1")[fnm]
+	for(i in fnm)
+	   while(i %in% names(randomterms)) {
+			rval[[i]] <- .addRanTermToFormula(rval[[i]], randomterms[[i]])
+			randomterms[[i]] <- NULL
+	   }
+	
     argnm <- c("formula", "ziformula", "dispformula")
-    rval <- umf_terms2formulalist(termNames, opt, replaceInt = "1")[fnm]
+	
 	names(rval) <- argnm
-    for(i in which(vapply(rval, is.null, FALSE))) rval[[i]] <- ~ 0
+    for(i in which(vapply(rval, is.null, FALSE))) {
+		rval[[i]] <- ~ 0
+		environment(rval[[i]]) <- opt$gmFormulaEnv
+	}
 	rval$formula <- as.formula(call("~", as.symbol(opt$response), rval$formula[[2L]]), opt$gmFormulaEnv)
-	if(inherits(attr(opt$allTerms, "random"), "formula"))
-		rval$formula <- update.formula(rval$formula, attr(opt$allTerms, "random"))
+		
 	rval
 }

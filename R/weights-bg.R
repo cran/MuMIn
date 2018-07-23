@@ -8,7 +8,7 @@ function(object, ..., data, force.update = FALSE) {
     models <- getModelArgs()
     M <- length(models)
     if(M < 2) stop("need more than one model")
-    .checkModels(models)
+    checkIsModelDataIdentical(models)
 
     no <- nrow(data)
     k <- sample.int(no, floor(no / 2))
@@ -67,7 +67,7 @@ function(object, ..., data, force.update = FALSE) {
             cl <- get_call(models[[i]])
             cl$data <- nz_data
             cl$weights <- nz_weights
-            print(cl)
+            #print(cl)
             py_test[, i] <- predict(eval(cl, pf), newdata = dat_test,
                  type = "response")
                 # XXX: weird behaviour of predict when offset= is given.

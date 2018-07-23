@@ -67,10 +67,10 @@ function(global.model, cluster = NA,
 	}
 
 	
-	thiscall <- sys.call()
+	thisCall <- sys.call()
 	exprApply(gmCall[["data"]], NA, function(expr) {
 		if(is.symbol(expr[[1L]]) && all(expr[[1L]] != c("@", "$")))
-			cry(thiscall, "'global.model' uses \"data\" that is a function value: use a variable instead")
+			cry(thisCall, "'global.model' uses \"data\" that is a function value: use a variable instead")
 	})
 	
 
@@ -116,7 +116,7 @@ function(global.model, cluster = NA,
 	}
 
 	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,
-		data = eval(gmCall$data, envir = gmEnv)) ### TODO: data needed?
+		data = eval(gmCall$data, envir = gmEnv))
 
 	# Intercept(s)
 	interceptLabel <- attr(allTerms, "interceptLabel")
@@ -234,8 +234,12 @@ function(global.model, cluster = NA,
 
 	## BEGIN Manage 'extra'
 	## @param:	extra, global.model, gmFormulaEnv,
-	## @value:	extra, nextra, extraNames, nullfit_
+	## @value:	extra, nExtra, extraNames, nullfit_
 	if(!missing(extra) && length(extra) != 0L) {
+		
+		if (any(c("adjR^2", "R^2") %in% extra) && nVariants > 1L)
+			stop("\"R^2\" in 'extra' can be used only with no 'varying'")
+		
 		# a cumbersome way of evaluating a non-exported function in a parent frame:
 		extra <- eval(as.call(list(call("get", ".get.extras",
 			envir = call("asNamespace", .packageName), inherits = FALSE),
@@ -250,10 +254,10 @@ function(global.model, cluster = NA,
 		if(!is.numeric(extraResult))
 			cry(, "function in 'extra' returned non-numeric result")
 
-		nextra <- length(extraResult)
+		nExtra <- length(extraResult)
 		extraNames <- names(extraResult)
 	} else {
-		nextra <- 0L
+		nExtra <- 0L
 		extraNames <- character(0L)
 	}
 	## END: manage 'extra'
@@ -264,11 +268,11 @@ function(global.model, cluster = NA,
 	if(nov > 30L) cry(, "number of predictors [%d] exceeds allowed maximum of 30", nov)
 	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
 	nmax <- ncomb * nVariants
-	rvChunk <- 25L
+	resultChunkSize <- 25L
 	if(evaluate) {
-		rvNcol <- nVars + nVarying + 3L + nextra
-		rval <- matrix(NA_real_, ncol = rvNcol, nrow = rvChunk)
-		coefTables <- vector(rvChunk, mode = "list")
+		rvNcol <- nVars + nVarying + 3L + nExtra
+		rval <- matrix(NA_real_, ncol = rvNcol, nrow = resultChunkSize)
+		coefTables <- vector(resultChunkSize, mode = "list")
 	}
 
 
@@ -381,8 +385,8 @@ function(global.model, cluster = NA,
 	comb.seq <- if(nov != 0L) seq_len(nov) else 0L
 	k <- 0L
 	extraResult1 <- integer(0L)
-	calls <- vector(mode = "list", length = rvChunk)
-	ord <- integer(rvChunk)
+	calls <- vector(mode = "list", length = resultChunkSize)
+	ord <- integer(resultChunkSize)
 
 	argsOptions <- list(
 		response = attr(allTerms0, "response"),
@@ -409,7 +413,7 @@ function(global.model, cluster = NA,
 				IC = IC,
 				# beta = beta,
 				# allTerms = allTerms,
-				nextra = nextra,
+				nExtra = nExtra,
 				matchCoefCall = as.call(c(list(
 					as.name("matchCoef"), as.name("fit1"),
 					all.terms = allTerms, beta = betaMode,
@@ -417,7 +421,7 @@ function(global.model, cluster = NA,
 				# matchCoefCall = as.call(c(alist(matchCoef, fit1, all.terms = Z$allTerms,
 				#   beta = Z$beta, allCoef = TRUE), ct.args))
 		)
-	if(nextra) {
+	if(nExtra) {
 		props$applyExtras <- applyExtras
 		props$extraResultNames <- names(extraResult)
 	}
@@ -436,7 +440,7 @@ function(global.model, cluster = NA,
 	if(trace > 1L) {
 		progressBar <- if(.Platform$GUI == "Rgui") {
 			 utils::winProgressBar(max = ncomb, title = "'dredge' in progress")
-		} else utils::txtProgressBar(max = ncomb, style = 3)
+		} else utils::txtProgressBar(max = ncomb, style = 3L)
 		setProgressBar <- switch(class(progressBar),
 			   txtProgressBar = utils::setTxtProgressBar,
 			   winProgressBar = utils::setWinProgressBar,
@@ -512,7 +516,7 @@ function(global.model, cluster = NA,
 					k <- k + 1L # all OK, add model to table
 					rvlen <- length(ord)
 					if(k > rvlen) {
-						nadd <- min(rvChunk, nmax - rvlen)
+						nadd <- min(resultChunkSize, nmax - rvlen)
 						#message(sprintf("extending result from %d to %d", rvlen, rvlen + nadd))
 						addi <- seq.int(rvlen + 1L, length.out = nadd)
 						calls[addi] <- vector("list", nadd)
@@ -566,7 +570,7 @@ function(global.model, cluster = NA,
 			rvlen <- nrow(rval)
 
 			if(retNeedsExtending <- k + qresultLen > rvlen) {
-				nadd <- min(max(rvChunk, qresultLen), nmax - rvlen)
+				nadd <- min(max(resultChunkSize, qresultLen), nmax - rvlen)
 				rval <- rbind(rval, matrix(NA_real_, ncol = rvNcol, nrow = nadd),
 					deparse.level = 0L)
 				addi <- seq.int(rvlen + 1L, length.out = nadd)
@@ -682,11 +686,11 @@ function(global.model, cluster = NA,
 	if (inherits(result$value, "condition")) return(result)
 
 	fit1 <- result$value
-	if(get("nextra", envir) != 0L) {
+	if(get("nExtra", envir) != 0L) {
 		extraResult1 <- get("applyExtras", envir)(fit1)
-		nextra <- get("nextra", envir)
-		if(length(extraResult1) < nextra) {
-			tmp <- rep(NA_real_, nextra)
+		nExtra <- get("nExtra", envir)
+		if(length(extraResult1) < nExtra) {
+			tmp <- rep(NA_real_, nExtra)
 			tmp[match(names(extraResult1), get("extraResultNames", envir))] <-
 				extraResult1
 			extraResult1 <- tmp

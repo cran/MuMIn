@@ -28,10 +28,20 @@ if(MuMIn:::.parallelPkgCheck(quiet = TRUE)) {
 		ma1 <- model.avg(pdd1, beta = FALSE)
 		ma0 <- model.avg(pddc)
 
-		stopifnot(isTRUE(all.equal(ma1$avg.model, ma0$avg.model)))
-		stopifnot(isTRUE(all.equal(ma1$summary, ma0$summary)))
-
-		stopifnot(identical(c(pddc), c(pdd1)) && identical(c(pdd1), c(dd1)))
+		if(!isTRUE(test <- all.equal(ma1$avg.model, ma0$avg.model))) {
+			print(test)
+			warning("'ma1' and 'ma0' are not equal")
+		}
+		if(!isTRUE(test <- all.equal(ma1$summary, ma0$summary))) {
+			print(test)
+			warning("'ma1' and 'ma0' are not equal")
+		}
+		
+        if(!(identical(c(pddc), c(pdd1)) && identical(c(pdd1), c(dd1)))) {
+		    warning("results of 'dredge' and 'pdredge' are not equal")
+			print(all.equal(c(pddc), c(pdd1)))
+			print(all.equal(c(pdd1), c(dd1)))
+		}
 
 		stopCluster(clust)
 

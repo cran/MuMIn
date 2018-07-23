@@ -60,10 +60,10 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	}
 	
 	
-	thiscall <- sys.call()
+	thisCall <- sys.call()
 	exprApply(gmCall[["data"]], NA, function(expr) {
 		if(is.symbol(expr[[1L]]) && all(expr[[1L]] != c("@", "$")))
-			cry(thiscall, "'global.model' uses \"data\" that is a function value: use a variable instead")
+			cry(thisCall, "'global.model' uses \"data\" that is a function value: use a variable instead")
 	})
 	
 
@@ -223,8 +223,12 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 
 	## BEGIN Manage 'extra'
 	## @param:	extra, global.model, gmFormulaEnv,
-	## @value:	extra, nextra, extraNames, nullfit_
+	## @value:	extra, nExtra, extraNames, nullfit_
 	if(!missing(extra) && length(extra) != 0L) {
+		
+		if (any(c("adjR^2", "R^2") %in% extra) && nVariants > 1L)
+			stop("\"R^2\" in 'extra' can be used only with no 'varying'")
+		
 		# a cumbersome way of evaluating a non-exported function in a parent frame:
 		extra <- eval(as.call(list(call("get", ".get.extras",
 			envir = call("asNamespace", .packageName), inherits = FALSE),
@@ -239,10 +243,10 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		if(!is.numeric(extraResult))
 			cry(, "function in 'extra' returned non-numeric result")
 
-		nextra <- length(extraResult)
+		nExtra <- length(extraResult)
 		extraNames <- names(extraResult)
 	} else {
-		nextra <- 0L
+		nExtra <- 0L
 		extraNames <- character(0L)
 	}
 	## END: manage 'extra'
@@ -252,11 +256,11 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 
 	if(nov > 30L) cry(, "number of predictors [%d] exceeds allowed maximum of 30", nov)
 	nmax <- ncomb * nVariants
-	rvChunk <- 25L
+	resultChunkSize <- 25L
 	if(evaluate) {
-		rvNcol <- nVars + nVarying + 3L + nextra
-		rval <- matrix(NA_real_, ncol = rvNcol, nrow = rvChunk)
-		coefTables <- vector(rvChunk, mode = "list")
+		rvNcol <- nVars + nVarying + 3L + nExtra
+		rval <- matrix(NA_real_, ncol = rvNcol, nrow = resultChunkSize)
+		coefTables <- vector(resultChunkSize, mode = "list")
 	}
 
 	## BEGIN: Manage 'subset'
@@ -343,7 +347,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			tmp <- updateDeps(subsetExpr, deps)
 			subsetExpr <- tmp$expr
 			deps <- tmp$deps
-
+			
 			subsetExpr <- exprapply0(subsetExpr, "dc", .sub_args_as_vars)
 			subsetExpr <- .subst4Vec(subsetExpr, allTerms, "comb")
 
@@ -374,8 +378,8 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	comb.seq <- if(nov != 0L) seq_len(nov) else 0L
 	k <- 0L
 	extraResult1 <- integer(0L)
-	calls <- vector(mode = "list", length = rvChunk)
-	ord <- integer(rvChunk)
+	calls <- vector(mode = "list", length = resultChunkSize)
+	ord <- integer(resultChunkSize)
 
 	argsOptions <- list(
 		response = attr(allTerms0, "response"),
@@ -406,7 +410,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			 utils::winProgressBar(max = ncomb, title = "'dredge' in progress")
 		#} else if(capabilities("tcltk") && ("package:tcltk" %in% search())) {
 			 #tkProgressBar(max = ncomb, title = "'dredge' in progress")
-		} else utils::txtProgressBar(max = ncomb, style = 3)
+		} else utils::txtProgressBar(max = ncomb, style = 3L)
 		setProgressBar <- switch(class(progressBar),
 			    txtProgressBar = utils::setTxtProgressBar,
 			   #tkProgressBar = setTkProgressBar,
@@ -477,7 +481,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 
 		if(evaluate) {
 			# begin row1: (clVariant, gmEnv, modelId, IC(), applyExtras(),
-			#              nextra, allTerms, beta,
+			#              nExtra, allTerms, beta,
 			#              if(nVarying) variantsIdx[v] else NULL
 			fit1 <- tryCatch(eval(clVariant, gmEnv), error = function(err) {
 				err$message <- paste(conditionMessage(err), "(model",
@@ -489,10 +493,10 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 
 			if (is.null(fit1)) next;
 
-			if(nextra != 0L) {
+			if(nExtra != 0L) {
 				extraResult1 <- applyExtras(fit1)
-				if(length(extraResult1) < nextra) {
-					tmp <- rep(NA_real_, nextra)
+				if(length(extraResult1) < nExtra) {
+					tmp <- rep(NA_real_, nExtra)
 					tmp[match(names(extraResult1), names(extraResult))] <- extraResult1
 					extraResult1 <- tmp
 				}
@@ -513,7 +517,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			k <- k + 1L # all OK, add model to table
 			rvlen <- nrow(rval)
 			if(retNeedsExtending <- k > rvlen) { # append if necesarry
-				nadd <- min(rvChunk, nmax - rvlen)
+				nadd <- min(resultChunkSize, nmax - rvlen)
 				rval <- rbind(rval, matrix(NA_real_, ncol = rvNcol, nrow = nadd),
 					deparse.level = 0L)
 				addi <- seq.int(rvlen + 1L, length.out = nadd)
@@ -525,7 +529,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			k <- k + 1L
 			rvlen <- length(ord)
 			if(retNeedsExtending <- k > rvlen) {
-				nadd <- min(rvChunk, nmax - rvlen)
+				nadd <- min(resultChunkSize, nmax - rvlen)
 				addi <- seq.int(rvlen + 1L, length.out = nadd)
 			}
 		}

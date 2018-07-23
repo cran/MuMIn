@@ -91,10 +91,6 @@ nobs(object$mod)
 function (object, ...) 
 nobs(object$fm)
 
-`nobs.cplm` <-
-function (object, ...) 
-sum(!is.na(resid(object)))
-
 `nobs.cpglmm` <-
 function (object, ...) 
 object@dims[['n']]

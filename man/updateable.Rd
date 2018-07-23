@@ -23,7 +23,7 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 }
 
 \arguments{
-    \item{FUN}{function to be modified, found via \code{\link{match.fun}}. }
+    \item{FUN}{function to be modified, found \emph{via} \code{\link{match.fun}}. }
 	\item{eval.args}{optionally a character vector of function arguments' names
 	      to be evaluated in the stored call. See \sQuote{Details}. }
 	
@@ -38,13 +38,13 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 
 \details{
 	Most model fitting functions in \R return an object that can be updated or
-	re-fitted via \code{\link{update}}. This is thanks to the \code{call} stored
-	in the object, which can be used (possibly modified) later on. It is also
-	utilised by \code{dredge} to generate sub-models.
-	Some functions (such as \code{gamm} or \code{MCMCglmm}) do not provide their
-	result with the \code{call} element. To work that around, \code{updateable} 
-	can be used on that function to store the call. The resulting
-	\dQuote{wrapper} should be used in exactly the same way as the original function.
+	re-fitted \emph{via} \code{\link{update}}. This is thanks to the \code{call}
+	stored in the object, which can be used (possibly modified) later on. It is
+	also utilised by \code{dredge} to generate sub-models. Some functions (such
+	as \code{gamm} or \code{MCMCglmm}) do not provide their result with the
+	\code{call} element. To work that around, \code{updateable} can be used on
+	that function to store the call. The resulting \dQuote{wrapper} should be
+	used in exactly the same way as the original function.
 	
 	Argument \code{eval.args} specifies names of function arguments that should
 	be evaluated in the stored call. This is useful when, for example, the model

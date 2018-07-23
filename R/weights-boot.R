@@ -11,7 +11,7 @@ function(object, ...,
 
 	if(M < 2) stop("need more than one model")
 
-	.checkModels(models)
+	checkIsModelDataIdentical(models)
 	
 	for(fm in models) {
 	  if(is.na(match("x", names(fm)))) {

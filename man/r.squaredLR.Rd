@@ -18,13 +18,13 @@ Calculate a coefficient of determination based on the likelihood-ratio test
 }
 
 \usage{
-r.squaredLR(x, null = NULL, null.RE = FALSE)
+r.squaredLR(object, null = NULL, null.RE = FALSE, ...)
 
-null.fit(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL)
+null.fit(object, evaluate = FALSE, RE.keep = FALSE, envir = NULL, ...)
 }
 
 \arguments{
-  \item{x}{a fitted model object. }
+  \item{object}{a fitted model object. }
   \item{null}{a fitted \emph{null} model. If not provided, \code{null.fit} will
 	be used to construct it. \code{null.fit}'s capabilities are limited to only 
 	a few model classes, for others the \emph{null} model has to be specified
@@ -37,6 +37,9 @@ null.fit(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL)
 	included. }
   \item{envir}{the environment in which the \emph{null} model is to be
     evaluated, defaults to the environment of the original model's formula. }
+  \item{\dots}{further arguments, of which only \code{x} would be used, to 
+    maintain compatibility with older versions (\code{x} has been replaced 
+	with \code{object}).}
 }
 
 \value{

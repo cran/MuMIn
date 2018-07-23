@@ -7,7 +7,7 @@ export(
 	"importance", "Weights", "Weights<-",
 	"AICc", "QAIC", "QAICc", "Cp", "ICOMP", "CAICF", "DIC", 
 	"r.squaredLR", "null.fit", "r.squaredGLMM",
-	"QIC", "quasiLik",
+	"QIC", "QICu", "quasiLik",
 	"model.names",
 	"simplify.formula", "expand.formula",
 	"updateable",
@@ -27,7 +27,6 @@ export(
 	"mod.sel",  "tTable", "updateable2"
 )
 
-
 # Imports:
 importFrom("graphics", "axis", "box", "mtext", "par", "plot.new", "plot.window",
 	"rect",	"strheight", "strwidth", "title")
@@ -39,14 +38,16 @@ importFrom("stats", ".checkMFClasses", ".getXlevels", ".MFclass", "AIC",
 	"delete.response", "deviance", "df.residual",
 	"family", "fitted", "formula", "getCall", "glm.fit",  "make.link",
 	"median", 
-	"model.frame", "model.matrix", "model.response", "na.fail", "nobs", "pnorm",
-	"power", "predict", "printCoefmat", "qnorm", "qt", "reformulate", "resid",
-	"rbinom", "rgamma", "rpois", # for .simulateData
-	"sd", "summary.glm", "terms", "terms.formula", "update", "update.default",
-	"update.formula", "var", "weighted.mean", "weights",
+	"model.frame", "model.matrix", "model.response", "na.fail", "nobs", 
+	"power", "predict", "printCoefmat", "reformulate", "resid",
+	"sigma",
+	"sd", "var", "summary.glm", "terms", "terms.formula", 
+	"update", "update.default", "update.formula", 
+	"weighted.mean", "weights",
     "gaussian", "binomial", "Gamma", "inverse.gaussian", "quasi", 
     "quasibinomial", "quasipoisson",
-	"dnorm", "dt", "pt"
+	"dnorm", "pnorm", "qnorm", "dt", "pt", "qt",
+	"rbinom", "rgamma", "rpois" # for .simulateData
     )
 importFrom("stats4", "logLik", "coef", "vcov")
 #importFrom("utils", "capture.output", "setTxtProgressBar", "txtProgressBar")
@@ -57,6 +58,9 @@ importFrom("graphics", "abline", "lines", "matplot")
 
 # model-averaging related functions:
 importFrom("stats", "cor", "cov", "rnorm", "runif", "optim")
+
+importFrom("nlme", fixef, VarCorr)
+
 
 
 # Methods:
@@ -302,11 +306,6 @@ S3method(coefTable, logistf)
 S3method(nobs, logistf)
 S3method(logLik, logistf)
 
-S3method(r.squaredGLMM, lm)
-S3method(r.squaredGLMM, lme)
-S3method(r.squaredGLMM, merMod)
-S3method(r.squaredGLMM, glmmML)
-
 S3method(coefTable, aodml)
 #S3method(coeffs, aodml)
 S3method(coefTable, aodml)
@@ -377,3 +376,33 @@ S3method(loo, lm)
 
 S3method(print, model.weights)
 S3method("[", model.weights)
+
+S3method(r.squaredGLMM, cplm)
+S3method(r.squaredGLMM, glmmadmb)
+S3method(r.squaredGLMM, glmmML)
+S3method(r.squaredGLMM, glmmTMB)
+S3method(r.squaredGLMM, lm)
+S3method(r.squaredGLMM, lme)
+S3method(r.squaredGLMM, merMod)
+
+S3method(.numfixef, default)
+S3method(.numfixef, glmmTMB)
+S3method(.OLREFit, default)
+S3method(.OLREFit, merMod)
+S3method(.remodmat, default)
+S3method(.remodmat, lme)
+S3method(.nullFitRE, default)
+S3method(.nullFitRE, lme)
+
+S3method(.varcorr, default)
+S3method(.varcorr, glmmadmb)
+S3method(.varcorr, glmmTMB)
+S3method(.varcorr, lme)
+
+S3method(sigma2, default)
+S3method(sigma2, glmmPQL)
+S3method(sigma2, glmmTMB)
+   
+S3method(family, cplm)
+S3method(family, glmmadmb)
+S3method(sigma, glmmadmb)

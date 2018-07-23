@@ -84,7 +84,7 @@ function(object, ..., rank = NULL, rank.args = NULL,
 
 	if(length(models) == 0L) stop("at least one model must be given")
 
-	.checkModels(models, FALSE)
+	checkIsModelDataIdentical(models, FALSE)
 
 	if(is.null(names(models)) || anyNA(names(models)))
 		names(models) <- seq_along(models)
@@ -123,8 +123,6 @@ function(object, ..., rank = NULL, rank.args = NULL,
 	d[,j] <- lapply(d[,j, drop = FALSE], function(x) factor(is.nan(x),
 		levels = TRUE, labels = "+"))
 	
-
-
 	rval <- vapply(models, function(x) {
 		ll <- logLik(x)
 		ic <- tryCatch(rank(x), error = function(e) e)

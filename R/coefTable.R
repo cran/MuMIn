@@ -219,6 +219,7 @@ function (model, ...)
 function (model, ...) 
 .makeCoefTable(coeffs(model), sqrt(diag(vcov(model))))
 
+
 `coefTable.maxlikeFit` <-
 function (model, ...)
 .makeCoefTable(model$Est[, 1L], model$Est[, 2L])

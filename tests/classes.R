@@ -19,8 +19,8 @@ varying <- list(correlation = alist(AR1_0.771 = corAR1(0.771, form = ~1 | Subjec
     NULL)) 
 
 
-dd <- dredge(fm1Dial.gls, m.lim = c(1, 2), fixed = ~pressure, varying = varying, 
-    extra = "R^2") 
+dd <- dredge(fm1Dial.gls, m.lim = c(1, 2), fixed = ~pressure, varying = varying)
+    #extra = "R^2") 
 
 models <- get.models(dd, subset = 1:4)
 
@@ -98,10 +98,11 @@ data(Cement, package = "MuMIn")
 
 nseq <- function(x, len = length(x)) seq(min(x, na.rm = TRUE), 
     max(x, na.rm = T), length = len)
-	fm1 = glm(y ~ (X1 + X2 + X3)^2, data = Cement)
-	dd <- dredge(fm1)
 
-gm = get.models(dd, subset = 1L:10L)
+fm1 <- glm(y ~ (X1 + X2 + X3)^2, data = Cement)
+dd <- dredge(fm1)
+
+gm <- get.models(dd, subset = 1L:10L)
 
 summary(ma <- model.avg(gm))
 
@@ -120,6 +121,7 @@ rm(list=ls())
 # TEST rlm --------------------------------------------------------------------------------
 
 if (.checkPkg("MASS")) {
+
 library(MASS)
 data(Cement, package = "MuMIn")
 
@@ -138,6 +140,7 @@ rm(list=ls()); #detach(package:MASS)
 
 # TEST multinom --------------------------------------------------------------------------------
 if (.checkPkg("nnet")) {
+
 library(nnet); library(MASS)
 
 # Trimmed-down model from example(birthwt)
@@ -188,12 +191,12 @@ dd <- dredge(gam1, subset=!`s(x0)` & (!`s(x1)` | !x1) & (!`s(x2)` |
 gm <- get.models(dd, cumsum(weight) <= .95)
 ma <- model.avg(gm)
 
-summary(ma)
+print(summary(ma))
 
-predict(ma, dat[1:10, ], se.fit=T, type = "link")
+print(predict(ma, dat[1:10, ], se.fit=T, type = "link"))
 
-predict(ma, dat[1:10, ], se.fit=T, type = "response")
-predict(ma, dat[1:10, ], se.fit=T, type = "link", backtransform = TRUE)
+print(predict(ma, dat[1:10, ], se.fit=T, type = "response"))
+print(predict(ma, dat[1:10, ], se.fit=T, type = "link", backtransform = TRUE))
 
 options(ops)
 
@@ -211,7 +214,6 @@ suppressMessages(example(NY_data, echo = FALSE))
 # method argument changed in spdep 0.5.53 from "full" to "eigen"
 method1 <- if(packageVersion("spdep") < '0.5.53') "full" else "eigen"
 
-
 fm1.spautolm <- spautolm(Z ~ PEXPOSURE * PCTAGE65P + PCTOWNHOME,
  data = nydata, listw = listw_NY, family = "SAR", method = method1, verbose = FALSE)
 
@@ -223,11 +225,12 @@ dd <- dredge(fm1.spautolm, m.lim=c(0,1), fixed = ~PEXPOSURE,
 	), trace=FALSE)
 options(warn=0)
 
+print(dd)
 
 #dd <- dredge(fm1.spautolm, m.lim=c(0,3), fixed=~PEXPOSURE)
 gm <- get.models(dd, cumsum(weight) <= .99)
 ma <- model.avg(gm)
-summary(ma)
+print(summary(ma))
 # signif(resid(ma), 5)[1:10]
 
 rm(list=ls())
@@ -239,20 +242,10 @@ data(oldcol)
 fm1.sarlm <- errorsarlm(CRIME ~ INC * HOVAL * OPEN, data = COL.OLD,
  listw = nb2listw(COL.nb, style = "W"), method = "eigen", quiet = TRUE)
 
- 
 dd <- dredge(fm1.sarlm)
 
 gm <- get.models(dd, cumsum(weight) <= .98)
 ma <- model.avg(gm)
-
-
-#fm <- fm1.sarlm
-#avgpred(ma)
-#avgpred(ma, newdata = COL.OLD, listw = nb2listw(COL.nb, style = "W"))
-#avgpred(ma, newdata = COL.OLD[1:10, ])
-#
-#std_predict(fm, newdata = COL.OLD, listw = nb2listw(COL.nb, style = "W"))
-#predict(fm, newdata = COL.OLD, listw = nb2listw(COL.nb, style = "W"))
 
 stopifnot(isTRUE(all.equal(coefTable(ma), coefTable(model.avg(dd, cumsum(weight) <= .98)))))
 
@@ -279,17 +272,16 @@ ms <- dredge(quine.nb1)
 models <- get.models(ms, subset = TRUE)
 models <- get.models(ms, subset = NA)
 
-summary(model.avg(models))
-
-
+print(summary(model.avg(models)))
 
 #dredge(quine.nb1) # OK
 #dredge(quine.nb1x = NA) # OK
 #dredge(quine.nb1) # OK
-dredge(quine.nb1) # OK
+print(dredge(quine.nb1)) # OK
 #dredge(quine.nb1) # Right, should be the same as above
 ma <- model.avg(dredge(quine.nb1), subset = cumsum(weight)<=.9999)
 
+print(summary(ma))
 # Cannot predict with this 'averaging'
 #pred <- predict(ma, se=TRUE)
 
@@ -322,13 +314,14 @@ r.squaredGLMM(budworm.lg)
 dd <- dredge(budworm.lg, rank = "QAIC", chat = summary(budworm.lg)$dispersion)
 #dd <- dredge(budworm.lg) # should be the same
 mod <- get.models(dd, subset = NA)
-
+mod
 # Note: this works:
 # ma <- model.avg(mod)
 # but this will not: ('rank' attribute passed from 'dredge' is lost)
 # ma <- model.avg(mod)
 # so, need to supply them
 ma <- model.avg(mod[1:5], rank = "QAICc", rank.args = list(chat = 0.403111))
+print(ma)
 
 rm(list=ls())
 
@@ -352,18 +345,29 @@ options(na.action = na.fail)
 
 bladder1 <- bladder[bladder$enum < 5, ]
 
-fmcph <- coxph(Surv(stop, event) ~ (rx + size + number) * strata(enum) +  cluster(id), bladder1)
+fmcph <- coxph(Surv(stop, event) ~ (rx + size + number) * strata(enum) + cluster(id), bladder1)
 
 r.squared.coxph <- function(object, ...) {
 	logtest <- -2 * (object$loglik[1L] - object$loglik[2L])
 	c(rsq = 1 - exp(-logtest/object$n), maxrsq = 1 - exp(2 * object$loglik[1L]/object$n))
 }
 
+getAllTerms(fmcph)
+coef(fmcph)
+
 ms <- dredge(fmcph, fixed=c("cluster(id)", "strata(enum)"), extra = list(R2="r.squared.coxph"))
+#ms <- dredge(fmcph, fixed=c("strata(enum)"), extra = list(R2="r.squared.coxph"))
+
+summary(model.avg(ms))
+
+# BUG in survival
+if(! "logLik.coxph.null" %in% methods("logLik"))
+    registerS3method("logLik", "coxph.null", survival:::logLik.coxph.null)
+
+summary(model.avg(ms[1:10]))
 
 fits <- get.models(ms, delta < 5)
 summary(model.avg(fits))
-
 
 ####
 

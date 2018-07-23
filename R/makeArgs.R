@@ -41,7 +41,7 @@ function(obj, termNames, opt, ...) {
 			opt$gmCall$contrasts, envir = opt$gmEnv))
 		idx <- match(coefNames, opt$gmCoefNames)
 		if(anyNA(idx)) reportProblems <-
-			append(reportProblems, "cannot subset 'start' argument. Coefficients in model do not exist in 'global.model'")
+			append(reportProblems, "cannot subset 'start' argument. Coefficients in the model do not exist in 'global.model'")
 		else ret$start <- substitute(start[idx], list(start = opt$gmCall$start,
 			idx = idx))
 	}
@@ -68,7 +68,6 @@ function(obj, termNames, opt, ...) {
 
 
 `makeArgs.glmmadmb` <- 
-`makeArgs.clmm` <- 		## Class 'clmm'  from package 'ordinal':
 `makeArgs.merMod` <-    ## since lme4-0.99999911-0
 `makeArgs.mer` <- 
 function(obj, termNames, opt, ...) {
@@ -78,6 +77,14 @@ function(obj, termNames, opt, ...) {
 	ret
 }
 
+# clmm needs explicit "1" if no other FX terms
+`makeArgs.clmm` <- 		## Class 'clmm'  from package 'ordinal':
+function(obj, termNames, opt, ...) {
+	ret <- makeArgs.merMod(obj, termNames, opt, ...)
+	if(length(termNames) == 1L && identical(termNames[1L], opt$interceptLabel))
+		ret$formula[[3L]] <- call("+", 1, ret$formula[[3L]])
+	ret
+}
 
 `makeArgs.coxph` <- 
 function(obj, termNames, opt, ...) {
@@ -92,12 +99,9 @@ function(obj, termNames, opt, ...) {
 	termNames[i] <- gsub("(Intercept)", "1", termNames[i], fixed = TRUE)
 	j <- grepl("^\\(phi\\)_", termNames)
 	# TODO: zero-length terms in reformulate
-	zarg <- list(	
-		beta = formula(terms.formula(reformulate(termNames[!j]), simplify = TRUE))
-		)
+	zarg <- list(beta = formula(terms.formula(reformulate(termNames[!j]), simplify = TRUE)))
 	if(any(j))
-		zarg$phi <- 
-			formula(terms.formula(reformulate(substring(termNames[j], 7L)), simplify = TRUE))
+		zarg$phi <- formula(terms.formula(reformulate(substring(termNames[j], 7L)), simplify = TRUE))
 	
 	zarg <- lapply(zarg, `environment<-`, opt$gmFormulaEnv)
 	fexpl <- zarg$beta[[2L]]

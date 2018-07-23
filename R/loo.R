@@ -83,10 +83,8 @@ function(object, type = c("loglik", "rmse"), start, etastart, mustart,
 	})
 	
 	.DebugPrint(type)
-	
 	.Debug(if(type == "loglik") {
 		.DebugPrint(y0)
-		
 		message("running test 1...")
 		# XXX: DEBUG test // lm has no $family
 		testLL1 <- llik(y, X, object$coefficients, family(object), n, wt, offset)

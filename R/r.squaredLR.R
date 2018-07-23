@@ -1,14 +1,19 @@
 `null.fit` <-
-function(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL) {
-	cl <- get_call(x)
-	if(!is.environment(envir)) envir <- environment(as.formula(formula(x)))
+function(object, evaluate = FALSE, RE.keep = FALSE, envir = NULL, ...) {
+	if("x" %in% names(list(...))) {
+		object <- list(...)$x
+		warning("the argument ", sQuote("x"), " has been removed. Use ", dQuote("object"), " instead")
+	}
+
+	cl <- get_call(object)
+	if(!is.environment(envir)) envir <- environment(as.formula(formula(object)))
 	
 	if(RE.keep) {
-		if(inherits(x, c("mer", "merMod", "coxme", "lmekin"))) {
+		if(inherits(object, c("mer", "merMod", "coxme", "lmekin"))) {
 			cl$formula <- .nullREForm(as.formula(cl$formula))
 			environment(cl$formula) <- envir
-		} else if(inherits(x, "gamm")) {
-			mefm <- x[[if("lme" %in% names(x)) "lme" else "mer"]]
+		} else if(inherits(object, "gamm")) {
+			mefm <- object[[if("lme" %in% names(object)) "lme" else "mer"]]
 			
 			if(inherits(mefm, "merMod")) {
 				Fun <- if(inherits(mefm, "glmerMod"))
@@ -16,7 +21,7 @@ function(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL) {
 					cl$family <- NULL
 					"lmer"
 				}
-				cl$REML <- as.logical(x$mer@devcomp$dims[['REML']])
+				cl$REML <- as.logical(object$mer@devcomp$dims[['REML']])
 				frm <- cl$formula
 				frm[[3L]] <- call("+", 1, as.formula(cl$random)[[2L]])
 				cl$random <- NULL
@@ -25,26 +30,26 @@ function(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL) {
 				Fun <- "lme"
 				cl$fixed <- update.formula(as.formula(cl$formula), . ~ 1)
 				cl$formula <- cl$family <- NULL
-				cl$method <- x$lme$method
+				cl$method <- object$lme$method
 				environment(cl$fixed) <- envir
 			}
 			cl[[1L]] <- as.symbol(Fun)
-		} else if(inherits(x, c("glmmML", "glimML"))) {
+		} else if(inherits(object, c("glmmML", "glimML"))) {
 			cl$formula <- update.formula(as.formula(cl$formula), . ~ 1)
 			environment(cl$formula) <- envir
-		} else if(inherits(x, "lme")) {
+		} else if(inherits(object, "lme")) {
 			cl$fixed <- update.formula(as.formula(cl$fixed), . ~ 1)
 			environment(cl$fixed) <- envir
 		} else {
 			stop("do not know (yet) how to construct a null model with RE for class ",
-				 prettyEnumStr(class(x), sep.last = ", "))					
+				 prettyEnumStr(class(object), sep.last = ", "))					
 		}
 		return(if(evaluate) eval(cl, envir = envir) else cl)
 	}	
 	
 	mClasses <- c("glmmML", "lm", "lme", "gls", "mer", "merMod", "lmekin",
 				  "unmarkedFit", "coxph", "coxme", "zeroinfl", "gamm")
-	mClass <- mClasses[inherits(x, mClasses, which = TRUE) != 0L][1]
+	mClass <- mClasses[inherits(object, mClasses, which = TRUE) != 0L][1]
 
 	if(is.na(mClass)) mClass <- "default"
 	formulaArgName <- "formula"
@@ -83,7 +88,7 @@ function(x, evaluate = FALSE, RE.keep = FALSE, envir = NULL) {
 			cl$random <- NULL
 		}, {
 			stop("do not know (yet) how to construct a null model for class ",
-				sQuote(class(x)))
+				sQuote(class(object)))
 		}
 	)
 	
@@ -125,16 +130,21 @@ function(formula) {
 }
 
 `r.squaredLR` <-
-function(x, null = NULL, null.RE = FALSE) {
+function(object, null = NULL, null.RE = FALSE, ...) {
+	if("x" %in% names(list(...))) {
+		object <- list(...)$x
+		warning("the argument ", sQuote("x"), " has been removed. Use ", dQuote("object"), " instead")
+	}
+
 	if(!missing(null) && !missing(null.RE))
 		warning("argument 'null.RE' disregarded if 'null' is provided")
 	if(is.null(null))
-		null <- null.fit(x, TRUE, null.RE, parent.frame())
+		null <- null.fit(object, TRUE, null.RE, parent.frame())
 
 	#print(get_call(null))
 	L0 <- as.vector(if(inherits(null, "glm")) logLik(null) else logLik(null, REML = FALSE))
-	L1 <- if(inherits(x, "glm")) logLik(x) else logLik(x, REML = FALSE)
-	n <- if(is.null(attr(L1, "nobs"))) nobs(x) else attr(L1, "nobs")
+	L1 <- if(inherits(object, "glm")) logLik(object) else logLik(object, REML = FALSE)
+	n <- if(is.null(attr(L1, "nobs"))) nobs(object) else attr(L1, "nobs")
 	ret <- 1 - exp(-2 / n * (as.vector(L1) - L0))
 	max.r2 <- 1 - exp(2 / n * L0)
 	attr(ret, "adj.r.squared") <- ret / max.r2
