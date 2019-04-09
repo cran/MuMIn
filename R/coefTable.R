@@ -334,7 +334,7 @@ function (x, y, labAsExpr = FALSE, n = 101, w = 5,...) {
 		rval <- matrix(NA_real_, ncol = 3L, nrow = n)
 		rval[, 1L] <- seq(z[1L] - w * z[2L], z[1L] + w * z[2L],
 			length.out = n)
-		if(!is.na(z[3L]))
+		if(!anyNA(z[3L]))
 			rval[, 2L] <- dt((rval[, 1L] - z[1L]) / z[2L], z[3L]) / z[2L]
 		rval[, 3L] <- dnorm(rval[, 1L], z[1L], z[2L])
 		rval

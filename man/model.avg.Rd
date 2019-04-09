@@ -59,9 +59,6 @@ model.avg(object, ..., revised.var = TRUE)
 	\item{fit}{ if \code{TRUE}, the component models are fitted using
 		\code{get.models}. See \sQuote{Details}.
 	}
-	
-
-
 }
 
 \value{
@@ -79,10 +76,8 @@ An object of class \code{"averaging"} is a list with components:
     second row. See \sQuote{Note} }
 \item{coefArray}{ a 3-dimensional \code{array} of component models' coefficients,
 	their standard errors and degrees of freedom. }
-\item{importance}{ object of class \code{importance} containing relative 
-	importance values of each term (including interactions), calculated as a sum
-	of the \emph{Akaike weights} over all of the models in which the term
-	appears.
+\item{sw}{ object of class \code{sw} containing per-model term 
+    sum of model weights over all of the models in which the term appears.
 }
 \item{formula}{ a formula corresponding to the one that would be used in a 
 	single model. The formula contains only the averaged (fixed) coefficients.

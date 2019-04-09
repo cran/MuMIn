@@ -1,5 +1,6 @@
 
 
+
 bootWeights <- 
 function(object, ...,
 		 R,
@@ -14,7 +15,7 @@ function(object, ...,
 	checkIsModelDataIdentical(models)
 	
 	for(fm in models) {
-	  if(is.na(match("x", names(fm)))) {
+	  if(anyNA(match("x", names(fm)))) {
 		warning("for efficiency of the bootstrap procedure, 'glm' should be called with 'x = TRUE'")
 		break
 	  }

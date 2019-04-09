@@ -45,7 +45,7 @@ Weights(x) <- value
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{importance}}, \code{\link{weighted.mean}}
+\code{\link{sw}}, \code{\link{weighted.mean}}
 
 \code{\link{armWeights}}, 
 \code{\link{bootWeights}}, \code{\link{BGWeights}}, \code{\link{cos2Weights}},

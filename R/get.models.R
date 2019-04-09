@@ -14,9 +14,10 @@ function(object, subset, cluster = NA, ...) {
 		stop("'object' has no \"model.calls\" attribute")
 
 	if(!missing(subset)) {
-		r <- subset_eval(substitute(subset), if(isAveraging) object$msTable else object, parent.frame())
+		r <- subset_eval(substitute(subset), 
+            if(isAveraging) object$msTable else object, parent.frame())
 
-		if(!isTRUE(r) && !is.na(r)) {
+		if(!isTRUE(r) && !anyNA(r)) {
 			if(is.character(r)) r <- match(r, dimnames(object)[[1L]])
 		} else r <- TRUE
 	} else {

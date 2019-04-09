@@ -47,7 +47,10 @@ legend("topleft", legend = c("AIC", "AICc"), pch = c(1, 19))
 Kamil Barto\enc{ń}{n}, based on code by Carsten Dormann
 }
 \references{
-Dormann, C. et al. (\emph{in prep.}) Model averaging in ecology.
+Dormann, C. et al. (2018) Model averaging in ecology: a review of Bayesian, 
+   information-theoretic, and tactical approaches for predictive inference.
+   \emph{Ecological Monographs}, 88, 485–504. 
+
 }
 \keyword{models}
 

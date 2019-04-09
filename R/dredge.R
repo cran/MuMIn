@@ -15,7 +15,7 @@
 })
 
 
-`dredge` <-
+dredge <-
 function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, rank = "AICc",
 		 fixed = NULL, m.lim = NULL, m.min, m.max, subset,
 		 trace = FALSE, varying, extra, ct.args = NULL,
@@ -253,10 +253,10 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 
 	nov <- as.integer(nVars - nFixed)
 	ncomb <- (2L ^ nov) * nVariants
-
-	if(nov > 30L) cry(, "number of predictors [%d] exceeds allowed maximum of 30", nov)
-	nmax <- ncomb * nVariants
-	resultChunkSize <- 25L
+    novMax <- log2(.Machine$integer.max %/% nVariants)
+    if(nov > novMax)
+		cry(, "number of non-fixed predictors [%d] exceeds the allowed maximum of %d (with %d variants)", nov, novMax, nVariants)
+    resultChunkSize <- 25L
 	if(evaluate) {
 		rvNcol <- nVars + nVarying + 3L + nExtra
 		rval <- matrix(NA_real_, ncol = rvNcol, nrow = resultChunkSize)
@@ -337,26 +337,26 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
 
 			subsetExpr <- subset[[1L]]
-			subsetExpr <- exprapply0(subsetExpr, ".", .sub_dot, gloFactorTable,
-				allTerms, as.name("comb"))
+			subsetExpr <- exprapply0(subsetExpr, c("with", "."), .subst.with, gloFactorTable,
+				allTerms, as.name("comb"), gmEnv)
 
-			subsetExpr <- exprapply0(subsetExpr, c("{", "Term"), .sub_Term)
+			subsetExpr <- exprapply0(subsetExpr, c("{", "Term"), .subst.term)
 
-			#@@@ TODO has subsetExpr <- exprapply0(subsetExpr, "has", .sub_Term)
+			#@@@ TODO has subsetExpr <- exprapply0(subsetExpr, "has", .subst.term)
 
 			tmp <- updateDeps(subsetExpr, deps)
 			subsetExpr <- tmp$expr
 			deps <- tmp$deps
 			
-			subsetExpr <- exprapply0(subsetExpr, "dc", .sub_args_as_vars)
-			subsetExpr <- .subst4Vec(subsetExpr, allTerms, "comb")
+			subsetExpr <- exprapply0(subsetExpr, "dc", .subst.vars.for.args)
+			subsetExpr <- .subst.names.for.items(subsetExpr, allTerms, "comb")
 
 			if(nVarying) {
 				ssValidNames <- c("cVar", "comb", "*nvar*")
-				subsetExpr <- exprapply0(subsetExpr, "V", .sub_V,
+				subsetExpr <- exprapply0(subsetExpr, "V", .subst.v,
 					as.name("cVar"), varyingNames)
 				if(!all(all.vars(subsetExpr) %in% ssValidNames))
-					subsetExpr <- .subst4Vec(subsetExpr, varyingNames,
+					subsetExpr <- .subst.names.for.items(subsetExpr, varyingNames,
 											 "cVar", fun = "[[")
 			}
 			ssVars <- all.vars(subsetExpr)
@@ -422,7 +422,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	iComb <- -1L
 	while((iComb <- iComb + 1L) < ncomb) {
 		varComb <- iComb %% nVariants
-		jComb <- (iComb - varComb) / nVariants
+		jComb <- (iComb - varComb) %/% nVariants
 
 		#if(iComb %% 100L == 0L) setProgressBar(progressBar, value = iComb, title = sprintf("dredge: %d/%d total", k, iComb))
 
@@ -517,7 +517,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			k <- k + 1L # all OK, add model to table
 			rvlen <- nrow(rval)
 			if(retNeedsExtending <- k > rvlen) { # append if necesarry
-				nadd <- min(resultChunkSize, nmax - rvlen)
+				nadd <- min(resultChunkSize, ncomb - rvlen)
 				rval <- rbind(rval, matrix(NA_real_, ncol = rvNcol, nrow = nadd),
 					deparse.level = 0L)
 				addi <- seq.int(rvlen + 1L, length.out = nadd)
@@ -529,7 +529,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			k <- k + 1L
 			rvlen <- length(ord)
 			if(retNeedsExtending <- k > rvlen) {
-				nadd <- min(resultChunkSize, nmax - rvlen)
+				nadd <- min(resultChunkSize, ncomb - rvlen)
 				addi <- seq.int(rvlen + 1L, length.out = nadd)
 			}
 		}

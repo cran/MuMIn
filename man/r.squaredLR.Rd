@@ -88,7 +88,7 @@ where
 
 \code{null.fit} tries to guess the \emph{null} model call, given the provided
 fitted model object. This would be usually a \code{glm}. The function will give
-an error for an unrecognized class.
+an error for an unrecognised class.
 
 }
 
@@ -96,7 +96,7 @@ an error for an unrecognized class.
 \Rsq is a useful goodness-of-fit measure as it has the interpretation
 of the proportion of the variance \sQuote{explained}, but it performs poorly in
 model selection, and is not suitable for use in the same way as the information
-criterions.
+criteria.
 }
 
 

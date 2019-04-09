@@ -1,10 +1,10 @@
-`importance` <-
-function (x) UseMethod("importance")
+`sw` <-
+function(x) UseMethod("sw")
 
-`importance.averaging` <-
-function(x) return(x$importance)
+`sw.averaging` <-
+function(x) return(x$sw)
 
-`importance.model.selection` <-
+`sw.model.selection` <-
 function(x) {
 	if(nrow(x) <= 1L) stop("argument consists of only one model")
 
@@ -18,17 +18,16 @@ function(x) {
 	o <- order(res, decreasing = TRUE)
 	res <- res[o]
 	attr(res, "n.models") <- colSums(z)[o]
-	class(res) <- c("importance", "numeric") 
+	class(res) <- c("sw", "numeric") 
 	return(res)
 }
 
-
-`print.importance` <-
+`print.sw` <-
 function(x, ...) {
 	print.default(format(matrix(c(
 		format(ifelse(x < 0.01, "<0.01", zapsmall(x, 2L)), scientific = FALSE,
 		justify = "r"), format(attr(x, "n.models"))), nrow = 2L, byrow = TRUE,
-		dimnames = list(c("Importance:", "N containing models:"), names(x))),
+		dimnames = list(c("Sum of weights:", "N containing models:"), names(x))),
 		justify = "r"), quote = FALSE)
 	invisible(x)
 }
@@ -36,5 +35,9 @@ function(x, ...) {
 #function(x) return(apply(x[, attr(x, "terms")], 2L,
 #	function(z) sum(x[, "weight"][!is.na(z)])))
 
-`importance.default` <- function(x)
-	model.avg(x)$importance
+`sw.default` <-
+function(x)
+	model.avg(x)$sw
+	
+	
+importance <- sw

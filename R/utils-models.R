@@ -498,7 +498,7 @@ function(models) {
 		if(any(res))
 			warning("smooth term dimensions differ between models for variables ",
 				prettyEnumStr(names(res)[res], quote = "'"),
-				". Related coefficients are incomparable"
+				". Related coefficients are incomparable."
 			)
 	}
 	invisible()

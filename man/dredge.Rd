@@ -27,15 +27,14 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	\item{global.model}{a fitted \sQuote{global} model object. See
 	\sQuote{Details} for a list of supported types. }
 
-	\item{beta}{indicates whether and how the coefficients estimates should be
-	standardized, and must be one of \code{"none"}, \code{"sd"} or
-	\code{"partial.sd"}. You can specify just the initial letter. \code{"none"}
-	corresponds to unstandardized coefficients, \code{"sd"} and
-	\code{"partial.sd"} to coefficients standardized by \acronym{SD} and Partial
-	\acronym{SD}, respectively. For backwards compatibility, logical value is
-	also accepted, \code{TRUE} is equivalent to \code{"sd"} and \code{FALSE} to
-	\code{"none"}. See \code{\link{std.coef}}.
-	 }
+	\item{beta}{indicates whether and how the coefficient are standardized, and 
+    must be one of \code{"none"}, \code{"sd"} or \code{"partial.sd"}. You can 
+    specify just the initial letter. \code{"none"} corresponds to unstandardized
+    coefficients, \code{"sd"} and \code{"partial.sd"} to coefficients 
+    standardized by \acronym{SD} and Partial \acronym{SD}, respectively. For 
+    backwards compatibility, logical value is also accepted, \code{TRUE} is 
+    equivalent to \code{"sd"} and \code{FALSE} to \code{"none"}. 
+    See \code{\link{std.coef}}.	}
 
 	\item{evaluate}{whether to evaluate and rank the models. If \code{FALSE}, a
 	list of unevaluated \code{call}s is returned. }
@@ -59,8 +58,7 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 
 	\item{trace}{if \code{TRUE} or \code{1}, all calls to the fitting function
 	are printed before actual fitting takes place. If \code{trace > 1}, a progress bar
-	is displayed.
-	}
+	is displayed. }
 
 	\item{varying}{ optionally, a named list describing the additional arguments
 	to vary between the generated models. Item names correspond to the
@@ -76,12 +74,11 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	or quoted). Similarly as in \code{rank} argument, each function must accept
 	fitted model object as an argument and return (a value coercible to) a
 	numeric vector.
-	These can be e.g. additional information criterions or goodness-of-fit
+	These can be e.g. additional information criteria or goodness-of-fit
 	statistics. The character strings \code{"R^2"} and \code{"adjR^2"} are
 	treated in a special way, and will add a likelihood-ratio based \Rsq and
 	modified-\Rsq respectively to the result (this is more efficient than using
-	\code{\link{r.squaredLR}} directly).
-	}
+	\code{\link{r.squaredLR}} directly). }
 
   \item{x}{ a \code{model.selection} object, returned by \code{dredge}. }
 
@@ -99,18 +96,18 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 		\code{\link[=model.avg]{model averaging}}).}
 
   \item{\dots}{ optional arguments for the \code{rank} function. Any can be
-    an unevaluatec expression, in which case any \code{x} within it will be substituted
-	with a current model. }
+    an unevaluated expression, in which case any \code{x} within it will be 
+	substituted with the current model. }
 }
 
 
 \details{
 Models are fitted through repeated evaluation of modified call extracted from
 the \code{global.model} (in a similar fashion as with \code{update}). This
-approach, while robust in that it can be applied to most model types, 
-is inefficient because of its considerable computational overhead.
+approach, while robust in that it can be applied to most model types through the
+usual formula interface, may have considerable computational overhead.
 
-Note that the number of combinations grows exponentially with number of
+Note that the number of combinations grows exponentially with the number of
 predictors (\ifelse{latex}{\eqn{2^{N}}}{\ifelse{html}{2ⁿ}{2^N}}, less when
 interactions are present, see below).
 
@@ -121,9 +118,9 @@ Another way of getting all the models is to run
 which avoids fitting the models twice.
 
 For a list of model types that can be used as a \code{global.model} see
-\link[=MuMIn-models]{list of supported models}.
-Modelling functions not storing \code{call} in their result should be evaluated
-\emph{via} the wrapper function created by \code{\link{updateable}}.
+\link[=MuMIn-models]{the list of supported models}. Modelling functions not storing
+\code{call} in their result should be evaluated \emph{via} the wrapper function
+created by \code{\link{updateable}}.
 
 \subsection{Information criterion}{
 \code{rank} is found by a call to \code{match.fun} and may be specified as a
@@ -144,11 +141,10 @@ subset models.
 
 \subsection{Subsetting}{
 There are three ways to constrain the resulting set of models: setting limits to
-the number of terms in a model with \code{m.lim}, binding
+the number of terms in a model with \code{m.lim}, binding the
 term(s) to all models with \code{fixed}, and more complex rules can be applied
 using argument \code{subset}. To be included in the selection table, the model
 formulation must satisfy all these conditions.
-
 
 %%Terms in \code{fixed} argument are applied before the combinations are
 %%generated, therefore more efficient than \code{subset}.
@@ -157,14 +153,13 @@ formulation must satisfy all these conditions.
 The latter should be a lower triangular matrix with logical values, where
 columns and rows correspond to \code{global.model} terms. Value
 \code{subset["a", "b"] == FALSE} will exclude any model containing both terms
-\var{a} and \var{b}.
-\code{demo(dredge.subset)} has examples of using the \code{subset} matrix in
-conjunction with correlation matrices to exclude models containing collinear
-predictors.
+\var{a} and \var{b}. \code{demo(dredge.subset)} has examples of using the
+\code{subset} matrix in conjunction with correlation matrices to exclude models
+containing collinear predictors.
 
-The term names in \code{fixed} and \code{subset} must be given in the
-form returned by \code{getAllTerms(global.model)}, which can differ from
-the original term names (e.g. the interaction term components are ordered 
+Term names appearing in \code{fixed} and \code{subset} must be given in the
+exact form as returned by \code{getAllTerms(global.model)}, which can differ
+from the original term names (e.g. the interaction term components are ordered
 alphabetically).
 
 In the form of \code{expression}, the argument \code{subset} acts in a similar
@@ -173,17 +168,12 @@ terms can be referred to by name as variables in the expression, with the
 difference being that are interpreted as logical values (i.e. equal to
 \code{TRUE} if the term exists in the model).
 
-There is also \code{.(x)} and \code{.(+x)} notation indicating, respectively,
-any and all interactions including a \emph{term} \code{x}. It is only useful
-with marginality exceptions.
-
-The expression can contain any of the \code{global.model} terms
-(\code{getAllTerms(global.model)} lists them), as well as names of the
-\code{varying} argument items. Names of \code{global.model} terms take
+The expression can contain any of the \code{global.model} term names, as well as
+ names of the \code{varying} list items. \code{global.model} term names take
 precedence when identical to names of \code{varying}, so to avoid ambiguity
 \code{varying} variables in \code{subset} expression should be enclosed in
-\code{V()} (e.g. \code{subset = V(family) == "Gamma"} assuming that
-\code{varying} is something like \code{list(family = c(..., "Gamma"))}).
+\code{V()} (e.g. \code{V(family) == "Gamma"} assuming that
+\code{varying} is something like \code{list(family =} \code{c("Gamma", ...))}).
 
 If item names in \code{varying} are missing, the items themselves are coerced to
 names. Call and symbol elements are represented as character values (\emph{via}
@@ -193,11 +183,22 @@ names. Call and symbol elements are represented as character values (\emph{via}
 \code{subset = V(family) == 2}. This can quickly become confusing, therefore it
 is recommended to use named lists. \code{demo(dredge.varying)} provides examples.
 
-The \code{subset} expression can also contain variable
-\ifelse{latex}{\bq{*nvar*}}{\code{`*nvar*`}} (backtick-quoted), equal to
-number of terms in the model (\bold{not} the number of estimated parameters).
 
-To make inclusion of a model term conditional on presence of another model term,
+%% .(+x)
+The \code{with(x)} and \code{with(+x)} notation indicates, respectively, any and
+all interactions including the main effect term \code{x}. This is only effective
+with marginality exceptions. The extended form \code{with(x, order)} allows for
+specifying the order of interaction of terms which \code{x} is part of. For
+instance, \code{with(b, 2:3)} selects models with at least one second- or
+third-order interaction of the variable \code{b}. The second (positional)
+argument is coerced to integer vector. The \dQuote{dot} notation \code{.(x)} is
+an alias for \code{with}.
+
+The special variable \ifelse{latex}{\bq{*nvar*}}{\code{`*nvar*`}} 
+(backtick-quoted), in the \code{subset} expression is equal to the number of 
+terms in the model (\bold{not} the number of estimated parameters).
+
+To make the inclusion of a model term conditional on the presence of another one,
 the function \code{dc} (\dQuote{\bold{d}ependency \bold{c}hain}) can be used in
 the \code{subset} expression. \code{dc} takes any number of term names as
 arguments, and allows a term to be included only if all preceding ones
@@ -206,7 +207,7 @@ are also present (e.g. \code{subset = dc(a, b, c)} allows for models \code{a},
 \code{a+c}).
 
 \code{subset} expression can have a form of an unevaluated \code{call},
-\code{expression} object, or a one sided \code{formula}. See \sQuote{Examples}.
+\code{expression} object, or a one-sided \code{formula}. See \sQuote{Examples}.
 
 Compound model terms (such as interactions, \sQuote{as-is} expressions within
 \code{I()} or smooths in \code{gam}) should be enclosed within curly brackets
@@ -215,7 +216,7 @@ Compound model terms (such as interactions, \sQuote{as-is} expressions within
  \bq{s(x, k = 2)}
  }{
  \code{`s(x, k = 2)`}
- }).
+ }), unless they are arguments to \code{.} or \code{dc}.
  Backticks-quoted names must match exactly (including whitespace) the term names
  as returned by \code{getAllTerms}.
 
@@ -223,44 +224,51 @@ Compound model terms (such as interactions, \sQuote{as-is} expressions within
 
 	\describe{
 	\item{\code{a & b}}{ indicates that model terms \var{a} and \var{b} must be
-	present (see \link[=Logic]{Logical Operators}) }
+        present (see \link[=Logic]{Logical Operators}) }
     \item{\code{{log(x,2)}} or \bq{log(x, 2)}}{ represent a complex
 		model term \code{log(x, 2)}}
-	\item{\code{V(x)}}{ represents a \code{varying} variable \var{x} }
-	\item{\code{.(x)}}{ indicates that at least one term containing the term
-		\var{x} must be present }
-	\item{\code{.(+x)}}{ indicates that all the terms containing the term \var{x}
-		must be present }
+	\item{\code{V(x)}}{ represents a \code{varying} item \var{x} }
+	\item{\code{with(x)}}{ indicates that at least one term containing the main 
+	    effect term \var{x} must be present }
+	\item{\code{with(+x)}}{ indicates that all the terms containing the main 
+	    effect term \var{x} must be present }
+	\item{\code{with(x, n:m)}}{ indicates that at least one term containing an 
+	    \var{n}-th to \var{m}-th order interaction term of \var{x} must be present }
 	\item{\code{dc(a, b, c,...)}}{ \sQuote{dependency chain}: \var{b} is allowed only
 		if \var{a} is present, and \var{c} only if both \var{a} and \var{b} are
 		present, etc. }
-	\item{\code{`*nvar*`}}{ number of terms. }
+	\item{\code{`*nvar*`}}{ the number of terms in the model. }
 	}
 }
 
 To simply keep certain terms in all models, use of argument \code{fixed} is much
 more efficient. The \code{fixed} formula is interpreted in the same manner
-as model formula and so the terms need not to be quoted.
+as model formula and so the terms must not be quoted.
 }
 
 \subsection{Missing values}{
 Use of \code{na.action = "na.omit"} (\R's default) or \code{"na.exclude"}  in
 \code{global.model} must be avoided, as it results with sub-models fitted to
-different data sets, if there are missing values. Error is thrown if it is
+different data sets if there are missing values. An error is thrown if it is
 detected.
 
 It is a common mistake to give \code{na.action} as an argument in the call
   to \code{dredge} (typically resulting in an error from the \code{rank}
-  function to which the argument is passed through \sQuote{\dots}), while the correct way
+  function to which the argument is passed through \sQuote{\dots}), while the 
+  correct way
   is either to pass \code{na.action} in the call to the global model or to set
   it as a \link[=options]{global option}.
+}
 
+\subsection{Intercept}{ 
+If present in the \code{global.model}, the intercept will be included in all 
+sub-models.
 }
 
 \subsection{Methods}{
 There are \code{\link[=subset.model.selection]{subset}} and
 \code{\link[=plot.model.selection]{plot}} methods, the latter creates a
-graphical representation of model weights and variable relative importance.
+graphical representation of model weights and per-model term sum of weights.
 Coefficients can be extracted with \code{coef} or \code{\link{coefTable}}.
 }
 
@@ -364,7 +372,7 @@ dredge(fm1, m.lim = c(NA, 1), extra = list(
     })
 )
 
-# Add other information criterions (but rank with AICc):
+# Add other information criteria (but rank with AICc):
 dredge(fm1, m.lim = c(NA, 1), extra = alist(AIC, BIC, ICOMP, Cp))
 \dontshow{options(oop)}
 }

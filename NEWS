@@ -1,5 +1,56 @@
 MuMIn package news:
 
+Version: 1.43.6 (2019-04-08)
+(fixed) if conditions with "length > 1 in coercion to logical" error produced by
+    the new Rcheck.
+(fixed) updated 'tests' to make up for 'spautolm' moved from 'spdep' to 
+    'spatialreg'.
+
+Version: 1.43.4 (2019-04-04)
+(fixed) minor changes to the quasi-likelihood function
+
+Version: 1.43.3 (2019-03-19)
+(added) methods for 'gamlss' (suggested by Anne Loosen)
+(fixed) QIC,quasiLik: now gives results compatible with those of 
+    wgeesel::QIC.gee.
+
+Version: 1.43.2 (2019-03-16)
+'sw' (for "Sum of Weights") is now preferred to 'importance' (which is 
+    still available, but is going to be deprecated in future). This is because
+    of the controversies about SoW being a valid measure of actual variable 
+    importance.
+[p]dredge: max. number of predictors is now correctly calculated (depending on 
+    the number of variants)
+
+Version: 1.43.1 (2019-03-06)
+(added) new model structure for unmarkedFitGDS (gdistsamp) with alpha parameter
+   (thanks to Alba Estrada)
+
+Version: 1.43.0 (2019-02-28)
+(fixed) in QICu, the number of parameters was mistaken for number of 
+    observations (reported by Richard Fredrickson)
+(added) some methods for wgeesel::wgee objects.
+
+Version: 1.42.5 (2019-01-02)
+r.squaredGLMM: added the argument "envir" which is passed to `.nullFitRE`. This 
+    can be used in case of issues with model data not being found (reported by
+    Eliot McIntire)
+
+Version: 1.42.4 (2018-12-05)
+(fixed) r.squaredGLMM.merMod: error when the function was called in an 
+    environment different than .GlobalEnv (spotted by a certain Martin on 
+    Stackoverflow)
+
+Version: 1.42.3 (2018-07-31)
+(added) dredge: the subset expression `.(x)` now accepts an additional argument
+    for the allowed term orders. For example `.(X, 2:10)` means 
+	"at least one 2nd or 3rd order interaction of 'X'". The `.` pseudo-function
+	has also a new alias: "with", e.g. `with(X, 2:10)`.
+
+Version: 1.42.2 (2018-07-27)
+(fixed) r.squaredGLMM: handle the case when some coefficients are not estimated 
+	and NA
+
 Version: 1.42.1 (2018-07-21)
 tests have been modified to prevent CRAN check errors on some systems. 
 (fixed) arm.glm, armWeights: now use a random sample to select a training set.

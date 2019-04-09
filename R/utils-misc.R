@@ -1,6 +1,19 @@
 
 .MuMInEnv <- new.env(parent = baseenv())
 
+testStart <- 
+function(...) {
+    p <- c(...)
+	res <- length(find.package(p, quiet = TRUE)) == length(p)
+    if(res) {
+		for(a in p) suppressPackageStartupMessages(
+			library(a, character.only = TRUE, quietly = TRUE))
+		require(.packageName, character.only = TRUE)
+		options(na.action = "na.fail")
+	}
+	res
+}
+
 warnonce <- function(id, ...) {
 	if(!isTRUE(get0(flag <- paste0("warned.", as.character(id)[1L]), .MuMInEnv,
 					ifnotfound = FALSE))) {

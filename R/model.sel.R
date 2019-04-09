@@ -26,7 +26,7 @@ function (object, rank = NULL, rank.args = NULL, fit = NA, ...,
 	} #else rank <- .getRank(attr(object, "rank"))
 
 	if(reFit && !isTRUE(fit)) {
-		if(is.na(fit)) message("Re-fitting models...")
+		if(anyNA(fit)) message("Re-fitting models...")
 			else stop("cannot proceed without re-fitting models ('fit' is FALSE)")
 	}
 	

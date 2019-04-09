@@ -1,4 +1,5 @@
 
+
 # TODO: common framework for glm.fit loops
 # TODO: pass data in formula environment
 

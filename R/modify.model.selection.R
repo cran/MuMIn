@@ -124,9 +124,9 @@ function(subset, object, objectname = substitute(object)) {
 
 	if(!is.language(subset) && is.na(subset)) return(TRUE)
 
-	subset <- exprapply0(exprapply0(exprapply0(subset, "dc", .sub_dc_has),
-		c("{", "Term"), .sub_Term),
-		    "has", .sub_has)
+	subset <- exprapply0(exprapply0(exprapply0(subset, "dc", .subst.has.dc),
+		c("{", "Term"), .subst.term),
+		    "has", .subst.has)
 			
 	objectname <- as.name(objectname)
 

@@ -52,7 +52,7 @@ the estimated standard errors.
 from a model list, or from \code{model.selection} object with argument \code{fit
 = TRUE} (which will recreate the model objects, see \code{\link{model.avg}}).
 
-If all the component models are oridinary linear models, the prediction can be
+If all the component models are ordinary linear models, the prediction can be
 made either with the full averaged coefficients (the argument \code{full =
 TRUE} this is the default) or subset-averaged coefficients. Otherwise the
 prediction is obtained by calling \code{predict} on each component model and

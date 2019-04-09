@@ -4,7 +4,7 @@
 
 \title{Visualize model selection table}
 \description{
-Produces a graphical representation of model weights and relative variable importance.
+Produces a graphical representation of model weights per model term.
 }
 
 \usage{

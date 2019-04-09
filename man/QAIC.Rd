@@ -44,6 +44,9 @@ Note that \code{glm} does not compute maximum-likelihood estimates in models
 within the \emph{quasi-} family. In case it is justified, it can be worked 
 around by \sQuote{borrowing} the \code{aic} element from the corresponding
 \sQuote{non-quasi} family (see \sQuote{Example}).
+
+Consider using \code{negative.binomial} family models for overdispersed 
+count data.
 }
 
 \seealso{

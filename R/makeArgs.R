@@ -51,6 +51,7 @@ function(obj, termNames, opt, ...) {
 }
 
 makeArgs.gls <- 
+makeArgs.wgee <- 
 function(obj, termNames, opt, ...) {
 	ret <- makeArgs.default(obj, termNames, opt)
 	names(ret)[1L] <- "model"

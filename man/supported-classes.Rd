@@ -25,6 +25,7 @@ functions include those produced by:
 \item \lxcode{cpglm}{cplm}, \lxcode{cpglmm}{cplm} (\CRANpkg{cplm});
 \item \lxcode{gam}{mgcv}, \lxcode{gamm}{mgcv}* (\CRANpkg{mgcv});
 \item \lxcode{gamm4}{gamm4}* (\CRANpkg{gamm4});
+\item \lxcode{gamlss}{gamlss} (\CRANpkg{gamlss});
 \item \lxcode{glmmML}{glmmML} (\CRANpkg{glmmML});
 \item \code{glmmadmb} (\href{http://glmmadmb.r-forge.r-project.org/}{\pkg{glmmADMB}}
 	from R-Forge);
@@ -38,7 +39,7 @@ functions include those produced by:
 \item \lxcode{aodml}{aods3}, \lxcode{aodql}{aods3} (\CRANpkg{aods3});
 \item \lxcode{betareg}{betareg} (\CRANpkg{betareg});
 \item \lxcode{brglm}{brglm} (\CRANpkg{brglm});
-\item \code{*sarlm} models, \lxcode{spautolm}{spdep} (\CRANpkg{spdep});
+\item \code{*sarlm} models, \lxcode{spautolm}{spatialreg} (\CRANpkg{spatialreg});
 \item \lxcode{spml}{splm}* (if fitted by \acronym{ML}, \CRANpkg{splm});
 \item \lxcode{coxph}{survival}, \lxcode{survreg}{survival} (\CRANpkg{survival});
 \item \lxcode{coxme}{coxme}, \lxcode{lmekin}{coxme} (\CRANpkg{coxme});
@@ -59,7 +60,8 @@ Generalized Estimation Equation model implementations:
 \lxcode{geeglm}{geepack} from package \CRANpkg{geepack}, 
 \lxcode{gee}{gee} from \CRANpkg{gee}, 
 \lxcode{geem}{geeM} from \CRANpkg{geeM}, 
-and \code{yags} from  \href{http://yags.r-forge.r-project.org/}{\pkg{yags}} (from 
+\lxcode{wgee}{wgeesel} from \CRANpkg{wgeesel}, 
+and \code{yags} from  \href{http://yags.r-forge.r-project.org/}{\pkg{yags}} (on 
 R-Forge) can be used with \code{\link{QIC}} as the selection criterion.
 
 

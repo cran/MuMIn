@@ -264,10 +264,10 @@ function(global.model, cluster = NA,
 
 	nov <- as.integer(nVars - nFixed)
 	ncomb <- (2L ^ nov) * nVariants
+    novMax <- log2(.Machine$integer.max %/% nVariants)
+    if(nov > novMax)
+		cry(, "number of non-fixed predictors [%d] exceeds the allowed maximum of %d (with %d variants)", nov, novMax, nVariants)
 
-	if(nov > 30L) cry(, "number of predictors [%d] exceeds allowed maximum of 30", nov)
-	#if(nov > 10L) warning(gettextf("%d predictors will generate up to %.0f combinations", nov, ncomb))
-	nmax <- ncomb * nVariants
 	resultChunkSize <- 25L
 	if(evaluate) {
 		rvNcol <- nVars + nVarying + 3L + nExtra
@@ -347,23 +347,23 @@ function(global.model, cluster = NA,
 			rownames(gloFactorTable) <- allTerms0[!(allTerms0 %in% interceptLabel)]
 
 			subsetExpr <- subset[[1L]]
-			subsetExpr <- exprapply0(subsetExpr, ".", .sub_dot, gloFactorTable,
-				allTerms, as.name("comb"))
-			subsetExpr <- exprapply0(subsetExpr, c("{", "Term"), .sub_Term)
+			subsetExpr <- exprapply0(subsetExpr, c("with", "."), .subst.with, gloFactorTable,
+				allTerms, as.name("comb"), gmEnv)
+			subsetExpr <- exprapply0(subsetExpr, c("{", "Term"), .subst.term)
 
 			tmp <- updateDeps(subsetExpr, deps)
 			subsetExpr <- tmp$expr
 			deps <- tmp$deps
 
-			subsetExpr <- exprapply0(subsetExpr, "dc", .sub_args_as_vars)
-			subsetExpr <- .subst4Vec(subsetExpr, allTerms, "comb")
+			subsetExpr <- exprapply0(subsetExpr, "dc", .subst.vars.for.args)
+			subsetExpr <- .subst.names.for.items(subsetExpr, allTerms, "comb")
 
 			if(nVarying) {
 				ssValidNames <- c("cVar", "comb", "*nvar*")
-					subsetExpr <- exprapply0(subsetExpr, "V", .sub_V,
+					subsetExpr <- exprapply0(subsetExpr, "V", .subst.v,
 						as.name("cVar"), varyingNames)
 				if(!all(all.vars(subsetExpr) %in% ssValidNames))
-					subsetExpr <- .subst4Vec(subsetExpr, varyingNames,
+					subsetExpr <- .subst.names.for.items(subsetExpr, varyingNames,
 						"cVar", fun = "[[")
 			}
 			ssVars <- all.vars(subsetExpr)
@@ -516,7 +516,7 @@ function(global.model, cluster = NA,
 					k <- k + 1L # all OK, add model to table
 					rvlen <- length(ord)
 					if(k > rvlen) {
-						nadd <- min(resultChunkSize, nmax - rvlen)
+						nadd <- min(resultChunkSize, ncomb - rvlen)
 						#message(sprintf("extending result from %d to %d", rvlen, rvlen + nadd))
 						addi <- seq.int(rvlen + 1L, length.out = nadd)
 						calls[addi] <- vector("list", nadd)
@@ -570,7 +570,7 @@ function(global.model, cluster = NA,
 			rvlen <- nrow(rval)
 
 			if(retNeedsExtending <- k + qresultLen > rvlen) {
-				nadd <- min(max(resultChunkSize, qresultLen), nmax - rvlen)
+				nadd <- min(max(resultChunkSize, qresultLen), ncomb - rvlen)
 				rval <- rbind(rval, matrix(NA_real_, ncol = rvNcol, nrow = nadd),
 					deparse.level = 0L)
 				addi <- seq.int(rvlen + 1L, length.out = nadd)

@@ -28,7 +28,7 @@ function(x, center = TRUE, scale = TRUE, ...) {
 	if(is.logical(center)) center <- if(center) mean(x, na.rm = TRUE) else 0
 	
 	if(scale == 0) scale <- 1
-	if(!is.na(scale)) {
+	if(!anyNA(scale)) {
 		x <- (x - center) / scale
 		attr(x, "scaled:center") <-  center
 		attr(x, "scaled:scale") <- scale
@@ -78,7 +78,7 @@ function(x, binary = c("center", "scale", "binary", "half", "omit"),
 center = TRUE, scale = FALSE, 
 ...) {
 	#if(!missing(...)) warning("additional arguments ignored")
-	binary <- if(is.null(binary) || is.na(binary)) "" else match.arg(binary)
+	binary <- if(is.null(binary) || anyNA(binary)) "" else match.arg(binary)
 	switch(binary,
 			   center = stdize.numeric(x, center = TRUE, scale = 1),
 			   scale = stdize.numeric(x, center = TRUE, scale = TRUE),
@@ -118,7 +118,7 @@ function(x, binary = c("center", "scale", "binary", "half", "omit"),
 		binary <- ""
 		if(is.null(center) || is.null(scale)) stop("invalid 'source' object")
 	} else
-		binary <- if(is.null(binary) || is.na(binary)) "" else match.arg(binary)
+		binary <- if(is.null(binary) || anyNA(binary)) "" else match.arg(binary)
 	
 	dataClasses <- vapply(x, function(x) {
 		if (is.logical(x)) return("logical")

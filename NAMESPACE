@@ -4,7 +4,7 @@ export(
 	"model.avg", "par.avg", 
 	"model.sel",
 	"getAllTerms", "coeffs", "coefTable", 
-	"importance", "Weights", "Weights<-",
+	"sw", "importance", "Weights", "Weights<-",
 	"AICc", "QAIC", "QAICc", "Cp", "ICOMP", "CAICF", "DIC", 
 	"r.squaredLR", "null.fit", "r.squaredGLMM",
 	"QIC", "QICu", "quasiLik",
@@ -51,6 +51,7 @@ importFrom("stats", ".checkMFClasses", ".getXlevels", ".MFclass", "AIC",
     )
 importFrom("stats4", "logLik", "coef", "vcov")
 #importFrom("utils", "capture.output", "setTxtProgressBar", "txtProgressBar")
+importFrom("utils", "capture.output")
 
 importFrom("Matrix", "t", "rowSums", "det", "diag", "solve")
 importFrom("grDevices", "n2mfrow")
@@ -104,11 +105,11 @@ S3method(model.avg, default)
 
 S3method(plot, model.selection)
 
-S3method(importance, averaging)
-S3method(importance, model.selection)
-S3method(importance, default)
+S3method(sw, averaging)
+S3method(sw, model.selection)
+S3method(sw, default)
 
-S3method(print, importance)
+S3method(print, sw)
 
 S3method(Weights, model.selection)
 S3method(Weights, averaging)
@@ -276,16 +277,25 @@ S3method(getQIC, gee)
 S3method(getQIC, geeglm)
 S3method(getQIC, yagsResult)
 S3method(getQIC, geem)
+S3method(getQIC, wgee)
 
 S3method(print, quasiLik)
 S3method(quasiLik, gee)
 S3method(quasiLik, geem)
 S3method(quasiLik, geeglm)
 S3method(quasiLik, yagsResult)
+S3method(quasiLik, wgee)
 S3method(nobs, yagsResult)
 S3method(nobs, geem)
 
 S3method(model.matrix, geem)
+
+S3method(coef, wgee)
+S3method(coefTable, wgee)
+S3method(nobs, wgee)
+S3method(formula, wgee)
+S3method(makeArgs, wgee)
+
 
 S3method(coeffs, mark)
 S3method(coefTable, mark)
@@ -406,3 +416,11 @@ S3method(sigma2, glmmTMB)
 S3method(family, cplm)
 S3method(family, glmmadmb)
 S3method(sigma, glmmadmb)
+
+S3method(coeffs, gamlss)
+S3method(coefTable, gamlss)
+S3method(getAllTerms, gamlss)
+S3method(makeArgs, gamlss)
+
+
+

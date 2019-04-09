@@ -200,12 +200,27 @@ function(family, vfe, vre, vol, link, pmean, lambda, omega) {
 }
 
 `r.squaredGLMM.merMod` <-
-function(object, null, pj2014 = FALSE, ...) {
+function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
+    
+    if(is.logical(envir)) { # backwards compatibility
+        tmp <- envir
+        if(!missing(pj2014)) envir <- pj2014
+        pj2014 <- tmp
+    }
+        
+    
 	fam <- family(object)
     #varOL <- lambda <- omega <- NA
-    fitted <- (model.matrix(object) %*% .numfixef(object))[, 1L]
+    fe <- .numfixef(object)
+    ok <- !is.na(fe)
+    fitted <- (model.matrix(object)[, ok, drop = FALSE] %*% fe[ok])[, 1L]
     varFE <- var(fitted)
     mmRE <- .remodmat(object)
+    
+    # XXX: alternatively:
+    #mmRE <- do.call("cbind", model.matrix(object, type = "randomListRaw"))
+    #varRE <- .varRESum(vc, mmRE[, unique(colnames(mmRE)), drop = FALSE])
+  
     
     ##Note: Argument 'contrasts' can only be specified for fixed effects
 	##contrasts.arg = eval(cl$contrasts, envir = environment(formula(object))))	
@@ -222,7 +237,7 @@ function(object, null, pj2014 = FALSE, ...) {
     
     if(familyName %in% c("quasipoisson", "poisson", "nbinom1", "nbinom2",
         "binomial", "quasibinomial")) {
-		if(missing(null) || !is.object(null)) null <- .nullFitRE(object)
+		if(missing(null) || !is.object(null)) null <- .nullFitRE(object, envir)
         fixefnull <- unname(.numfixef(null))
     }
     
@@ -259,7 +274,11 @@ function(object, null, pj2014 = FALSE, ...) {
            familyName == "poisson" && pj2014) {
             xo <- .OLREFit(object)
             vc <- .varcorr(xo)
-            fitted <- (model.matrix(xo) %*% .numfixef(xo))[, 1L]
+            
+            fe <- .numfixef(xo)
+            ok <- !is.na(fe)
+            fitted <- (model.matrix(xo)[, ok, drop = FALSE] %*% fe[ok])[, 1L]
+            
             n <- nrow(mmRE)
             vname <- names(xo@flist)[sapply(xo@flist, nlevels) == n][1L]
             if(! vname %in% names(vc)) vname <- make.names(vname)
@@ -278,27 +297,28 @@ function(object, null, pj2014 = FALSE, ...) {
 function(object, null, ...) r.squaredGLMM.merMod(object, null, ...)
 
 `r.squaredGLMM.glmmTMB` <-
-function(object, null, ...) {
+function(object, null, envir = parent.frame(), ...) {
 	fx <- fixef(object) # fixed effect estimates
 	if(length(fx$zi) != 0L) # || length(fx$disp) != 0L)
 		stop("r.squaredGLMM cannot (yet) handle 'glmmTMB' object with zero-inflation")
-	r.squaredGLMM.merMod(object, null, ...)
+	r.squaredGLMM.merMod(object, null, envir, ...)
 }
 
 `r.squaredGLMM.glmmadmb` <-
-function(object, null, ...) {
+function(object, null, envir = parent.frame(), ...) {
 	if(object$zeroInflation)
 		stop("r.squaredGLMM cannot (yet) handle 'glmmADMB' object with zero-inflation")
-	r.squaredGLMM.merMod(object, null, ...)
+	r.squaredGLMM.merMod(object, null, envir, ...)
 }
 
 `r.squaredGLMM.lm` <-
-function(object, null, ...) {
+function(object, null, envir = parent.frame(), ...) {
 	fam <- family(object)
-    fitted <- (model.matrix(object) %*% coef(object))[, 1L]
+    ok <- !is.na(coef(object))
+    fitted <- (model.matrix(object)[, ok, drop = FALSE] %*% coef(object)[ok])[, 1L]
 	delayedAssign("fixefnull",
 		coef(if(missing(null) || !is.object(null))
-			 .nullFitRE(object) else null))
+			 .nullFitRE(object, envir) else null))
     varFE <- var(fitted)
     familyName <- fam$family
     if(substr(familyName, 1L, 17L) == "Negative Binomial")
@@ -330,13 +350,16 @@ function(object, null, ...) {
 }
 
 `r.squaredGLMM.cplm` <-
-function(object, null, ...) {
+function(object, null, envir = parent.frame(), ...) {
 	fam <- family(object)
     if(!fam$link %in% c("mu^0", "log"))
-         stop("not implemented yet for ", fam$family, " and ", fam$link)  
-    fitted <- (model.matrix(object) %*% .numfixef(object))[, 1L]
+         stop("not implemented yet for ", fam$family, " and ", fam$link)
+         
+    fe <- .numfixef(object)
+    ok <- !is.na(fe)
+    fitted <- (model.matrix(object)[, ok, drop = FALSE] %*% fe[ok])[, 1L]
     varFE <- var(fitted)
-	if(missing(null) || !is.object(null)) null <- .nullFitRE(object)
+	if(missing(null) || !is.object(null)) null <- .nullFitRE(object, envir)
 
 	if(inherits(object, "cpglm")) {
 		varRE <- vt <- 0

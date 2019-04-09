@@ -68,7 +68,7 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 				traceinfo("k=", k, " ")
 				fit1 <- glm.fit(x1[, combin[, k], drop = FALSE], y1, family = fam, weights = prwts1,
 								offset = off)
-				if (problem <- (any(is.na(fit1$coefficients)) || !fit1$converged)) {
+				if (problem <- (anyNA(fit1$coefficients) || !fit1$converged)) {
 					traceinfo("<!>")
 					break
 				}
@@ -130,10 +130,10 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 			term.codes = attr(allmodelnames, "variables")),
 		coefficients = coefMat,
 		coefArray = coefArray[ordmod, , ],
-		importance = {
+		sw = {
 			structure(wtsmean %*% bp,
 				n.models = structure(colSums(bp), names = tenm),
-				names = tenm, class = "importance")
+				names = tenm, class = "sw")
 		 },
 		formula = object$formula,
 		call = match.call() 
@@ -194,7 +194,7 @@ function(object, ..., data, weight.by = c("aic", "loglik"), R = 1000) {
 			if(!fit1$converged) break
 			wmat[r, j] <- aicloglik_glm_fit(fit1, y.test, model.matrix(tf, data.test), wts[-k], off[-k])[weight.by]
         }
-		if(!any(is.na(wmat[r, ])))
+		if(!anyNA(wmat[r, ]))
 			r <- r + 1L
     }
 	

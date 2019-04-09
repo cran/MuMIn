@@ -17,7 +17,7 @@ quasiLik(object, ...)
 
 \arguments{
   \item{object}{a fitted model object of class \code{"gee"}, \code{"geepack"}, 
-    \code{"geem"} or \code{"yags"}.}
+    \code{"geem"}, \code{"wgee"},  or \code{"yags"}.}
   \item{\dots}{ for QIC and QIC\eqn{_{u}}{u}, optionally more fitted model objects. }  
   \item{typeR}{ logical, whether to calculate QIC(R). QIC(R) is
     based on quasi-likelihood of a working correlation \eqn{R} model. Defaults
@@ -41,7 +41,8 @@ This implementation is based partly on (revised) code from packages \pkg{yags}
 Pan W. (2001) Akaike's Information Criterion in Generalized Estimating Equations.
 \emph{Biometrics} 57: 120-125
 
-Hardin J. W., Hilbe, J. M. (2003) \emph{Generalized Estimating Equations}. Chapman & Hall/CRC
+Hardin J. W., Hilbe, J. M. (2003) \emph{Generalized Estimating Equations}.
+Chapman & Hall/CRC
 }
 
 
@@ -52,6 +53,7 @@ Methods exist for
 \code{\link[gee]{gee}} (package \pkg{gee}),
 \code{\link[geepack]{geeglm}} (\pkg{geepack}), 
 \code{\link[geeM]{geem}} (\pkg{geeM}), 
+\code{\link[wgeesel]{wgee}} (\pkg{wgeesel}, the package's \code{QIC.gee} function is used), 
 and
 \code{yags} (\pkg{yags} on R-Forge).
 \code{yags} and

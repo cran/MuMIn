@@ -39,7 +39,7 @@ stdizeFit(object, data, which = c("formula", "subset", "offset", "weights"),
 \arguments{
     \item{x}{a numeric or logical vector, factor, numeric matrix, 
          \code{data.frame} or a formula. }
-    \item{center, scale}{ either a logical value, or a logical or numeric vector
+    \item{center, scale}{ either a logical value or a logical or numeric vector
          of length equal to the number of columns of \code{x} (see
          \sQuote{Details}). \code{scale} can be also a function to use for
          scaling. 
@@ -77,7 +77,7 @@ stdizeFit(object, data, which = c("formula", "subset", "offset", "weights"),
         For \code{stdizeFit}, a \code{stdize}d \code{data.frame} to use.
         }
     \item{\dots}{ for the \code{formula} method, additional arguments passed to
-        \code{\link{model.frame}}. For other methods it is silently ignored. }
+        \code{\link{model.frame}}. For other methods, it is silently ignored. }
     \item{object}{a fitted model object or an expression being a \code{call} to
         the modelling function. }
     \item{which}{ a character string naming arguments which should be modified.
@@ -101,7 +101,7 @@ where the values are centred and/or scaled. Transformation is carried out
 column-wise in \code{data.frame}s and matrices. 
 
 The returned value is compatible with that of \code{\link{scale}} in that the
-numeric centring and scalings used are stored in attributes attributes
+numeric centring and scalings used are stored in attributes
 \code{"scaled:center"} and \code{"scaled:scale"} (these can be \code{NA} if no
 centring or scaling has been done).
 
@@ -137,7 +137,7 @@ is done by dividing the (centred) value by standard deviation (if corresponding
 If \code{center} or \code{scale} are numeric vectors with length equal 
 to the number of columns of \code{x} (or numeric scalars for vector methods),
 then these are used instead. Any \code{NA}s in the numeric vector result in no
-centering or scaling on the corresponding column.
+centring or scaling on the corresponding column.
 
 Note that \code{scale = 0} is equivalent to no scaling (i.e. \code{scale = 1}).
 
