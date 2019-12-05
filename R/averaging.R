@@ -114,10 +114,13 @@ function (x, digits = max(3L, getOption("digits") - 3L),
 		print.default(attr(x$msTable, "term.codes"), quote = FALSE)
 	}
 	cat("\nModel-averaged coefficients: ")
-	if (nnotdef <- sum(is.na(x$coefmat.full[, 1L])))
-		 cat("\n(", nnotdef, " not defined because of singularities in all ",
-			"component models)", sep = "")
+	if (nnotdef <- sum(is.na(x$coefmat.full[, 1L]))) {
+		 msg <- paste0("\n(", nnotdef, " not defined because of singularities in all ",
+			"component models)", collapse = "")
+		cat(strwrap(msg, exdent = 4L), sep = "\n")
+	}
 
+		 
 	hasPval <- TRUE
 	coefTitles <- if(isTRUE(attr(x, "ARM")))
 		c(coefmat.full = "(ARM average)") else
@@ -125,14 +128,21 @@ function (x, digits = max(3L, getOption("digits") - 3L),
 		  coefmat.subset = "(conditional average)")
 		
 	n <- length(coefTitles)	
-	for(i in seq.int(n)) {
-		iname <- names(coefTitles[i])
-		if(is.null(x[[i]])) next
-		cat(" \n", coefTitles[i], " \n", sep = "")
-		printCoefmat(x[[iname]], P.values = hasPval, has.Pvalue = hasPval,
-			digits = digits, signif.stars = signif.stars,
-			signif.legend = i == n)
+	for (i in seq.int(n)) {
+	    iname <- names(coefTitles[i])
+	    if (is.null(x[[i]])) next
+	    cat(" \n", coefTitles[i], " \n", sep = "")
+	    printCoefmat(x[[iname]],
+	        P.values = hasPval, has.Pvalue = hasPval,
+	        digits = digits, signif.stars = signif.stars,
+	        signif.legend = i == n
+	    )
 	}
+	
+	nose <- apply(x$coefArray[, 2L, ], 1L, function(x) all(is.na(x)))
+	msg <- if(all(nose)) "Standard errors cannot be calculated because no component models provide them \n" else
+		if(any(nose)) "Standard errors cannot be calculated because some component models do not provide them \n"
+	cat(strwrap(msg, exdent = 4L), sep = "\n")
 	
 	#if (no.ase) cat("Confidence intervals are unadjusted \n")
 	#printCoefmat(matrix(x$coef  .shrinkage, nrow = 1L,

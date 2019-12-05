@@ -1,5 +1,20 @@
 MuMIn package news:
 
+Version: 1.43.10 (2019-12-05)
+(removed) conflicting methods which are now defined in their 'survival' package
+    (nobs.coxph, nobs.survreg). Because of that, MuMIn now depends on 
+    survival >= 3.1.0.
+
+Version: 1.43.9 (2019-06-21)
+(fixed) 'r.squaredGLMM' failed when order of interaction components in RE part
+    of model formula were not in order of appearance (found by
+    Gabriel Baud-Bovy)
+(removed) 'predict.merMod' replacement, since the original method (in 'lme4')
+    now accepts "se.fit" argument.
+
+Version: 1.43.8 (2019-04-15)
+(fixed) methods for 'gamlss' (reported by Andras Farkas)
+
 Version: 1.43.6 (2019-04-08)
 (fixed) if conditions with "length > 1 in coercion to logical" error produced by
     the new Rcheck.

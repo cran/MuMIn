@@ -23,12 +23,6 @@
 # #ncol - the number of columns in the model matrix for each level of grouping from innermost to outermost
 # #  (last two values are equal to the number of fixed effects and one).
 
-# Extends: survival
-`nobs.survreg` <-
-function (object, ...)
-length(object$linear)
-
-
 # Extends: nnet/spdep
 `nobs.sarlm` <-
 `nobs.spautolm` <-

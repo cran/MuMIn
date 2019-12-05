@@ -62,8 +62,6 @@ importFrom("stats", "cor", "cov", "rnorm", "runif", "optim")
 
 importFrom("nlme", fixef, VarCorr)
 
-
-
 # Methods:
 S3method(getCall, yagsResult)
 
@@ -77,11 +75,10 @@ S3method(logLik, averaging)
 S3method(confint, averaging)
 S3method(vcov, averaging)
 S3method(model.matrix, averaging)
+
 S3method(print, model.selection)
 S3method(subset, model.selection)
-
 S3method(nobs, model.selection)
-
 S3method("[", model.selection)
 S3method("[[", model.selection)
 S3method("[<-", model.selection)
@@ -89,10 +86,8 @@ S3method("[[<-", model.selection)
 S3method("$<-", model.selection)
 S3method("names<-", model.selection)
 S3method("row.names<-", model.selection)
-
 S3method(merge, model.selection)
 S3method(rbind, model.selection)
-
 S3method(update, model.selection)
 S3method(coef, model.selection)
 S3method(logLik, model.selection)
@@ -108,7 +103,6 @@ S3method(plot, model.selection)
 S3method(sw, averaging)
 S3method(sw, model.selection)
 S3method(sw, default)
-
 S3method(print, sw)
 
 S3method(Weights, model.selection)
@@ -116,7 +110,6 @@ S3method(Weights, averaging)
 S3method(Weights, data.frame)
 S3method(Weights, numeric)
 S3method(Weights, default)
-
 
 S3method("Weights<-", averaging)
 S3method("Weights<-", default)
@@ -157,24 +150,18 @@ S3method(summary, glmmML)
 
 S3method(getAllTerms, coxph)
 S3method(coefTable, coxph)
-S3method(nobs, coxph)
-
 
 S3method(coeffs, survreg)
 S3method(coefTable, survreg)
-S3method(nobs, survreg)
 
 S3method(getAllTerms, lme)
 S3method(coeffs, lme)
 S3method(coefTable, lme)
-#S3method(predict, lme)
-#S3method(predict, gls)
 
 S3method(model.frame, lme)
 S3method(model.matrix, lme)
 
 S3method(coeffs, merMod)
-S3method(predict, merMod)
 
 S3method(coefTable, multinom)
 S3method(coeffs, multinom)
@@ -296,7 +283,6 @@ S3method(nobs, wgee)
 S3method(formula, wgee)
 S3method(makeArgs, wgee)
 
-
 S3method(coeffs, mark)
 S3method(coefTable, mark)
 S3method(confint, mark)
@@ -401,6 +387,7 @@ S3method(.OLREFit, default)
 S3method(.OLREFit, merMod)
 S3method(.remodmat, default)
 S3method(.remodmat, lme)
+S3method(.remodmat, merMod)
 S3method(.nullFitRE, default)
 S3method(.nullFitRE, lme)
 
@@ -421,6 +408,3 @@ S3method(coeffs, gamlss)
 S3method(coefTable, gamlss)
 S3method(getAllTerms, gamlss)
 S3method(makeArgs, gamlss)
-
-
-

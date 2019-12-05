@@ -12,7 +12,7 @@
 			envir = envir)	
 	
 	asNeeded("unmarked", function(...) regmethod("logLik", "unmarkedFit", TRUE))
-	asNeeded("lme4", function(...) regmethod("predict", "merMod"))
+	#asNeeded("lme4", function(...) regmethod("predict", "merMod"))
 	asNeeded("nlme", function(...) regmethod("predict", "lme"))
 	asNeeded("nlme", function(...) regmethod("predict", "gls"))
 	

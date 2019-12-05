@@ -20,8 +20,10 @@ function(model, ...)  {
 
 `makeArgs.gamlss` <- 
 function(obj, termNames, opt, ...) {
-	formulanames <- c("formula", "sigma.formula", "nu.formula", "tau.formula")
 	zarg <- umf_terms2formulalist(termNames, opt)
+	formulanames <- c(mu = "formula", sigma = "sigma.formula",
+		nu = "nu.formula", tau = "tau.formula")[
+			attr(opt$allTerms, "term.kind")]
 	names(zarg) <- formulanames
 	f <- zarg[[1L]][c(1L, NA, 2L)]
 	f[[2L]] <- opt$response
@@ -33,6 +35,9 @@ getAllTerms.gamlss <-
 function(x, intercept = FALSE, ...) {
 	formlist <- list(mu = x$mu.formula, sigma = x$sigma.formula, 
         nu = x$nu.formula, tau = x$tau.formula)
+	
+	formlist <- formlist[!vapply(formlist, is.null, logical(1L))]
+
 	allterms <- lapply(formlist, getAllTerms.formula, intercept = FALSE)
 	attrint <- vapply(allterms, attr, 0L, "intercept")
 	
@@ -40,6 +45,7 @@ function(x, intercept = FALSE, ...) {
 	n <- length(allterms)
 	rval <- vector("list", n)
 	for(i in which(sapply(allterms, length) != 0L))
+		#rval[[i]] <- allterms[[i]]
 		rval[[i]] <- paste0(term.prefix[i], "(", allterms[[i]], ")")
 	rval <- unlist(rval)
     
@@ -57,6 +63,7 @@ function(x, intercept = FALSE, ...) {
 	attr(rval, "intercept") <- attrint
 	attr(rval, "interceptLabel") <- ints
 	attr(rval, "response") <- attr(allterms$mu, "response")
+	attr(rval, "term.kind") <- names(formlist)
 	if(intercept) attr(rval, "interceptIdx") <- seq_along(ints)
 	attr(rval, "deps") <- deps
 	return(rval)

@@ -90,6 +90,9 @@ function(object, ..., rank = NULL, rank.args = NULL,
 		names(models) <- seq_along(models)
 	names(models) <- make.unique(names(models), sep = "")
 
+    if(is.null(rank) && !missing(rank.args))
+        warning("'rank.args' ignored with no 'rank' given")
+        
 	rank <- .getRank(rank, rank.args = rank.args, object = object)
 	ICname <- asChar(attr(rank, "call")[[1L]])
 	allTermsList <- lapply(models, getAllTerms, intercept = TRUE)

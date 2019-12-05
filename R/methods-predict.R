@@ -6,43 +6,6 @@
 # http://web.archiveorange.com/archive/v/rOz2zbtjRgntPMuIDoIl
 
 # based on the original 'predict.gls' in package 'nlme'
-#`predict.gls` <-
-#function (object, newdata, se.fit = FALSE, na.action = na.fail, ...) {
-#    if (missing(newdata) && missing(se.fit)) return(fitted(object))
-#	
-#    form <- formula(object)[-2L]
-#	if(length(form[[2L]]) == 3L && form[[2L]][[1L]] == "|" )
-#		form[[2L]] <- form[[2L]][[2L]] 
-#	
-#	dataMod <- model.frame(object, data = newdata, na.action = na.action,
-#										drop.unused.levels = TRUE)
-#	contr <- object$contrasts
-#	for(i in names(contr)) {
-#		levs <- levels(dataMod[, i])
-#		if (any(wch <- is.na(match(levs, rownames(contr[[i]]))))) {
-#                stop(sprintf(ngettext(sum(wch), "level %s not allowed for %s", 
-#                  "levels %s not allowed for %s"), paste(levs[wch], 
-#                  collapse = ",")), domain = NA)
-#            }
-#		attr(dataMod[[i]], "contrasts") <- contr[[i]][levs, , drop = FALSE]
-#	}
-#	X <- model.matrix(terms(form), data = dataMod)
-#	
-#    cf <- coef(object)
-#    val <- c(X[, names(cf), drop = FALSE] %*% cf)
-#	if(se.fit) {
-#		# se <- sqrt(diag(X %*% vcov(object) %*% t(X)))
-#		# se <- sqrt(rowSums((X %*% vcov(object)) * X))
-#		se <- sqrt(matmultdiag(X %*% vcov(object), ty = X))
-#		val <- list(fit = val, se.fit = unname(se))
-#	}
-#	attr(val, "label") <- "Predicted values"
-#    if (!is.null(aux <- attr(object, "units")$y)) {
-#        attr(val, "label") <- paste(attr(val, "label"), aux)
-#    }
-#	val
-#}
-
 
 `predict.gls` <-
 function (object, newdata, se.fit = FALSE, na.action = na.fail, ...) {
@@ -113,29 +76,6 @@ function (object, newdata, level, asList = FALSE,
 	} else res
 }
 
-`predict.merMod` <-
-function (object, newdata, type = c("link", "response"), se.fit = FALSE,
-		re.form = NULL, ...) {
-	
-	if(!se.fit) {
-		cl <- sys.call()
-		cl$se.fit <- NULL
-		return(do.call(getFrom("lme4", "predict.merMod"), as.list(cl[-1L]), envir = parent.frame()))
-	}
-	
-	level0 <- (!is.null(re.form) && !inherits(re.form, "formula") && is.na(re.form)) || 
-        (inherits(re.form, "formula") && length(re.form) == 2L && identical(re.form[[2L]], 
-            0))
-	if(!level0) stop("cannot calculate predictions with both standard errors and random effects")
-
-	.predict_glm(object, newdata, type, se.fit,
-			trms = delete.response(terms(formula(object, fixed.only = TRUE))),
-			coeff = lme4::fixef(object),
-			offset = lme4::getME(object, "offset"),
-			...)
-}
-
-
 .predict_glm <-
 function (object, newdata, type = c("link", "response"), se.fit = FALSE,
 	trms, coeff, offset, ...) {
@@ -178,4 +118,3 @@ function (object, newdata, type = c("link", "response"), se.fit = FALSE,
 
 `predict.gamm` <- 
 function (object, ...) mgcv::predict.gam(object[['gam']], ...)
-
