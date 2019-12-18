@@ -55,7 +55,7 @@ function(global.model, cluster = NA,
 		isDotted <- grep("^\\.\\.", sapply(as.list(gmCall), asChar))
 		if(length(isDotted) != 0L) {
 			if(is.name(substitute(global.model))) {
-				cry(, "call stored in 'global.model' contains dotted names and cannot be updated. \n    Consider using 'updateable' on the modelling function")
+				cry(, "the call stored in 'global.model' contains dotted names and cannot be updated. \n    Consider using 'updateable' on the modelling function")
 			} else gmCall[isDotted] <-
 				substitute(global.model)[names(gmCall[isDotted])]
 		}
@@ -70,7 +70,7 @@ function(global.model, cluster = NA,
 	thisCall <- sys.call()
 	exprApply(gmCall[["data"]], NA, function(expr) {
 		if(is.symbol(expr[[1L]]) && all(expr[[1L]] != c("@", "$")))
-			cry(thisCall, "'global.model' uses \"data\" that is a function value: use a variable instead")
+			cry(thisCall, "'global.model' uses \'data\' that is a function value: use a variable instead")
 	})
 	
 
@@ -266,7 +266,7 @@ function(global.model, cluster = NA,
 	ncomb <- (2L ^ nov) * nVariants
     novMax <- log2(.Machine$integer.max %/% nVariants)
     if(nov > novMax)
-		cry(, "number of non-fixed predictors [%d] exceeds the allowed maximum of %d (with %d variants)", nov, novMax, nVariants)
+		cry(, "number of non-fixed predictors [%d] exceeds the allowed maximum of %.0f (with %d variants)", nov, novMax, nVariants)
 
 	resultChunkSize <- 25L
 	if(evaluate) {
@@ -534,8 +534,8 @@ function(global.model, cluster = NA,
 			qresult <- .getRow(queued[qseq])
 			utils::flush.console()
 
-			if(any(vapply(qresult, is.null, TRUE)))
-				stop("some results returned from cluster node(s) are NULL. \n",
+			if(!all(vapply(qresult, function(x) is.list(x) && "value" %in% names(x), FALSE)))
+				stop("some results returned from cluster node(s) are malformed or NULL. \n",
 					"This should not happen and indicates problems with ",
 					"the cluster node", domain = "R-MuMIn")
 			haveProblems <- logical(qi)

@@ -3,7 +3,7 @@
 \title{Description of Model Selection Objects}
 \description{
   An object of class \code{"model.selection"} holds a table of model 
-  coefficients and ranking statistics. It is a produced by \code{\link{dredge}} 
+  coefficients and ranking statistics. It is produced by \code{\link{dredge}} 
   or \code{\link{model.sel}}.
 }
 
@@ -14,7 +14,7 @@
 
 Data frame columns:
   
-\item{model terms}{For numeric covariates these columns hold coeficent value,
+\item{model terms}{For numeric covariates these columns hold coefficent value,
     for factors their presence in the model. If the term is not present in a 
     model, value is \code{NA}. }
 \item{\sQuote{varying} arguments}{optional. If any arguments differ between the 
@@ -34,21 +34,21 @@ Attributes:
     \item{global}{The \code{global.model} object }
     \item{global.call}{Call to the \code{global.model} }
     \item{terms}{A character string holding all term names. Attribute 
-        \code{"interceptLabel"} gives the name of intercept term. }
+        \code{"interceptLabel"} gives the name of the intercept term. }
     \item{rank}{The \code{rank} function used }
     \item{beta}{A character string, representing the coefficient standardizing 
         method used. Either \code{"none"}, \code{"sd"} or \code{"partial.sd"}
     }
     \item{coefTables}{List of matrices of class \code{"coefTable"} containing 
-        each model's coefficents with std. errors and associated \var{df}s }
+        each model's coefficients with std. errors and associated \var{df}s }
     \item{nobs}{Number of observations }
     \item{warnings}{optional (\code{pdredge} only). A list of errors and 
-        warnings issued by the modelling function during the fitting, with model
+        warnings issued by the modelling function during the fitting, with a model
         number appended to each. }
 
 Most attributes does not need (and should not) be accessed directly, use of extractor
     functions is preferred. These functions include \code{getCall} for 
-    retrieving model calls, \code{coefTable} and \code{coef} for coefficiens, 
+    retrieving model calls, \code{coefTable} and \code{coef} for coefficients, 
     and \code{nobs}. \code{logLik} extracts list of model log-likelihoods (as 
     \code{"logLik"} objects), and \code{Weights} extracts \sQuote{Akaike 
     weights}.

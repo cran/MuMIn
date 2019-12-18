@@ -45,7 +45,7 @@ function (object, rank = NULL, rank.args = NULL, fit = NA, ...,
 		attr(object, "names")[k] <- names(attr(object, "column.types"))[k] <-
 			newRankName
 		itemByType(object, "ic") <- ic
-		itemByType(object, "delta") <- ic - min(ic)
+		itemByType(object, "delta") <- ic - min(ic, na.rm = TRUE)
 		itemByType(object, "weight") <- Weights(ic)
 		rval <- object[order(ic), ]
 		attr(rval, "rank") <- rank
@@ -139,12 +139,12 @@ function(object, ..., rank = NULL, rank.args = NULL,
 		}, structure(double(3L), names = c("df", lLName, ICname)))
 	rval <- as.data.frame(t(rval))
 	rval <- cbind(d, rval)
-	rval[, "delta"] <- rval[, ICname] - min(rval[, ICname])
-	rval[, "weight"] <- Weights(rval[,ICname])
+    o <- order(rval[, ICname], decreasing = FALSE)
+	rval[, "delta"] <- rval[, ICname] - rval[o[1L], ICname]
+	rval[, "weight"] <- Weights(rval[, ICname])
 	mode(rval[, "df"]) <- "integer"
 	
-	o <- order(rval[, "delta"], decreasing = FALSE)
-
+	
 	descrf <- modelDescr(models)
 	descrf$model <- NULL
 	if(nlevels(descrf$family) == 1L) descrf$family <- NULL

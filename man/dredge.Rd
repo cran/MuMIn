@@ -10,8 +10,8 @@
 
 \title{Automated model selection}
 \description{
-Generate a set of models with combinations (subsets) of fixed effect terms in
-the global model, with optional rules for model inclusion.
+Generate a model selection table of models with combinations (subsets) of fixed 
+effect terms in the global model, with optional rules for model inclusion.
 }
 
 \usage{
@@ -27,7 +27,7 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	\item{global.model}{a fitted \sQuote{global} model object. See
 	\sQuote{Details} for a list of supported types. }
 
-	\item{beta}{indicates whether and how the coefficient are standardized, and 
+	\item{beta}{indicates whether and how the coefficients are standardized, and 
     must be one of \code{"none"}, \code{"sd"} or \code{"partial.sd"}. You can 
     specify just the initial letter. \code{"none"} corresponds to unstandardized
     coefficients, \code{"sd"} and \code{"partial.sd"} to coefficients 
@@ -44,11 +44,11 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
     \code{BIC}.
 	See \sQuote{Details}. }
 
-	\item{fixed}{optional, either a single sided formula or a character vector
+	\item{fixed}{optional, either a single-sided formula or a character vector
 	giving names of terms to be included in all models. See \sQuote{Subsetting}. }
 
 	\item{m.lim, m.max, m.min}{optionally, the limits \code{c(lower, upper)}
-    for number of terms in a single model (excluding the intercept). An
+    for the number of terms in a single model (excluding the intercept). An
     \code{NA} means no limit. See \sQuote{Subsetting}.
     Specifying limits as \code{m.min} and \code{m.max} is allowed for backward
     compatibility. }
@@ -126,14 +126,14 @@ created by \code{\link{updateable}}.
 \code{rank} is found by a call to \code{match.fun} and may be specified as a
 function or a symbol or a character string specifying
 a function to be searched for from the environment of the call to \code{dredge}.
-The function \code{rank} must accept model object as its first argument and
+The function \code{rank} must accept a model object as its first argument and
 always return a scalar.
 }
 
 \subsection{Interactions}{
 By default, marginality constraints are respected, so \dQuote{all possible
 combinations} include only those containing interactions with their
-respective main effects and all lower order terms.
+respective main effects and all lower-order terms.
 However, if \code{global.model} makes an exception to this principle (e.g. due
 to a nested design such as \code{a / (b + d)}), this will be reflected in the
 subset models.
@@ -191,7 +191,7 @@ with marginality exceptions. The extended form \code{with(x, order)} allows for
 specifying the order of interaction of terms which \code{x} is part of. For
 instance, \code{with(b, 2:3)} selects models with at least one second- or
 third-order interaction of the variable \code{b}. The second (positional)
-argument is coerced to integer vector. The \dQuote{dot} notation \code{.(x)} is
+argument is coerced to an integer vector. The \dQuote{dot} notation \code{.(x)} is
 an alias for \code{with}.
 
 The special variable \ifelse{latex}{\bq{*nvar*}}{\code{`*nvar*`}} 

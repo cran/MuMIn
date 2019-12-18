@@ -50,16 +50,16 @@ function(object, subset, cluster = NA, ...) {
 		clusterApply <- get("clusterApply")
 		models <- clusterApply(cluster, calls, "eval", envir = .GlobalEnv)
 	} else {
-	glo <- attr(object, "global")
-	if(is.null(glo)) {
-		models <- lapply(attr(object, "model.calls"), function(cl) {
-			eval(cl, envir = environment(formula(cl)))
-		})
-	} else {
-		env <- attr(tryCatch(terms(glo), error = function(...) terms(formula(glo))),
-			".Environment")
-		models <- lapply(calls, eval, envir = env)
-	}
+		glo <- attr(object, "global")
+		if(is.null(glo)) {
+			models <- lapply(calls, function(cl) {
+				eval(cl, envir = environment(formula(cl)))
+			})
+		} else {
+			env <- attr(tryCatch(terms(glo), error = function(...) terms(formula(glo))),
+				".Environment")
+			models <- lapply(calls, eval, envir = env)
+		}
 	}
 
 	for(i in c("rank", "beta"))

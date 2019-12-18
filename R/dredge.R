@@ -255,7 +255,8 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	ncomb <- (2L ^ nov) * nVariants
     novMax <- log2(.Machine$integer.max %/% nVariants)
     if(nov > novMax)
-		cry(, "number of non-fixed predictors [%d] exceeds the allowed maximum of %d (with %d variants)", nov, novMax, nVariants)
+		cry(, "number of non-fixed predictors [%d] exceeds the allowed maximum of %.0f (with %d variants)", 
+            nov, novMax, nVariants)
     resultChunkSize <- 25L
 	if(evaluate) {
 		rvNcol <- nVars + nVarying + 3L + nExtra
@@ -582,7 +583,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	rval <- rval[o <- order(rval[, ICName], decreasing = FALSE), ]
 	coefTables <- coefTables[o]
 
-	rval$delta <- rval[, ICName] - min(rval[, ICName])
+	rval$delta <- rval[, ICName] - rval[1L, ICName]
 	rval$weight <- Weights(rval$delta)
     mode(rval$df) <- "integer"
 	

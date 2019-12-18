@@ -43,7 +43,7 @@ model.avg(object, ..., revised.var = TRUE)
         function. If one is an expression, an \code{x} within it is substituted
         with a current model. }
 
-    \item{revised.var}{ logical, indicating whether to use revised formula for
+    \item{revised.var}{ logical, indicating whether to use the revised formula for
         standard errors. See \code{\link{par.avg}}. }
 
 	\item{dispersion}{ the dispersion parameter for the family used. See
@@ -72,8 +72,8 @@ An object of class \code{"averaging"} is a list with components:
     representation of the terms in the row names of \code{msTable}. 
 }
 \item{coefficients}{a \code{matrix} of model-averaged coefficients. 
-    \dQuote{full}  coefficients in first row, \dQuote{subset} coefficients in
-    second row. See \sQuote{Note} }
+    \dQuote{full}  coefficients in the first row, \dQuote{subset} coefficients in
+    the second row. See \sQuote{Note} }
 \item{coefArray}{ a 3-dimensional \code{array} of component models' coefficients,
 	their standard errors and degrees of freedom. }
 \item{sw}{ object of class \code{sw} containing per-model term 
@@ -84,7 +84,7 @@ An object of class \code{"averaging"} is a list with components:
 	}
 \item{call}{ the matched call. }
 
-The object has following attributes:
+The object has the following attributes:
 \item{rank}{the rank function used. }
 \item{modelList}{ optionally, a list of all component model objects. Only if
     the object was created with model objects (and not model selection table).}
@@ -96,12 +96,12 @@ The object has following attributes:
 
 \details{
 
-\code{model.avg} may be used either with a list of models, or directly with a
+\code{model.avg} may be used either with a list of models or directly with a
 	\code{model.selection} object (e.g. returned by \code{dredge}). In the
 	latter case, the models from the model selection table are not evaluated
 	unless the argument \code{fit} is set to \code{TRUE} or some additional
 	arguments are present (such as \code{rank} or \code{dispersion}). This
-	results in much faster calculation, but has certain drawbacks, because the
+	results in a much faster calculation, but has certain drawbacks, because the
 	fitted component model objects are not stored, and some methods (e.g.
 	\code{predict}, \code{fitted}, \code{model.matrix} or \code{vcov}) would not
 	be available with the returned object. Otherwise, \code{get.models} is
@@ -148,11 +148,11 @@ The \sQuote{subset} (or \sQuote{conditional}) average only averages over the
 	zero.
 	Unlike the \sQuote{subset average}, it does not have a tendency of
 	biasing the value away from zero. The \sQuote{full} average is a type of
-	shrinkage estimator and for variables with a weak relationship to the
-	response they are smaller than \sQuote{subset} estimators.
+	shrinkage estimator, and for variables with a weak relationship to the
+	response it is smaller than \sQuote{subset} estimators.
 	
 	Averaging models with different contrasts for the same factor would yield
-	nonsense results, currently no checking for contrast consistency is done.
+	nonsense results. Currently, no checking for contrast consistency is done.
 	
 	\code{print} method provides a concise output (similarly as for \code{lm}). 
 	To print more details use \code{summary} function, and \code{\link{confint}}
@@ -175,7 +175,7 @@ bias and Freedman’s paradox}. Annals of the Institute of Statistical Mathemati
 
 \seealso{
 
-See \code{\link{par.avg}} for more details of model averaged parameter
+See \code{\link{par.avg}} for more details of model-averaged parameter
 calculation.
 
 \code{\link{dredge}}, \code{\link{get.models}} \cr

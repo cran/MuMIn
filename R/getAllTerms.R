@@ -33,9 +33,20 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 
 	# Leave out random terms (lmer type)
 	#ran <- attr(x, "variables")[-1][-c(attr(x, "offset"), attr(x, "response"))]
-	ran <- as.character(variables[vapply(variables, function(x) length(x) == 3L && x[[1L]] == "|", TRUE)])
+	
+	.is.re <- function(x) {
+		n <- length(x)
+		if(n == 3L && x[[1L]] == "|") return(1L)
+		if(n == 2 && is.call(x[[2L]]) && x[[2L]][[1L]] == "|") return(2L)
+		return(0L)
+	}
+	
+	reType <- vapply(variables, .is.re, 0L)
+	# 1 -> (terms|group), 2 -> struc(terms|group)
+	
+	ran <- as.character(variables[reType != 0L])
 	ifx <- !(ans %in% ran)
-
+	
 	ans <- ans[ifx] # ifx - indexes of fixed terms
 	#retUnsorted <- ans
 
@@ -67,7 +78,10 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 
 	if (length(ran) > 0L) {
 		attr(ans, "random.terms") <- ran
-		f.random <- reformulate(c(".", paste0("(", ran, ")")), response = ".")
+		i <- reType[reType != 0L] == 1L
+		ran1 <- ran
+		ran1[i] <- paste0("(", ran1[i], ")")
+		f.random <- reformulate(c(".", ran1), response = ".")
 		environment(f.random) <- environment(x)
 		attr(ans, "random") <- f.random
 	}

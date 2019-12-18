@@ -93,7 +93,7 @@ tab <- cbind(
     ) 
 colnames(tab) <- c("Akaike weight", "Predicted(40)", "SE", "Lower CI",
     "Upper CI") 
-rownames(tab) <- c(as.character(ms3$family), "model averaged") 
+rownames(tab) <- c(as.character(ms3$family), "model-averaged") 
 print(tab, digits = 3, na.print = "") 
 # Figure 4.3
 newdata <- list(dose = seq(min(Beetle$dose), max(Beetle$dose), length.out = 25)) 

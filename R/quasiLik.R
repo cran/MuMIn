@@ -8,29 +8,43 @@
 ## quasiLik 
 ##=============================================================================
 
+
 `quasiLik` <- function (object, ...) UseMethod("quasiLik")
 
-.qlik <- function(y, mu, fam, scale = 1) {
-	switch(fam,
-		gaussian = -0.5 * sum((y - mu)^2) / scale,
-		binomial = sum(y * log(mu / (1 - mu)) + log(1 - mu)),
+# TODO: add weights to families
+# TODO: update calls to .qlik, add weights
+.qlik <- function(y, mu, fam, w, scale = 1) {
+    w <- w / (sum(w) / length(w))
+	switch(fam$family,
+		gaussian = -0.5 * sum(w * (y - mu)^2) / scale,
+		binomial = sum(w * (y * log(mu / (1 - mu)) + log(1 - mu))),
 		#binomial.sqvar = sum(((2 * y - 1) * log(mu /(1 - mu))) - (y / mu) - ((1 - y)/(1 - mu))),
-		poisson = sum((y * log(mu)) - mu),
-		Gamma = -sum(y / mu + log(mu)) / scale,
-		inverse.gaussian = sum(-(y / (2 * mu^2)) + (1 / mu)) / scale,
-        negbin = , 
-        negative.binomial = sum((y * log(mu)) - (2 * log(mu + 1))) / scale,
-		cry(, "do not know how to calculate quasi-likelihood for family '%s'",
-			 fam))
+		poisson = sum(w * ((y * log(mu)) - mu)),
+		Gamma = -sum(w * (y / mu + log(mu))) / scale,
+		inverse.gaussian =  sum(w * (mu - 0.5 * y) / mu^2) / scale,
+        {
+            # negative.binomial = sum((y * log(mu)) - (2 * log(mu + 1))) / scale,
+            if(startsWith(tolower(fam$family), "negative binomial(")) {
+                gt <- fam$getTheta
+                th <- if(is.function(gt)) {
+                    if(is.null(formals(gt)$trans)) gt() else gt(TRUE)
+                } else environment(fam$aic)$.Theta
+                a <- (1 / th) * mu
+                ap1 <- a + 1
+                sum(w * (lgamma(y + th) - lgamma(th) + y * log(a / ap1) +
+                    th * log(1 / ap1)))
+            } else
+                cry(, "do not know how to calculate quasi-likelihood for family '%s'",
+                    fam$family)
+		})
 }
 
-`print.quasiLik` <- function (x, digits = getOption("digits"), ...) {
+`print.quasiLik` <-
+function (x, digits = getOption("digits"), ...) {
     cat("'quasi Lik.' ", paste(format(c(x), digits = digits), collapse = ", "), 
         "\n", sep = "")
     invisible(x)
 }
-
-
 
 `quasiLik.geeglm` <-
 `quasiLik.gee` <-
@@ -38,16 +52,21 @@ function(object, ...) {
 	scale <- if(is.null(object$geese))
 		object$scale else
 			object$geese$gamma[[1L]]
-	ret <- .qlik(object$y, object$fitted.values, family(object)$family, scale)
+	ret <- .qlik(object$y, object$fitted.values, family(object),
+        1, # XXX should use weights(object) for 'geeglm', 'gee' gives no weights,
+        scale)
 	attr(ret, "df") <- NA
 	attr(ret, "nobs") <- length(object$y)
 	class(ret) <- "quasiLik"
 	ret
 }
 
+# XXX: check weights
 `quasiLik.yagsResult` <- function(object, ...) {
 	mu <- object@fitted.values
-	ret <- .qlik(mu + object@residuals, mu, family(object)$family, object@phi)
+	ret <- .qlik(mu + object@residuals, mu, family(object),
+         1, # 'yags' object gives no weights,
+         object@phi)
 	attr(ret, "df") <- NA
 	attr(ret, "nobs") <- length(mu)
 	class(ret) <- "quasiLik"
@@ -58,8 +77,10 @@ function(object, ...) {
 function(object, ...) {
 	fam <- family(object)
 	scale <- object$phi
-	ret <- .qlik(object$y, fitted(object), if(inherits(fam, "family"))
-				 fam$family else "custom", scale)
+	ret <- .qlik(object$y, fitted(object),
+        if(inherits(fam, "family")) fam else list(family = "custom"),
+        1, # object$weights,
+        scale)
 	attr(ret, "df") <- NA
 	attr(ret, "nobs") <- length(object$y)
 	class(ret) <- "quasiLik"
@@ -72,7 +93,9 @@ function(object, ...) {
 	dat <- match.fun(getOption('na.action'))(model.frame(object$model, data = object$data))
 	bad <- attr(dat, "na.action")
 	ret <- .qlik(if(!is.null(bad)) object$y[-bad] else object$y, object$mu_fit,
-		family(object)$family, object$scale[[1L]])
+		family(object),
+        1, # object$weight XXX" no -s,
+        object$scale[[1L]])
 	attr(ret, "df") <- NA
 	attr(ret, "nobs") <- length(object$mu_fit)
 	class(ret) <- "quasiLik"
@@ -83,12 +106,14 @@ function(object, ...) {
 ## QIC 
 ##=============================================================================
 
-.qic2 <- function(y, mu, vbeta, mui, vbeta.naiv.i, fam, scale, typeR = FALSE) {
-	#ql <- if(typeR) .qlik(y, mu, fam, scale) else .qlik(y, mui, fam, scale)
-    ql <- .qlik(y, if(typeR) mu else mui, fam, scale)
+.qic2 <- function(y, mu, vbeta, mui, vbeta.naiv.i, fam, wts, scale, typeR = FALSE) {
+    ql <- .qlik(y, if(typeR) mu else mui, fam, wts, scale)
 	# XXX: should be typeR = TRUE for QICu???
 	n <- length(y)
-	AIinv <- solve(vbeta.naiv.i)
+    
+    invert <- if ("MASS" %in% loadedNamespaces()) MASS::ginv else solve
+    
+	AIinv <- invert(vbeta.naiv.i)
 	tr <- sum(matmult(AIinv, vbeta, diag.only = TRUE)) 
 	## tr <- sum(diag(AIinv %*% vbeta))
 	#px <- length(mu)
@@ -96,6 +121,7 @@ function(object, ...) {
 	## When all modelling specifications in GEE are correct tr = px.
 	c(2 * (c(QIC = tr, QICu = px) - ql), n = n)
 }
+
 
 `getQIC` <- 
 function(x, typeR = FALSE) UseMethod("getQIC")
@@ -115,22 +141,41 @@ function(x, typeR = FALSE) .NotYetImplemented()
 
 `getQIC.gee` <- 
 function(x, typeR = FALSE) {
-	if(x$model$corstr != "Independent")
+	
+    if(x$model$corstr != "Independent")
 		utils::capture.output(suppressMessages(xi <- update(x, corstr = "independence",
 		silent = TRUE))) else
 		xi <- x
-	.qic2(x$y, x$fitted.values, x$robust.variance, 
-		  xi$fitted.values, xi$naive.variance, family(x)$family,
+        
+    y <- if(x$family$family == "binomial" && any(x$y > 1)) {
+        cl <- getCall(x)
+        cl <- cl[names(cl) %in% c("", "formula", "data", "subset", "na.action")]
+        cl[[1L]] <- as.name("model.frame")
+        mf <- eval.parent(cl)
+        warning(gettextf("using response \"%s\" from the current %s.",
+            names(mf)[1L], if(is.null(cl$data)) "environment" else sQuote(asChar(cl$data))))
+        y <- mf[, 1L]
+        y <- y[, 1L] / rowSums(y)
+    } else x$y
+    
+    .qic2(y, x$fitted.values, x$robust.variance, 
+		  xi$fitted.values, xi$naive.variance, family(x),
+          1, # no weights
 		  scale = x$scale,
 		  typeR = typeR)
 }
 
 `getQIC.geeglm` <- 
 function(x, typeR = FALSE) {
-	xi <- if(x$corstr != "independence")
-		update(x, corstr = "independence") else x
+	xi <- if(x$corstr != "independence") {
+        cl <- getCall(x)
+        cl$corstr <- "independence"
+        cl$zcor <- NULL
+        eval.parent(cl)        
+        } else x
 	.qic2(x$y, x$fitted.values, x$geese$vbeta, 
-		  xi$fitted.values, xi$geese$vbeta.naiv, family(x)$family,
+		  xi$fitted.values, xi$geese$vbeta.naiv, family(x),
+          1, # weights(x)
 		  scale = x$geese$gamma[[1L]],
 		  typeR = typeR)
 }
@@ -147,7 +192,9 @@ function(x, typeR = FALSE) {
 	xi <- if(x@corstruct.tag != "independence")
 		update(x, corstruct = "independence") else x
 	.qic2(x@fitted.values + x@residuals, x@fitted.values, x@robust.parmvar, 
-		  xi@fitted.values, xi@naive.parmvar, family(x)$family,
+		  xi@fitted.values, xi@naive.parmvar,
+          family(x),
+          1, # no weights
 		  scale = x@phi,
 		  typeR = typeR)
 }
@@ -158,21 +205,24 @@ function(x, typeR = FALSE) {
 	xi <- if(x$corr != "independence")
 		update(x, corstr = "independence") else x
     .qic2(x$y, fitted(x), x$var, fitted(xi), xi$naiv.var,
-		if(inherits(fam, "family")) fam$family else "custom",
-		scale = x$phi,
-        typeR = typeR)
+        if (inherits(fam, "family")) fam else list(family = "custom"),
+        1, # x$weights
+        scale = x$phi,
+        typeR = typeR
+    )
 }
 
-`QIC` <- function (object, ..., typeR = FALSE) {
-	if (!missing(...)) {
-		res <- sapply(list(object, ...), getQIC, typeR = typeR)
-		val <- as.data.frame(t(res[1L,, drop = FALSE]))
-		colnames(val) <- c("QIC")
-		Call <- match.call()
-		Call$typeR <- NULL
-		row.names(val) <- as.character(Call[-1L])
-		val
-	} else getQIC(object, typeR = typeR)[1L]
+`QIC` <- function(object, ..., typeR = FALSE) {
+    if (!missing(...)) {
+        res <- sapply(list(object, ...), getQIC, typeR = typeR)
+        val <- as.data.frame(t(res[1L, , drop = FALSE]))
+        colnames(val) <- c("QIC")
+        Call <- match.call()
+        Call$typeR <- NULL
+        row.names(val) <- as.character(Call[-1L])
+        val
+    } else
+        getQIC(object, typeR = typeR)[1L]
 }
 
 `QICu` <- function (object, ..., typeR = FALSE) {

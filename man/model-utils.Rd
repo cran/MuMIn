@@ -57,7 +57,7 @@ model.names(object, ..., labels = NULL, use.letters = FALSE)
   \item{offset}{should \sQuote{offset} terms be included? }
   \item{intercept}{should terms names include the intercept?}
   \item{full, adjust.se}{logical, apply to \code{"averaging"} objects. If \code{full} is 
-    \code{TRUE}, the full model averaged coefficients are returned, and 
+    \code{TRUE}, the full model-averaged coefficients are returned, and 
     subset-averaged ones otherwise.
     If \code{adjust.se} is \code{TRUE}, inflated standard errors are returned. 
     See \sQuote{Details} in \code{\link{par.avg}}.

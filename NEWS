@@ -1,5 +1,23 @@
 MuMIn package news:
 
+Version: 1.43.14 (2019-12-18)
+(fixed) example(QIC) causing an error after recent update of 'geepack'.
+Added quasiLik/QIC for the negative binomial family (reportedly supported only 
+    by 'geeM::geem').
+
+Version: 1.43.13 (2019-12-14)
+(fixed) get.models: in the absence of a 'global model', the argument 'subset' 
+    was ignored and a list of all models was returned. 
+
+Version: 1.43.12 (2019-12-11)
+(fixed) [p]dredge: error while formatting the error message about an overlarge 
+    number of predictors (found by a certain 89_Simple on Stackoverflow).
+
+Version: 1.43.11 (2019-12-09)
+(fixed) getAllTerms now recognizes structured terms of form `struc(terms|group)`
+    properly as random effect terms;
+(fixed) dredge, model.sel: delta was not calculated if any rank was NA.
+
 Version: 1.43.10 (2019-12-05)
 (removed) conflicting methods which are now defined in their 'survival' package
     (nobs.coxph, nobs.survreg). Because of that, MuMIn now depends on 

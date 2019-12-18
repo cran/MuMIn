@@ -68,8 +68,8 @@ stdizeFit(object, data, which = c("formula", "subset", "offset", "weights"),
         
     \item{append}{ logical, if \code{TRUE}, modified columns are appended to the
         original data frame. }
-    \item{response}{logical, stating whether the response be standardized. By
-        default only variables on the right-hand side of formula are standardized. }
+    \item{response}{logical, stating whether the response should be standardized. By
+        default, only variables on the right-hand side of the formula are standardized. }
     \item{data}{ an object coercible to \code{data.frame}, containing the
         variables in \code{formula}. Passed to, and used by 
         \code{\link{model.frame}}.

@@ -31,7 +31,7 @@ Model-averaged predictions, optionally with standard errors.
 		"link"}).
 		See \sQuote{Details}.
 		}
-	\item{full}{ if \code{TRUE}, the full model averaged coefficients are used
+	\item{full}{ if \code{TRUE}, the full model-averaged coefficients are used
 		(only if \code{se.fit = FALSE} and the component objects are a result of
 		\code{lm}). }
     \item{\dots}{arguments to be passed to respective \code{predict}

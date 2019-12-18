@@ -5,8 +5,8 @@
 \encoding{utf-8}
 \title{Multi-model inference}
 \description{
-The package \pkg{MuMIn} contains functions to streamline information-theoretic
-model selection and carry out model averaging based on the information criteria.
+The package \pkg{MuMIn} contains functions to streamline the information-theoretic
+model selection and carry out model averaging based on information criteria.
 }
 
 \details{
@@ -24,8 +24,10 @@ The collection of functions includes:
 		}
 	\item{\code{\link{model.sel}}}{creates a model selection table from
 		hand-picked models. }
-	\item{\code{\link{model.avg}}}{ calculates model averaged parameters,
-		with standard errors and confidence intervals. }
+	\item{\code{\link{model.avg}}}{ calculates model-averaged parameters,
+		with standard errors and confidence intervals.
+        Furthermore, the \code{\link[=predict.averaging]{predict}} method 
+        produces model-averaged predictions. }
 	\item{\code{\link{AICc}}}{calculates second-order Akaike information
 		criterion. Some other criteria are provided, see below. }
 		

@@ -25,7 +25,7 @@
 
 \value{
 A \code{\link[=model.selection.object]{"model.selection" object}} containing 
-models from all provided tables.
+models (rows) from all provided tables.
 }
 
 \note{
