@@ -111,7 +111,8 @@ function(object, ...) {
 	# XXX: should be typeR = TRUE for QICu???
 	n <- length(y)
     
-    invert <- if ("MASS" %in% loadedNamespaces()) MASS::ginv else solve
+    invert <- if (is.matrix(vbeta.naiv.i) && 
+        "MASS" %in% loadedNamespaces()) MASS::ginv else solve
     
 	AIinv <- invert(vbeta.naiv.i)
 	tr <- sum(matmult(AIinv, vbeta, diag.only = TRUE)) 

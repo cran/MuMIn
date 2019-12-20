@@ -1,5 +1,9 @@
 MuMIn package news:
 
+Version: 1.43.15 (2019-12-19)
+(fixed) fatal error in QIC.geem introduced in the previous version
+    (reported by Lee McDaniel)
+
 Version: 1.43.14 (2019-12-18)
 (fixed) example(QIC) causing an error after recent update of 'geepack'.
 Added quasiLik/QIC for the negative binomial family (reportedly supported only 

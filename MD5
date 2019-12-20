@@ -1,6 +1,6 @@
-d47363839872ae3a175e0961489d5f34 *DESCRIPTION
+677a3c161372452c60abce2acd6b49a7 *DESCRIPTION
 2fc789548fc8bc8fcceabf95b6b4de4b *NAMESPACE
-756a69cf922cea20d979e6c90eb513cf *NEWS
+ac23be182cdb56cd3ad6f2a7f95599ef *NEWS
 d6aef97b8781b804e09f3e58c0894474 *R/AICc.R
 536fdb4d7afc4338564230ddbbc5555e *R/Cp.R
 871f16d89f7b002fdfcfb1c414344fa7 *R/DIC.R
@@ -46,7 +46,7 @@ d5c649c4b8fd6f6a41a246eff5de6fb6 *R/pdredge.R
 b66a83b123d2c49085c63ea01fb2df2f *R/plots.R
 09c49adad4a6ce1af2e43f483c7d87b2 *R/predict.R
 6b4358d8879a643967de5e82b933ae29 *R/predict.averaging.R
-ccbf2c6203e61ae4a14a82df3621a7e1 *R/quasiLik.R
+46a15f0349303ad4e08eebdaec279ace *R/quasiLik.R
 7a6ed0df10a0959142ef8516a2fc6012 *R/r.squaredGLMM2.R
 b5e98c4bd24dabc1731214c7e5c0e9a8 *R/r.squaredLR.R
 27f1560d1ba3a68214d33305019f03e4 *R/rbind.model.selection.R
