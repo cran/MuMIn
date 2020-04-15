@@ -1,7 +1,17 @@
 MuMIn package news:
 
+Version: 1.43.17 (2020-04-14)
+Merely refreshing date stamp to please CRAN policies.
+
+Version: 1.43.16 (2020-03-12)
+(added) new model structure for unmarkedFitPCount (pcount) with ZIP mixture
+   (found by Hannah Clyde)
+(fixed) r.squaredGLMM for binomial family models with N > 1 trials. The 
+    fixed effects variance now accounts for the number of trials (thanks to 
+    Daniel Schlaepfer)
+
 Version: 1.43.15 (2019-12-19)
-(fixed) fatal error in QIC.geem introduced in the previous version
+(fixed) fatal error with QIC.geem introduced in the previous version
     (reported by Lee McDaniel)
 
 Version: 1.43.14 (2019-12-18)

@@ -1,6 +1,6 @@
-677a3c161372452c60abce2acd6b49a7 *DESCRIPTION
+363114b4f4f3cd1da8b78030a58c160f *DESCRIPTION
 2fc789548fc8bc8fcceabf95b6b4de4b *NAMESPACE
-ac23be182cdb56cd3ad6f2a7f95599ef *NEWS
+e1a82972fadb3b89056ff762e9729867 *NEWS
 d6aef97b8781b804e09f3e58c0894474 *R/AICc.R
 536fdb4d7afc4338564230ddbbc5555e *R/Cp.R
 871f16d89f7b002fdfcfb1c414344fa7 *R/DIC.R
@@ -47,8 +47,8 @@ b66a83b123d2c49085c63ea01fb2df2f *R/plots.R
 09c49adad4a6ce1af2e43f483c7d87b2 *R/predict.R
 6b4358d8879a643967de5e82b933ae29 *R/predict.averaging.R
 46a15f0349303ad4e08eebdaec279ace *R/quasiLik.R
-7a6ed0df10a0959142ef8516a2fc6012 *R/r.squaredGLMM2.R
-b5e98c4bd24dabc1731214c7e5c0e9a8 *R/r.squaredLR.R
+1a4d74eb9d14794899b4f2f0f2754be7 *R/r.squaredGLMM2.R
+14e2552c2be8573f457f9e494e3efd1a *R/r.squaredLR.R
 27f1560d1ba3a68214d33305019f03e4 *R/rbind.model.selection.R
 3a62d0502aa0c26a99ff66c6dff2746c *R/simulateData.R
 9e53b7b92d769f47d4d863bc27551d10 *R/std.coef.R
@@ -56,7 +56,7 @@ b5e98c4bd24dabc1731214c7e5c0e9a8 *R/r.squaredLR.R
 28f206d16b03e79781c10924988849f9 *R/substitution.R
 2603e9e8ea179b7e095884b4b8fd16d3 *R/sumofweights.R
 c83a155b59c87ebffbfa1ed3b3acb540 *R/termdeps.R
-bf8f5f1e8f7bbe035c3957d08cae4390 *R/umf_specs.R
+84e33e5f26c3a61758dad0b6a02ac805 *R/umf_specs.R
 54576d53da9b9a0d8c29b845fac79068 *R/updateable.R
 28a8e3bebbf1273ebfea58b1a9a0b7db *R/utils-debug.R
 09863ec553565aa6d209ce876d5edbc8 *R/utils-misc.R
@@ -66,9 +66,9 @@ bf8f5f1e8f7bbe035c3957d08cae4390 *R/umf_specs.R
 1a4780776880f1114fbc5fdafc8b09f6 *R/weights-cos2.R
 13bc77ee0a507d4ab87e1feadc20a63e *R/weights-jackknife.R
 12d480403d0c5ce1a3b9d4fcd6cb8490 *R/weights-stacking.R
-53b333adabac638aa3fa30c2060243d8 *data/Beetle.rda
-62e78f240844947dee0f0eb823a112a8 *data/Cement.rda
-d8652538427d525b04979df636f0f8ef *data/GPA.rda
+e91d1699d8b92927a89e6c3f017dab65 *data/Beetle.rda
+79e389f9343a9802a601c26c7ad0fecc *data/Cement.rda
+d3398721ed7a0caf678af0e999e0fbbb *data/GPA.rda
 53cb21d4452d1916e078e7082b5cd15a *demo/00Index
 0ef079549f38add0ddd9ea0eb7fe7ee4 *demo/dredge.distsamp.R
 f0012e39fba43a945a303d3e82eb3215 *demo/dredge.subset.R
@@ -108,7 +108,7 @@ a369d21363c873e2a3a87cc6b5d14eb5 *man/predict.averaging.Rd
 0ca4d0c29e1c1ae5b0da11c2f4872a4f *man/r.squaredGLMM.Rd
 abf9f0828804cef9d6a8bdbd112049a8 *man/r.squaredLR.Rd
 77c2f74ef655ec00ad4dfa4792af14cb *man/stackingWeights.Rd
-caf00861d35ec0e4ccd48c30cf971da5 *man/std.coef.Rd
+8918546afe5999c3a3396f5fb09eed34 *man/std.coef.Rd
 960b73841b90a03cf0fb2818b5d3212f *man/stdize.Rd
 f40d3e69aaff389bcc17bd24f4cf7325 *man/subset.model.selection.Rd
 bd023f19cfa29d07ce3803ceb73ea1ac *man/sumofweights.Rd

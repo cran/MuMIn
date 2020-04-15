@@ -133,7 +133,7 @@ function(formula) {
 function(object, null = NULL, null.RE = FALSE, ...) {
 	if("x" %in% names(list(...))) {
 		object <- list(...)$x
-		warning("the argument ", sQuote("x"), " has been removed. Use ", dQuote("object"), " instead")
+		warning("the argument ", sQuote("x"), " has been removed. Use ", sQuote("object"), " instead")
 	}
 
 	if(!missing(null) && !missing(null.RE))
@@ -141,10 +141,10 @@ function(object, null = NULL, null.RE = FALSE, ...) {
 	if(is.null(null))
 		null <- null.fit(object, TRUE, null.RE, parent.frame())
 
-	#print(get_call(null))
 	L0 <- as.vector(if(inherits(null, "glm")) logLik(null) else logLik(null, REML = FALSE))
 	L1 <- if(inherits(object, "glm")) logLik(object) else logLik(object, REML = FALSE)
 	n <- if(is.null(attr(L1, "nobs"))) nobs(object) else attr(L1, "nobs")
+	#n <- sum(weights(object))
 	ret <- 1 - exp(-2 / n * (as.vector(L1) - L0))
 	max.r2 <- 1 - exp(2 / n * L0)
 	attr(ret, "adj.r.squared") <- ret / max.r2

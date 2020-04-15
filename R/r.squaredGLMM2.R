@@ -1,5 +1,6 @@
 ## Helper functions:
 
+
 # Consistent sigma
 sigma2 <- function(object) UseMethod("sigma2")
 sigma2.default <- function(object) sigma(object)
@@ -53,14 +54,24 @@ sigma2.glmmTMB <- function(object) {
 # RE model matrix
 .remodmat <- function(object) UseMethod(".remodmat")
 
-.remodmat.default <- function(object) model.matrix(.ranform(formula(object)), data = model.frame(object))
-.remodmat.merMod <- function(object) {
+.remodmat.default <-
+function(object) {
+    env <- environment(formula(object))
+    rval <- lapply(.findbars(formula(object)),
+        function(f) model.matrix(as.formula(call("~", f[[2L]]), env = env),
+                     data = model.frame(object)))
+    rval <- do.call("cbind", rval)
+    rval[, !duplicated(colnames(rval)), drop = FALSE]
+}
+    
+.remodmat.merMod <-
+function(object) {
     rval <- do.call("cbind", model.matrix(object, type = "randomListRaw"))
 	rval[, !duplicated(colnames(rval)), drop = FALSE]
 }
 
-
-.remodmat.lme <- function(object)
+.remodmat.lme <-
+function(object)
     model.matrix(object$modelStruct$reStruct, data = object$data[rownames(object$fitted), 
 			, drop = FALSE])
 
@@ -106,17 +117,6 @@ function(object, envir = parent.frame()) {
 	}))
 }
 
-## extracts random effect formula. e.g:
-.ranform <-
-function (form) {
-	### XXX: would give an error: values must be length 1 ...
-	###      for very long RE formulas
-	ans <- update.formula(reformulate(vapply(lapply(.findbars(form),
-		"[[", 2L), deparse, "", width.cutoff = 500L)), ~ . + 1)
-	environment(ans) <- environment(form)
-	ans
-}
-
 # update model adding an observation level RE term
 .OLREFit <- function(object) UseMethod(".OLREFit")
 .OLREFit.default <- function(object) .NotYetImplemented()
@@ -144,7 +144,7 @@ function (form) {
 
 # general function
 r2glmm <-
-function(family, vfe, vre, vol, link, pmean, lambda, omega) {
+function(family, vfe, vre, vol, link, pmean, lambda, omega, n) {
     if(inherits(family, "family")) {
         link <- family$link
         family <- family$family
@@ -155,20 +155,20 @@ function(family, vfe, vre, vol, link, pmean, lambda, omega) {
         gaussian.identity = vol,
         quasibinomial.logit =,
         binomial.logit = c(
-            theoretical = 3.28986813369645,
-            delta = 1 / (pmean * (1 - pmean))
+            theoretical = 3.28986813369645 / n,
+            delta = 1 / (n * pmean * (1 - pmean))
             ),
         quasibinomial.probit =,
         binomial.probit = c(
-            theoretical = 1,
+            theoretical = 1 / n,
             delta =
-                6.2831853071795862  * pmean * (1 - pmean) *
+                6.2831853071795862 / n * pmean * (1 - pmean) *
                     exp((qnorm(pmean) / 1.4142135623730951)^2)^2
             ),
         quasibinomial.cloglog =,
 		binomial.cloglog = c(
-			theoretical = 1.6449340668482264,  #  pi^2 / 6
-			delta = pmean / log(1 - pmean)^2 / (1 - pmean)
+			theoretical = 1.6449340668482264 / n,  #  pi^2 / 6
+			delta = pmean / n / log(1 - pmean)^2 / (1 - pmean)
 			),
 		Gamma.log =, poisson.log =, quasipoisson.log =, nbinom1.log = c(
 			delta = omega / lambda,
@@ -200,7 +200,15 @@ function(family, vfe, vre, vol, link, pmean, lambda, omega) {
 }
 
 
-`r.squaredGLMM` <- function(object, null, ...) {
+.binomial.sample.size <-
+function(object) {
+    tt <- terms(formula(object))
+    y <- model.frame(object)[, rownames(attr(tt, "factors"))[attr(tt, "response")]]
+    if(is.null(dim(y))) 1 else mean(rowSums(y))        
+}
+
+`r.squaredGLMM` <-
+function(object, null, ...) {
     warnonce("rsquaredGLMM",
 	simpleWarning(paste0("'r.squaredGLMM' now calculates a revised statistic. See the help page.")))
     UseMethod("r.squaredGLMM")
@@ -214,7 +222,6 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
         if(!missing(pj2014)) envir <- pj2014
         pj2014 <- tmp
     }
-        
     
 	fam <- family(object)
     #varOL <- lambda <- omega <- NA
@@ -223,7 +230,8 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
     fitted <- (model.matrix(object)[, ok, drop = FALSE] %*% fe[ok])[, 1L]
     varFE <- var(fitted)
 	
-	mmRE <- .remodmat(object) 
+	mmRE <- .remodmat(object)
+    
     ##Note: Argument 'contrasts' can only be specified for fixed effects
 	##contrasts.arg = eval(cl$contrasts, envir = environment(formula(object))))	
 
@@ -234,7 +242,7 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
 		dimnames(vc[[i]]) <- list(a, a)
 	}
 	colnames(mmRE) <- fixCoefNames(colnames(mmRE))
-
+    
 	if(!all(unlist(sapply(vc, rownames), use.names = FALSE) %in% colnames(mmRE)))
 		stop("RE term names do not match those in model matrix. \n",
 			 "Have 'options(contrasts)' changed since the model was fitted?")
@@ -259,7 +267,7 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
 		# XXX: inverse-link seems to give more reasonable value for non-logit
 		# links, should inv-logit (plogis) be used here always?
         pmean <- fam$linkinv(fixefnull - 0.5 * vt * tanh(fixefnull * (1 + 2 * exp(-0.5 * vt)) / 6))
-        r2glmm(fam, varFE, varRE, pmean = pmean)
+        r2glmm(fam, varFE, varRE, pmean = pmean, n = .binomial.sample.size(object))
     }, nbinom2 = {
         lambda <- unname(exp(fixefnull + 0.5 * varRE))
         theta <- if(inherits(object, "glmerMod"))
@@ -284,7 +292,6 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
            familyName == "poisson" && pj2014) {
             xo <- .OLREFit(object)
             vc <- .varcorr(xo)
-            
             fe <- .numfixef(xo)
             ok <- !is.na(fe)
             fitted <- (model.matrix(xo)[, ok, drop = FALSE] %*% fe[ok])[, 1L]
@@ -338,7 +345,8 @@ function(object, null, envir = parent.frame(), ...) {
     gaussian =
         r2glmm(fam, varFE, 0, vol = sigma2(object)^2),
     binomial =, quasibinomial = {
-        r2glmm(fam, varFE, 0, pmean = fam$linkinv(unname(fixefnull)))
+        r2glmm(fam, varFE, 0, pmean = fam$linkinv(unname(fixefnull)),
+            n = .binomial.sample.size(object))
     }, Gamma = {
         nu <- sigma2(object)^-2
         omega <- 1

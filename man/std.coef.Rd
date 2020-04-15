@@ -40,29 +40,28 @@ beta.weights(model)
     , where
 	\myequation{\beta}{\beta}{B} is the unstandardized coefficient, 
     \myequation{s_{X_{i}}}{sₓᵢ}{SXi}    
-    is the
-	standard deviation of associated depenent variable 
+    is the standard deviation of associated dependent variable 
     \myequation{X_i}{Xᵢ}{Xi}  and
 	\myequation{s_{y}}{Sᵧ}{Sy}
     is \acronym{SD} of the response variable.
     
 
-	If the variables are intercorrelated, the standard deviation of
+	If variables are intercorrelated, the standard deviation of
     \myequation{X_i}{Xᵢ}{Xi}
 	used in computing the standardized coefficients 
     \myequation{\beta_i^{*}}{\betaᵢ*}{Bi*} should be
-	replaced by a partial standard deviation of 
+	replaced by the partial standard deviation of 
     \myequation{X_i}{Xᵢ}{Xi} which is adjusted for
 	the multiple correlation of 
-    \myequation{X_i}{Xᵢ}{Xi}  with the other \eqn{X} variables
+    \myequation{X_i}{Xᵢ}{Xi} with the other \eqn{X} variables
 	included in the regression equation. The partial standard deviation is
 	calculated as 
     \myequation{s_{X_{i}}^{*}=s_{X_{i}} \var{VIF}(X_i)^{-0.5} (\frac{n-1}{n-p} )^{0.5}
         }{s*ₓᵢ = sₓᵢ √(VIFₓᵢ⁻¹) √((n-1)/(n-p))
         }{sXi* = SXi * sqrt(1/VIF(Xi)) * sqrt((n-1)/(n-p))}, 
     where \var{VIF} is the variance inflation factor,
-	\var{n} is the number of observations and \var{p} number of predictors in
-	the model. Coefficient is then transformed as 
+	\var{n} is the number of observations and \var{p}, the number of predictors in
+	the model. The coefficient is then transformed as 
     \myequation{\beta^{*}_i = \beta_i s_{X_{i}}^{*}
         }{\betaᵢ* = \betaᵢ s*ₓᵢ
         }{Bi* = Bi * SXi*}.
@@ -70,9 +69,9 @@ beta.weights(model)
 }
 
 \value{
-   A matrix with at least two columns for standardized coefficient estimate and
-   its standard error. Optionally, third column holds degrees of freedom
-   associated with the coefficients.
+    A matrix with at least two columns for the standardized coefficient estimate
+    and its standard error. Optionally, the third column holds degrees of freedom
+    associated with the coefficients.
 }
 
 
