@@ -111,7 +111,7 @@ zGPA <- stdize(GPA, scale = c(NA, psd), center = TRUE)
 # Note: first element of 'scale' is set to NA to ignore the first column 'y'
 
 # Coefficients of a model fitted to standardized data:
-zapsmall(coefTable(stdizeFit(fm, data = zGPA)))
+zapsmall(coefTable(stdizeFit(fm, newdata = zGPA)))
 # Standardized coefficients of a model fitted to original data:
 zapsmall(std.coef(fm, partial = TRUE))
 

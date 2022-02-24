@@ -15,8 +15,8 @@ Model averaging based on an information criterion.
 model.avg(object, ..., revised.var = TRUE)
 
 \method{model.avg}{default}(object, ..., beta = c("none", "sd", "partial.sd"),
-    rank = NULL, rank.args = NULL, revised.var = TRUE,
-    dispersion = NULL, ct.args = NULL)
+  rank = NULL, rank.args = NULL, revised.var = TRUE,
+  dispersion = NULL, ct.args = NULL)
 
 \method{model.avg}{model.selection}(object, subset, fit = FALSE, ..., revised.var = TRUE)
 

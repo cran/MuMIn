@@ -9,7 +9,7 @@ Model-averaged predictions, optionally with standard errors.
 
 \usage{
 \method{predict}{averaging}(object, newdata = NULL, se.fit = FALSE,
-    interval = NULL, type = NA, backtransform = FALSE, full = TRUE, ...)
+  interval = NULL, type = NA, backtransform = FALSE, full = TRUE, ...)
 }
 
 \arguments{

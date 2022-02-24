@@ -38,7 +38,7 @@ function(n = 10, k = 2, family = gaussian,
 		   Gamma = rgamma(n, rate = gamma.shape / mu, shape = gamma.shape),
 		   stop("'family' not recognized")
 	)
-	dat <- cbind(y = NA, as.data.frame(dat))
+	dat <- cbind(y = NA, as.data.frame(dat, stringsAsFactors = TRUE))
 	dat$y <- y
 	dat
 }

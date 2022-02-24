@@ -1,8 +1,13 @@
 TODO list for the MuMIn package:
 
+* UPDATE THIS LIST
+
+* response in plot title in plot.model.selection 
+* effects for "averaging" object?
+
 ** WAIC
 
-** fit.args - additional arguments for updated models (underwrite)
+**  fit.args - additional arguments for updated models (underwrite)
 **  handling random effects in 'dredge' (with 'lme', 'lmer', etc). Currently
         'varying' may be used with lme's "random" argument for that purpose.
 *   predictions from 'multinom'
@@ -14,4 +19,3 @@ TODO list for the MuMIn package:
 *   pdredge: checking if 'nobs' for all generated models in are equal (already 
         done in 'dredge')
 		
-*   effects for "averaging" object?

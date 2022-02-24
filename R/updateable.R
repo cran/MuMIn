@@ -9,9 +9,9 @@ function (FUN, eval.args = NULL, Class) {
 	rm(env, inherits = FALSE)
 
     FUNV <- function() {
-		rval <- do.call(FUN, as.list(match.call())[-1L])
-		cl <- match.call()
 		parentframe <- parent.frame()
+		rval <- do.call(FUN, as.list(match.call())[-1L], envir = parentframe)
+		cl <- match.call()
         for (i in eval.args) cl[[i]] <- eval(cl[[i]], parentframe)
         if (!isS4(rval) && is.list(rval)) 
             rval$call <- cl
@@ -19,7 +19,12 @@ function (FUN, eval.args = NULL, Class) {
         class(rval) <- Class
         rval
     }
-    body(FUNV)[c(if (missing(eval.args)) c(4L, 5L), if (missing(Class)) 7L)] <- NULL
+	
+	.hasname <- function(body., name.) vapply(body., function(expr) any(name. %in% all.vars(expr)), FALSE)
+	body(FUNV) <- body(FUNV)[!.hasname(body(FUNV),
+		c(if (missing(eval.args)) "eval.args", if (missing(Class)) "Class"))]
+	
+    #body(FUNV)[c(if (missing(eval.args)) c(4L, 5L), if (missing(Class)) 7L)] <- NULL
     formals(FUNV) <- formals(FUN)
     FUNV
 }

@@ -19,8 +19,9 @@ function(models = NULL, allTerms, uqTerms, use.letters = FALSE, ...) {
 
 	n <- length(uqTerms)
 
-	if(use.letters && n > length(LETTERS)) stop("more terms than there are letters")
-	sep <- if(!use.letters && n > 9L) "/" else ""
+	if(use.letters && n > length(LETTERS)) 
+        stop("more terms than there are letters")
+	sep <- if(!use.letters && n > 9L) "+" else ""
 
 	labels <- if (use.letters) LETTERS[seq_len(n)] else as.character(seq_len(n))
 	ret <- sapply(allTerms, function(x) paste(labels[sort(match(x, uqTerms))],

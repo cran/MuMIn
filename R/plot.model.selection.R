@@ -1,29 +1,31 @@
 `plot.model.selection` <-
 function(x,
 	ylab = NULL, xlab = NULL,
-	labels = attr(x, "terms"), labAsExpr = FALSE,
+	labels = attr(x, "terms"), labAsExpr = TRUE, mar.adj = TRUE,  # TERMS
 	col = c("SlateGray", "SlateGray2"), col2 = "white",
 	border = par("col"),
 	par.lab = NULL, par.vlab = NULL,
-	axes = TRUE, ann = TRUE,
-	...) {
+	axes = TRUE, ann = TRUE, ...) {
 	
 	if (is.null(xlab)) xlab <- NA  
 	if (is.null(ylab)) ylab <- expression("Cumulative Akaike weight" ~~(omega))
 
-	op <- par(..., no.readonly = TRUE)
-	on.exit(par(op))
+	if(...length() != 0L) {
+		op <- par(..., no.readonly = TRUE)
+		on.exit(par(op))
+	}
 	
 	cumweight <- cumsum(weight <- Weights(x))
 	stdweight <- weight / max(weight)
 	
 	n <- nrow(x)
-	m <- length(attr(x, "terms"))
+	m <- length(attr(x, "terms")) # TERMS
 	plot.new()
 	plot.window(xlim = c(0, m), ylim = c(1, 0), xaxs = "i", yaxs = "i")
 
 	pal <- if(is.na(col2)) rbind(col) else 
-		vapply(col, function(x) grDevices::rgb(grDevices::colorRamp(c(col2, x))(stdweight),
+		vapply(col, function(x)
+			grDevices::rgb(grDevices::colorRamp(c(col2, x))(stdweight),
 			maxColorValue = 255), character(n))
 		
 	pal <- matrix(pal, ncol = length(col))
@@ -38,24 +40,25 @@ function(x,
 	if(ann) {
 		labCommonArg <- list(col = par("col.axis"), font = par("font.axis"),
 							 cex = par("cex.axis"))
-		if(labAsExpr) {
-			labels <- gsub(":", "%*%", labels, perl = TRUE)
-				labels <- gsub("\\B_?(\\d+)(?![\\w\\._])", "[\\1]", labels, perl = TRUE)
-			labels <- parse(text = labels)
-		}	
+		if(labAsExpr) labels <- .lab2expr(labels)
 		arg <- c(list(side = 3L, padj = 0.5, line = 1L, las = 2L), labCommonArg)
 		for(i in names(par.lab)) arg[i] <- par.lab[i]
 		
 		if(is.expression(labels)) {
-			if(length(labels) != m) stop("length of 'labels' is not equal to number of terms")
-			for(i in 1L:m) do.call("mtext", c(list(text = as.expression(labels[[i]]), at = i - 0.5), arg))
-		} else if (!is.null(labels) && !is.na(labels)) {
-			if(length(labels) != m) stop("length of 'labels' is not equal to number of terms")
+			if(length(labels) != m)
+				stop("length of 'labels' is not equal to number of terms")
+			for(i in 1L:m)
+				do.call("mtext", c(list(text = as.expression(labels[[i]]),
+					at = i - 0.5), arg))
+		} else if(!is.null(labels) && !anyNA(labels)) {
+			if(length(labels) != m)
+				stop("length of 'labels' is not equal to number of terms")
 			do.call("mtext", c(list(text = labels, at = 1L:m - 0.5), arg))
 		}
 	   
 		arg <- c(list(side = 4L, las = 2L, line = 1L, adj = 1L), labCommonArg)
-		for(i in names(par.vlab)) arg[i] <- par.vlab[i]
+		for(i in names(par.vlab))
+			arg[i] <- par.vlab[i]
 		ss <- weight > -(1.2 * strheight("I", cex = arg$cex))
 		arg[['at']] <- (c(0, cumweight[-n]) + cumweight)[ss] / 2
 		arg[['text']] <- rownames(x)[ss]

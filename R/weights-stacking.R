@@ -19,6 +19,11 @@ function(object, ..., data, R, p = 0.5
     r <- counter <- 1L
     counterLimit <- R * 2L
     mode(R) <- mode(counterLimit) <- "integer"
+    
+    if (M >= (n - nt))
+        stop("more models than test points. ",
+             "Increase the test set or reduce the number of models")
+    
     while(counter < counterLimit && r <= R) {
         counter <- counter + 1L
         k <- sample.int(n, size = nt)
@@ -29,6 +34,7 @@ function(object, ..., data, R, p = 0.5
             fam <- family(fit)
             off <- fit$offset
             wts <- fit$weights
+            
             coef1 <- do_glm_fit(tf, data[k, , drop = FALSE], fam, wts[k],
                 off[k])$coefficients
             pymat[, j] <- predict_glm_fit(coef1,
@@ -36,12 +42,19 @@ function(object, ..., data, R, p = 0.5
                     family = fam)[, 1L]
         }
         y.test <- get.response(fit, data[-k, , drop = FALSE])
+        
+        if(!is.matrix(pymat))
+            stop("\"predicted\" must be a matrix")
+        if(nrow(pymat) != length(y.test))
+            stop("number of rows in \"predicted\" is not equal to length of \"observed\"")
+
         sw1 <- tryCatch(.stacking(pymat, y.test), error = function(...) NULL)
         if(!is.null(sw1)) {
             wmat[r, ] <- sw1
             r <- r + 1L
         }
     }
+    
     wts <- rbind(colMeans(wmat), apply(wmat, 2L, median),
                  deparse.level = 0)
     dimnames(wts) <- list(c("mean", "median"), names(models))
@@ -54,14 +67,13 @@ function(object, ..., data, R, p = 0.5
 .stacking <-
 function(predicted, observed) {
    
-    if(!is.matrix(predicted))
-        stop("\"predicted\" must be a matrix")
-    if(nrow(predicted) != length(observed))
-        stop("number of rows in \"predicted\" is not equal to length of \"observed\"")
 
-    if (NCOL(predicted) >= length(observed))
-        stop("more models than test points. ",
-             "Increase the test set or reduce the number of models")
+    #if(nrow(predicted) != length(observed))
+    #    stop("number of rows in \"predicted\" is not equal to length of \"observed\"")
+
+    #if (NCOL(predicted) >= length(observed))
+    #    stop("more models than test points. ",
+    #         "Increase the test set or reduce the number of models")
         # TODO: make the error message more specific.
 
     # now do an internal splitting into "folds" data sets:

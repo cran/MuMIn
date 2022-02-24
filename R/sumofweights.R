@@ -39,5 +39,7 @@ function(x, ...) {
 function(x)
 	model.avg(x)$sw
 	
-	
-importance <- sw
+importance <- function(x) {
+    .Deprecated("sw")
+    sw
+}

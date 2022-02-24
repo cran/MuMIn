@@ -8,21 +8,25 @@ Parallelized version of \code{dredge}.
 }
 
 \usage{
-pdredge(global.model, cluster = NA, 
-    beta = c("none", "sd", "partial.sd"), evaluate = TRUE, rank = "AICc", 
-    fixed = NULL, m.lim = NULL, m.min, m.max, subset, trace = FALSE, 
-    varying, extra, ct.args = NULL, check = FALSE, ...)
+pdredge(global.model, cluster = NULL, 
+  beta = c("none", "sd", "partial.sd"), evaluate = TRUE, rank = "AICc", 
+  fixed = NULL, m.lim = NULL, m.min, m.max, subset, trace = FALSE, 
+  varying, extra, ct.args = NULL, deps = attr(allTerms0, "deps"),
+  check = FALSE, ...)
 
 }
 
 \arguments{
-    \item{global.model, beta, evaluate, rank}{
+    \item{global.model, beta, rank, fixed, m.lim, m.max, m.min, 
+        subset, varying, extra, ct.args, deps, ...}{
         see \code{\link{dredge}}. }
-    \item{fixed, m.lim, m.max, m.min, subset, varying, extra, ct.args, ...}{
-        see \code{\link{dredge}}. }
+	\item{evaluate}{whether to evaluate and rank the models. If \code{FALSE}, a
+        list of unevaluated \code{call}s is returned and \code{cluster} is 
+        not used. 
+        }
     \item{trace}{ displays the generated calls, but may not work as expected
         since the models are evaluated in batches rather than one by one. }
-    \item{cluster}{ either a valid \code{"cluster"} object, or \code{NA} for a
+    \item{cluster}{ either a valid \code{"cluster"} object, or \code{NULL} for a
         single threaded execution. }
 	\item{check}{ either integer or logical value controlling how much checking
 		for existence and correctness of dependencies is done on the cluster
@@ -50,6 +54,12 @@ If \code{check} is \code{TRUE} or positive, \code{pdredge} tries to check whethe
 
 }
 
+\note{
+
+As of version 1.45.0, using \code{pdredge} directly is deprecated. Use 
+\code{dredge} instead and provide \code{cluster} argument. 
+
+}
 
 \value{
  See \code{\link{dredge}}.
@@ -95,9 +105,9 @@ clusterExport(clust, "Beetle100")
 
 # noticeable gain only when data has about 3000 rows (Windows 2-core machine)
 print(system.time(dredge(fm1, subset = msubset, varying = varying.link)))
-print(system.time(pdredge(fm1, cluster = FALSE, subset = msubset,
+print(system.time(dredge(fm1, cluster = FALSE, subset = msubset,
     varying = varying.link)))
-print(system.time(pdd <- pdredge(fm1, cluster = clust, subset = msubset,
+print(system.time(pdd <- dredge(fm1, cluster = clust, subset = msubset,
     varying = varying.link)))
 
 print(pdd)
@@ -119,10 +129,10 @@ clusterExport(clust, "mallardUMF")
 require(stats4)
 invisible(clusterCall(clust, "library", "stats4", character.only = TRUE))
 
-#system.time(print(pdd1 <- pdredge(ufm.mallard,
+#system.time(print(pdd1 <- dredge(ufm.mallard,
 #   subset = `p(date)` | !`p(I(date^2))`, rank = AIC)))
 
-system.time(print(pdd2 <- pdredge(ufm.mallard, clust,
+system.time(print(pdd2 <- dredge(ufm.mallard, cluster = clust,
     subset = `p(date)` | !`p(I(date^2))`, rank = AIC, extra = "adjR^2")))
 
 

@@ -1,150 +1,11 @@
-## Helper functions:
-
-
-# Consistent sigma
-sigma2 <- function(object) UseMethod("sigma2")
-sigma2.default <- function(object) sigma(object)
-sigma2.glmmPQL <- function(object) {
-    switch(family(object)$family,
-        gaussian = , Gamma = object$sigma,
-        object$sigma^2
-    )
-}
-sigma2.glmmTMB <- function(object) {
-    if(family(object)$family == "nbinom1") sigma(object) + 1 else sigma(object)
-}
-        
-# VarCorr wrapper returning consistent format (list of named RE variances) 
-.varcorr <- function(object, ...) UseMethod(".varcorr")
-.varcorr.default <- function(object, ...) {
-    unclass(VarCorr(object, ...))
-}
-
-# RE model matrix colnames for models with >1 random formulas are prefixed with
-# the grouping factor name, e.g. :
-# {~ 1 | X1, ~ 1 | X2} has model.matrix columns "X1.(Intercept)", "X2.(Intercept)"
-# Need to rename VC matrix dimnames to match them.
-.varcorr.lme <- function(object, ...) {
-    reStruct <- object$modelStruct$reStruct
-	rval <- lapply(reStruct, function(v, sig2) nlme::pdMatrix(v) * sig2, object$sigma^2)
-    if ((m <- length(rval)) > 1L) {
-		nm <- names(rval)
-		for (i in seq.int(m)) {
-			dn <- paste(nm[i], dimnames(rval[[i]])[[1L]], sep=".")
-			dimnames(rval[[i]]) <- list(dn, dn)
-		}
-	}
-    rval
-}
-
-
-# Note: currently ONLY FOR CONDITIONAL MODEL
-.varcorr.glmmTMB <- function(object, ...) {
-    unclass(VarCorr(object, ...)$cond)
-}
-.varcorr.glmmadmb <- function(object, ...) {
-    suppressWarnings(VarCorr(object))
-}
-
-.numfixef <- function (object, ...)  UseMethod(".numfixef")
-.numfixef.default <- function (object, ...) fixef(object, ...)
-.numfixef.cpglm <- function (object, ...) coef(object, ...)
-.numfixef.glmmTMB <- function (object, ...) fixef(object, ...)$cond
-
-# RE model matrix
-.remodmat <- function(object) UseMethod(".remodmat")
-
-.remodmat.default <-
-function(object) {
-    env <- environment(formula(object))
-    rval <- lapply(.findbars(formula(object)),
-        function(f) model.matrix(as.formula(call("~", f[[2L]]), env = env),
-                     data = model.frame(object)))
-    rval <- do.call("cbind", rval)
-    rval[, !duplicated(colnames(rval)), drop = FALSE]
-}
-    
-.remodmat.merMod <-
-function(object) {
-    rval <- do.call("cbind", model.matrix(object, type = "randomListRaw"))
-	rval[, !duplicated(colnames(rval)), drop = FALSE]
-}
-
-.remodmat.lme <-
-function(object)
-    model.matrix(object$modelStruct$reStruct, data = object$data[rownames(object$fitted), 
-			, drop = FALSE])
-
-
-.nullUpdateWarning <- 
-function(message = 
-"The null model is correct only if all variables used by the original model remain unchanged.",
-Call = NULL) {
-	if(!isTRUE(getOption("MuMIn.noUpdateWarning")))
-		cry(Call, message, warn = TRUE)
-}
-
-# .nullFitRE: update `object` to intercept only model, keeping original RE terms.
-# TODO: reOnlyModelCall or reOnlyFormula
-.nullFitRE <- function(object, envir) UseMethod(".nullFitRE")
-.nullFitRE.default <- 
-function(object, envir = parent.frame()) {
-    cl <- getCall(object)
-	if(! "formula" %in% names(cl)) 
-		stop("cannot create a null model for object without named \"formula\" argument in its call")
-    cl$formula <- .nullREForm(formula(object))
-	.nullUpdateWarning()
-    eval(cl, envir)
-}
-
-.nullFitRE.lme <-
-function(object, envir = parent.frame()) {
-	cl <- getCall(object)
-	cl$fixed <- update.formula(cl$fixed, . ~ 1)
-    if(inherits(object, "glmmPQL")) cl$verbose <- FALSE
-	.nullUpdateWarning()
-	eval(cl, envir)
-}
-
-# sum up RE variance using VarCorr list
-# For RE-intercept identical to a sum of diagonals of VC matrices.
-# sum(sapply(lapply(vc, diag), sum))
-.varRESum <- function(vc, X) {
-	n <- nrow(X)
-	sum(sapply(vc, function(sig) {
-		mm1 <-  X[, rownames(sig), drop = FALSE]
-		sum(matmultdiag(mm1 %*% sig, ty = mm1)) / n
-	}))
-}
-
-# update model adding an observation level RE term
-.OLREFit <- function(object) UseMethod(".OLREFit")
-.OLREFit.default <- function(object) .NotYetImplemented()
-.OLREFit.merMod <- function(object) {
-    if (!any(sapply(object@flist, nlevels) == nobs(object))) {
-		cl <- get_call(object)
-        frm <- formula(object)
-		nRowData <- eval(call("eval", as.expression(call("NROW", cl$formula[[2L]])),
-            envir = cl$data), envir = environment(frm),
-            enclos = parent.frame())
-		fl <- length(frm)
-		frx <- . ~ . + 1
-		frx[[3L]][[3L]] <- call("(", call("|", 1, call("gl", nRowData, 1)))
-		cl$formula <- update.formula(frm, frx)		
-		object <- tryCatch(eval(cl, envir = environment(frm), enclos = parent.frame()),
-			error = function(e) {
-				cry(conditionCall(e), conditionMessage(e), warn = TRUE)
-				cry(cl, "fitting model with the observation-level random effect term failed. Add the term manually")
-		})
-		.nullUpdateWarning("The result is correct only if all variables used by the model remain unchanged.")
-    }
-    object
-}
-
 
 # general function
 r2glmm <-
 function(family, vfe, vre, vol, link, pmean, lambda, omega, n) {
+    
+    #message("lambda=", lambda)
+    #message("omega=", omega)
+    
     if(inherits(family, "family")) {
         link <- family$link
         family <- family$family
@@ -180,7 +41,7 @@ function(family, vfe, vre, vol, link, pmean, lambda, omega, n) {
             delta = 0.25 * omega
             ),
         nbinom2.log = {
-            vdelta <- (1 / lambda) + (1 / omega) # omega is theta
+            vdelta <- (1 / lambda) + (1 / omega)
             c(
             delta = vdelta,
             lognormal =  log1p(vdelta),
@@ -192,20 +53,12 @@ function(family, vfe, vre, vol, link, pmean, lambda, omega, n) {
         cry(sys.call(-1L), "do not know how to calculate variance for %s(%s)", family, dQuote(link))
     )
 	
-    #print(c(varFE = vfe, varRE = vre, varOL = vol))
-    
 	vtot <- sum(vfe, vre)
 	matrix(c(vfe, vtot) / (vtot + rep(vol, each = 2L)),
         ncol = 2L, byrow = TRUE, dimnames = list(names(vol), c("R2m", "R2c")))
 }
 
 
-.binomial.sample.size <-
-function(object) {
-    tt <- terms(formula(object))
-    y <- model.frame(object)[, rownames(attr(tt, "factors"))[attr(tt, "response")]]
-    if(is.null(dim(y))) 1 else mean(rowSums(y))        
-}
 
 `r.squaredGLMM` <-
 function(object, null, ...) {
@@ -230,27 +83,27 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
     fitted <- (model.matrix(object)[, ok, drop = FALSE] %*% fe[ok])[, 1L]
     varFE <- var(fitted)
 	
+   
 	mmRE <- .remodmat(object)
-    
     ##Note: Argument 'contrasts' can only be specified for fixed effects
 	##contrasts.arg = eval(cl$contrasts, envir = environment(formula(object))))	
-
 	vc <- .varcorr(object)
-	
-	for(i in seq.int(length(vc))) {
-		a <- fixCoefNames(rownames(vc[[i]]))
-		dimnames(vc[[i]]) <- list(a, a)
-	}
-	colnames(mmRE) <- fixCoefNames(colnames(mmRE))
-    
-	if(!all(unlist(sapply(vc, rownames), use.names = FALSE) %in% colnames(mmRE)))
-		stop("RE term names do not match those in model matrix. \n",
-			 "Have 'options(contrasts)' changed since the model was fitted?")
-	
-    varRE <- .varRESum(vc, mmRE) # == sum(as.numeric(VarCorr(fm)))
+    if(!is.null(vc)) {
+        for(i in seq.int(length(vc))) {
+            a <- fixCoefNames(rownames(vc[[i]]))
+            dimnames(vc[[i]]) <- list(a, a)
+        }
+        colnames(mmRE) <- fixCoefNames(colnames(mmRE))
+        if(!all(unlist(sapply(vc, rownames), use.names = FALSE) %in% colnames(mmRE)))
+            stop("RE term names do not match those in model matrix. \n",
+                 "Have 'options(contrasts)' changed since the model was fitted?")
+        varRE <- .varRESum(vc, mmRE) # == sum(as.numeric(VarCorr(fm)))
+    } else {
+        varRE <- 0
+    }
     
     familyName <- fam$family
-    if(substr(familyName, 1L, 17L) == "Negative Binomial")
+    if(startsWith(familyName, "Negative Binomial("))
         familyName <- "nbinom2"
     
     if(familyName %in% c("quasipoisson", "poisson", "nbinom1", "nbinom2",
@@ -269,11 +122,14 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
         pmean <- fam$linkinv(fixefnull - 0.5 * vt * tanh(fixefnull * (1 + 2 * exp(-0.5 * vt)) / 6))
         r2glmm(fam, varFE, varRE, pmean = pmean, n = .binomial.sample.size(object))
     }, nbinom2 = {
-        lambda <- unname(exp(fixefnull + 0.5 * varRE))
-        theta <- if(inherits(object, "glmerMod"))
-            lme4::getME(object, "glmer.nb.theta") else
-            sigma2(object)^-2 
+        vt <- .varRESum(.varcorr(null), mmRE)
+        lambda <- unname(exp(fixefnull + 0.5 * vt))
+        theta <- sigma2(object)
+        
+        #koBrowseHere()
+
         r2glmm(familyName, varFE, varRE, lambda = lambda, omega = theta, link = fam$link)
+
     }, Gamma = {
         nu <- sigma2(object)^-2
         omega <- 1
@@ -281,15 +137,14 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
     }, quasipoisson = , nbinom1 = {
         vt <- .varRESum(.varcorr(null), mmRE)
         lambda <- unname(exp(fixefnull + 0.5 * vt))
-		omega <- sigma2(object)^-2
+        omega <- sigma2(object)
         r2glmm(fam, varFE, varRE, lambda = lambda, omega = omega)
     }, poisson = {
         vt <- .varRESum(.varcorr(null), mmRE)
         lambda <- unname(exp(fixefnull + 0.5 * vt))
         omega <- 1
         rval <- r2glmm(fam, varFE, varRE, lambda = lambda, omega = omega)
-        if(inherits(object, "merMod") &&
-           familyName == "poisson" && pj2014) {
+        if(inherits(object, "merMod") && familyName == "poisson" && pj2014) {
             xo <- .OLREFit(object)
             vc <- .varcorr(xo)
             fe <- .numfixef(xo)
@@ -315,16 +170,18 @@ function(object, null, ...) r.squaredGLMM.merMod(object, null, ...)
 
 `r.squaredGLMM.glmmTMB` <-
 function(object, null, envir = parent.frame(), ...) {
-	fx <- fixef(object) # fixed effect estimates
-	if(length(fx$zi) != 0L) # || length(fx$disp) != 0L)
-		stop("r.squaredGLMM cannot (yet) handle 'glmmTMB' object with zero-inflation")
-	r.squaredGLMM.merMod(object, null, envir, ...)
+    w <- c(fixef(object)$zi != 0L,
+        !identical(object$modelInfo$allForm$dispformula, ~0, ignore.environment = TRUE))
+    if(any(w)) warning("the effects of ",
+            prettyEnumStr(c("zero-inflation", "dispersion model"), quote = FALSE), " are ignored")
+    r.squaredGLMM.merMod(object, null, envir, ...)
 }
 
 `r.squaredGLMM.glmmadmb` <-
 function(object, null, envir = parent.frame(), ...) {
 	if(object$zeroInflation)
-		stop("r.squaredGLMM cannot (yet) handle 'glmmADMB' object with zero-inflation")
+        warning("effects of zero-inflation are ignored")
+		#stop("r.squaredGLMM cannot (yet) handle 'glmmADMB' object with zero-inflation")
 	r.squaredGLMM.merMod(object, null, envir, ...)
 }
 
@@ -352,9 +209,11 @@ function(object, null, envir = parent.frame(), ...) {
         omega <- 1
         r2glmm(fam, varFE, 0, lambda = nu, omega = omega)
     }, nbinom2 = {
-        r2glmm(familyName, varFE, 0, lambda = unname(exp(fixefnull)), omega = sigma2(object)^-2, link = fam$link)
+        r2glmm(familyName, varFE, 0, lambda = unname(exp(fixefnull)),
+            omega = sigma2(object), link = fam$link)
     }, quasipoisson = , nbinom1 = {
-        r2glmm(fam, varFE, 0, lambda = unname(exp(fixefnull)), omega = sigma2(object)^2)
+        r2glmm(fam, varFE, 0, lambda = unname(exp(fixefnull)),
+            omega = sigma2(object))
     }, poisson = {
         r2glmm(fam, varFE, 0, lambda = unname(exp(fixefnull)), omega = 1)
     }, r2glmm(fam, varFE, 0))

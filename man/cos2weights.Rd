@@ -3,17 +3,16 @@
 \alias{cos2Weights}
 \title{Cos-squared model weights}
 \usage{
-cos2Weights(object, ..., data, eps = 1e-06, maxit = 100,
-  predict.args = list())
+cos2Weights(object, ..., data, eps = 1e-06, maxit = 100, predict.args = list())
 }
 \arguments{
 \item{object, \dots}{two or more fitted \code{\link{glm}} objects, or a
 \code{list} of such, or an \code{\link[=model.avg]{"averaging"}} object.
-    Currently only \code{lm} and \code{glm} objects are accepted.}
+Currently only \code{lm} and \code{glm} objects are accepted.}
 
 \item{data}{a test data frame in which to look for variables
 for use with \link[=predict]{prediction}. If omitted, the fitted linear
-    predictors are used.}
+predictors are used.}
 
 \item{eps}{tolerance for determining convergence.}
 
@@ -23,11 +22,11 @@ for use with \link[=predict]{prediction}. If omitted, the fitted linear
 passed to \code{predict}.}
 }
 \value{
-The function returns a numeric vector of model weights.
+A numeric vector of model weights.
 }
 \description{
 Calculates cos-squared model weights, following the algorithm
-    outlined in the appendix of Garthwaite & Mubwandarikwa (2010).
+outlined in the appendix of Garthwaite & Mubwandarikwa (2010).
 }
 \examples{
 \dontshow{
@@ -45,26 +44,26 @@ predict(ma, data = test.data)
 \} else message("Need CRAN package 'expm' to run this example")
 }
 }
-\author{
-Carsten Dormann, adapted by Kamil Barto\enc{ń}{n}
-}
 \references{
 Garthwaite, P. H. and Mubwandarikwa, E. (2010) Selection of weights for
-    weighted model averaging. \emph{Australian & New Zealand Journal of
-    Statistics}, 52: 363–382.
+weighted model averaging. \emph{Australian & New Zealand Journal of
+Statistics}, 52: 363–382.
 
-Dormann, C. et al. (2018) Model averaging in ecology: a review of Bayesian, 
-   information-theoretic, and tactical approaches for predictive inference.
-   \emph{Ecological Monographs}, 88, 485–504. 
-
+Dormann, C. et al. (2018) Model averaging in ecology: a review of Bayesian,
+information-theoretic, and tactical approaches for predictive inference.
+\emph{Ecological Monographs}, 88, 485–504.
 }
 \seealso{
 \code{\link{Weights}}, \code{\link{model.avg}}
 
-Other model.weights: \code{\link{BGWeights}},
-  \code{\link{bootWeights}},
-  \code{\link{jackknifeWeights}},
-  \code{\link{stackingWeights}}
+Other model weights: 
+\code{\link{BGWeights}()},
+\code{\link{bootWeights}()},
+\code{\link{jackknifeWeights}()},
+\code{\link{stackingWeights}()}
 }
+\author{
+Carsten Dormann, adapted by Kamil Barto\enc{ń}{n}
+}
+\concept{model weights}
 \keyword{models}
-

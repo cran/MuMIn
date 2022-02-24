@@ -2,7 +2,8 @@
 coeffs.gamlss <-
 function(model) {
     cf <- model[c('mu.coefficients', 'sigma.coefficients', 'nu.coefficients', 'tau.coefficients')]
-    n <- vapply(cf, length, 0L)
+    cf <- lapply(cf, function(x) x[!is.na(x)])
+	n <- vapply(cf, length, 0L)
     nm <- unlist(lapply(cf, names), recursive = FALSE, use.names = FALSE)
     nm[nm == "(Intercept)"] <- "(Int)"
     rval <- unlist(cf, use.names = FALSE, recursive = FALSE)
@@ -13,10 +14,14 @@ function(model) {
 
 coefTable.gamlss <-
 function(model, ...)  {
-    capture.output(sm <- summary(model))
-    ct <- sm[, c(1L, 2L), drop = FALSE]
-    .makeCoefTable(ct[, 1L], ct[, 2L], coefNames = names(coeffs(model)))
+	cf <- coeffs(model)
+    .makeCoefTable(cf, vcov(model, type = "se"), coefNames = names(cf))
 }
+
+# rm(model)
+# environment(coeffs.gamlss) <- asNamespace("MuMIn")
+# environment(coefTable.gamlss) <- asNamespace("MuMIn")
+# coefTable.gamlss(fit1)
 
 `makeArgs.gamlss` <- 
 function(obj, termNames, opt, ...) {
@@ -30,6 +35,7 @@ function(obj, termNames, opt, ...) {
 	zarg[[1L]] <- f
 	zarg
 }
+
 
 getAllTerms.gamlss <-
 function(x, intercept = FALSE, ...) {

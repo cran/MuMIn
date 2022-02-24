@@ -5,6 +5,14 @@
 `model.sel` <-
 function (object, ...) UseMethod("model.sel")
 
+`model.sel.averaging` <-
+function (object, rank = attr(object, "rank"),
+    rank.args = NULL, ...,  beta = c("none", "sd", "partial.sd"), extra) {
+    model.sel(get.models(object, NA), rank = rank, rank.args = rank.args, ...,
+       beta = beta, extra)
+}
+
+
 `model.sel.model.selection` <-
 function (object, rank = NULL, rank.args = NULL, fit = NA, ...,
 		  beta = c("none", "sd", "partial.sd"),
@@ -137,7 +145,7 @@ function(object, ..., rank = NULL, rank.args = NULL,
 		}
 		c(attr(ll, "df"), ll, ic)
 		}, structure(double(3L), names = c("df", lLName, ICname)))
-	rval <- as.data.frame(t(rval))
+	rval <- as.data.frame(t(rval), stringsAsFactors = TRUE)
 	rval <- cbind(d, rval)
     o <- order(rval[, ICname], decreasing = FALSE)
 	rval[, "delta"] <- rval[, ICname] - rval[o[1L], ICname]
@@ -177,6 +185,7 @@ function(object, ..., rank = NULL, rank.args = NULL,
 	
 	rval <- structure(
 		rval[o, , drop = FALSE],
+		 # TERMS
 		terms = structure(all.terms, interceptLabel =
 			unique(unlist(lapply(allTermsList, attr, "interceptLabel")))),
 		model.calls = lapply(models, get_call)[o],

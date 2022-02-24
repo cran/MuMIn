@@ -37,7 +37,6 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 		names(cl)[2L] <- "x"
 		object <- eval.parent(cl[1L:3L])
 	}
-	
 	# TODO: unify refitting conditions in model.avg and model.sel
 	
 	if(fit || !missing(...)) {
@@ -59,10 +58,8 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 	if(nrow(object) <= 1L) stop("'object' consists of only one model")
 	
 	ct <- attr(object, "coefTables")
-
 	cfarr <- coefArray(ct)
 	weight <- Weights(object)
-	
 
 	cfmat <- as.matrix(cfarr[, 1L, ])
 	cfmat[is.na(cfmat)]<- 0
@@ -77,7 +74,7 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 	#allterms1 <- lapply(attr(object, "calls"), function(x)
 		#getAllTerms(as.formula(x[[switch(as.character(x[[1L]]),
 			#lme=, lme.formula= "fixed", gls= "model", "formula")]])))
-	all.terms <- attr(object, "terms")
+	all.terms <- attr(object, "terms") # TERMS
 	all.vterms <- all.terms[!(all.terms %in% attr(all.terms, "interceptLabel")
 		| apply(is.na(object[, all.terms, drop = FALSE]), 2L, all))]
 	#allterms1 <- apply(!is.na(object[, all.vterms, drop = FALSE]), 1L, function(x) all.vterms[x])
@@ -90,7 +87,7 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 	.Debug(.Generic <- "model.avg")
 
 	ret <- list(
-		msTable = structure(as.data.frame(mstab),
+		msTable = structure(as.data.frame(mstab, stringsAsFactors = TRUE),
 			term.codes = attr(allmodelnames, "variables")),
 		coefficients = coefMat,
 		coefArray = cfarr,
@@ -107,9 +104,12 @@ function(object, subset, fit = FALSE, ..., revised.var = TRUE) {
 	)
 
 	attr(ret, "rank") <- attr(object, "rank")
-	attr(ret, "modelList") <- attr(object, "modelList")
-	if(is.null(attr(ret, "modelList")))
+	if(is.null(attr(object, "modelList"))) {
 		attr(ret, "model.calls") <- attr(object, "model.calls")
+		attr(ret, "interceptLabel") <- attr(attr(object, "terms"), "interceptLabel")
+	} else {
+		attr(ret, "modelList") <- attr(object, "modelList")
+	}
 	attr(ret, "beta") <- attr(object, "beta")
 	attr(ret, "nobs") <- attr(object, "nobs")
 	attr(ret, "revised.var") <- revised.var
@@ -205,12 +205,15 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 
 	if (betaMode == 1L) {
 		response.sd <- sd(model.response(model.frame(object)))
-		for(i in seq_along(coefTables))
+		for(i in seq_along(coefTables)) {
+			X <- model.matrix(models[[i]])
 			coefTables[[i]][, 1L:2L] <-
 				coefTables[[i]][, 1L:2L] *
-				apply(model.matrix(models[[i]]), 2L, sd) / response.sd
+				#apply(model.matrix(models[[i]]), 2L, sd) / response.sd
+				apply(X[, match(rownames(coefTables[[i]]), colnames(X)),
+					drop = FALSE], 2L, sd) / response.sd
+		}
 	}
-
 
 	cfarr <- coefArray(coefTables)
 	cfmat <- array(cfarr[, 1L, ], dim = dim(cfarr)[-2L], dimnames = dimnames(cfarr)[-2L])
@@ -222,7 +225,6 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 		as.numeric(!is.na(cfarr[, 1L, ])), dim = dim(cfmat)))
 	coefMat[is.nan(coefMat)] <- NA_real_
 		
-
     names(all.terms) <- seq_along(all.terms)
 	colnames(mstab)[3L] <- ICname
 
@@ -279,17 +281,16 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 			))[[1L]]
 	} else NA
 	
-	
 	.Debug(.Generic <- "model.avg")
 	
 	ret <- list(
-		msTable = structure(as.data.frame(mstab),
+		msTable = structure(as.data.frame(mstab, stringsAsFactors = TRUE),
 			term.codes = attr(allmodelnames, "variables")),
 		coefficients = coefMat,
 		coefArray = cfarr,
 		sw = sw,
 		x = mmxs,
-		residuals = NULL, # no residuals
+		residuals = NULL, # no residuals, as they can be calculated in several ways
 		formula = frm,
 		call = {
 			cl <- match.call()
@@ -300,7 +301,7 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 
 	attr(ret, "rank") <- rank
 	attr(ret, "modelList") <- models
-	attr(ret, "beta") <- beta
+	attr(ret, "beta") <- strbeta
 	attr(ret, "nobs") <- nobs(object)
 	attr(ret, "revised.var") <- revised.var
 	class(ret) <- "averaging"

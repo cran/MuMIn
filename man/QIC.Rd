@@ -84,6 +84,9 @@ QIC <- function(x) geepack::QIC(x)[1]
 
 model.sel(fm1, fm2, fm3, rank = QIC)
 
+#####
+library(geepack)
+library(MuMIn)
 
 \dontrun{
 # same result:

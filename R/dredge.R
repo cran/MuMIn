@@ -1,6 +1,7 @@
 
 # code snippet to handle argument 'beta'
-.expr_beta_arg <- expression({
+.expr_beta_arg <- 
+expression({
 	if(is.logical(beta) && beta) {
 		betaMode <- as.integer(beta)
 		strbeta <- if(beta) "sd" else "none"
@@ -9,6 +10,8 @@
 		beta <- strbeta != "none"
 		betaMode <- (strbeta != "none") + (strbeta == "partial.sd")
 	} else {
+        cry(, "invalid value for 'beta' : the argument is taken to be \"none\"",
+            warn = TRUE)
 		betaMode <- 0L
 		strbeta <- "none"
 	}
@@ -19,7 +22,17 @@ dredge <-
 function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, rank = "AICc",
 		 fixed = NULL, m.lim = NULL, m.min, m.max, subset,
 		 trace = FALSE, varying, extra, ct.args = NULL,
+		 deps = attr(allTerms0, "deps"),
+         cluster = NULL,
 		 ...) {
+         
+         
+    if(isTRUE(evaluate) && inherits(cluster, "cluster")) {
+        cl <- match.call()
+        cl[[1L]] <- quote(.dredge.par)
+        return(eval(cl))
+    }
+    
 
 	trace <- min(as.integer(trace), 2L)
 	strbeta <- betaMode <- NULL
@@ -39,7 +52,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		#"For objects without a 'call' component the call to the fitting function \n",
 		#" must be used directly as an argument to 'dredge'.")
 		# NB: this is unlikely to happen
-		if(!is.function(eval.parent(gmCall[[1L]])))
+		if(!is.function(eval(gmCall[[1L]], gmEnv)))
 			cry(, "could not find function '%s'", asChar(gmCall[[1L]]))
 	} else {
 		# if 'update' method does not expand dots, we have a problem with
@@ -59,13 +72,11 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		}
 	}
 	
-	
 	thisCall <- sys.call()
 	exprApply(gmCall[["data"]], NA, function(expr) {
 		if(is.symbol(expr[[1L]]) && all(expr[[1L]] != c("@", "$")))
 			cry(thisCall, "'global.model' uses \"data\" that is a function value: use a variable instead")
 	})
-	
 
 	lik <- .getLik(global.model)
 	logLik <- lik$logLik
@@ -118,11 +129,11 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 	nIntercepts <- sum(attr(allTerms, "intercept"))
 
 	# Check for na.omit
-	if(!(gmNaAction <- .checkNaAction(cl = gmCall, what = "'global.model'")))
+	if(!(gmNaAction <- .checkNaAction(cl = gmCall, what = "'global.model'", envir = gmEnv)))
 		cry(, attr(gmNaAction, "message"))
 
 	if(names(gmCall)[2L] == "") gmCall <-
-		match.call(gmCall, definition = eval.parent(gmCall[[1L]]),
+		match.call(gmCall, definition = eval(gmCall[[1L]], envir = gmEnv),
 				   expand.dots = TRUE)
 
 
@@ -182,7 +193,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		}
 	}
 
-	deps <- attr(allTerms0, "deps")
+	#deps <- attr(allTerms0, "deps")
 	fixed <- union(fixed, rownames(deps)[rowSums(deps, na.rm = TRUE) == ncol(deps)])
 	fixed <- c(fixed, allTerms[allTerms %in% interceptLabel])
 
@@ -232,7 +243,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		# a cumbersome way of evaluating a non-exported function in a parent frame:
 		extra <- eval(as.call(list(call("get", ".get.extras",
 			envir = call("asNamespace", .packageName), inherits = FALSE),
-				substitute(extra), r2nullfit = TRUE)), parent.frame())
+				substitute(extra), r2nullfit = TRUE)), gmEnv)
 
 		#extra <- eval(call(".get.extras", substitute(extra), r2nullfit = TRUE), parent.frame())
 		if(any(c("adjR^2", "R^2") %in% names(extra))) {
@@ -406,19 +417,18 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 
 	retColIdx <- if(nVarying) -nVars - seq_len(nVarying) else TRUE
 
-	if(trace > 1L) {
-		progressBar <- if(.Platform$GUI == "Rgui") {
-			 utils::winProgressBar(max = ncomb, title = "'dredge' in progress")
-		#} else if(capabilities("tcltk") && ("package:tcltk" %in% search())) {
-			 #tkProgressBar(max = ncomb, title = "'dredge' in progress")
-		} else utils::txtProgressBar(max = ncomb, style = 3L)
-		setProgressBar <- switch(class(progressBar),
-			    txtProgressBar = utils::setTxtProgressBar,
-			   #tkProgressBar = setTkProgressBar,
-			   winProgressBar = utils::setWinProgressBar,
-			   function(...) {})
-		on.exit(close(progressBar))
-	}
+	dotrace <- if(trace == 1L) {
+		dotrace <- function()  {
+			cat(iComb, ": "); print(clVariant)
+			utils::flush.console()
+		}
+	} else if(trace > 1L) {
+		progressBar <- .progbar(max = ncomb, title = "\"dredge\" working...")
+		on.exit(.closeprogbar(progressBar))
+		function() progressBar(value = iComb,
+			title = sprintf("dredge: %d of ca. %.0f subsets (%d total)", k, (k / iComb) * ncomb, iComb))
+	} else function() {}
+	
 
 	iComb <- -1L
 	while((iComb <- iComb + 1L) < ncomb) {
@@ -472,13 +482,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 			clVariant[varyingNames] <- fvarying[cvi]
 		}
 
-		if(trace == 1L) {
-			cat(iComb, ": "); print(clVariant)
-			utils::flush.console()
-		} else if(trace == 2L) {
-			setProgressBar(progressBar, value = iComb,
-				title = sprintf("dredge: %d of %.0f subsets (%d total)", k, (k / iComb) * ncomb, iComb))
-		}
+		dotrace()
 
 		if(evaluate) {
 			# begin row1: (clVariant, gmEnv, modelId, IC(), applyExtras(),
@@ -561,7 +565,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		rval[, nVars + seq_len(nVarying)] <- variants[varlev, ]
 	}
 
-	rval <- as.data.frame(rval)
+	rval <- as.data.frame(rval, stringsAsFactors = TRUE)
 	row.names(rval) <- ord
 
 	# Convert columns with presence/absence of terms to factors
@@ -609,7 +613,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE, ra
 		},
         class = c("model.selection", "data.frame")
 	)
-} ######
+} #
 
 
 

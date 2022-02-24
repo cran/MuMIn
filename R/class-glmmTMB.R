@@ -77,6 +77,24 @@ function (model, ...) {
     .makeCoefTable(cf1[, 1L], cf1[, 2L], dfs, coefNames = nm)
 }
 
+# coefTable.glmmTMB <-
+# function (model, ...) {
+    # dfs <- df.residual(model)
+    # cf1 <- fixef(model)
+    # se <- lapply(vcov(model), function(x) sqrt(diag(x)))
+    # a <- intersect(names(cf1), names(se))
+    # cf1[a] <- mapply(cbind, cf1[a], se[a], SIMPLIFY = FALSE, USE.NAMES = FALSE)
+    # a <- setdiff(names(cf1), names(se))
+    # a <- a[sapply(cf1[a], length) != 0L]
+    # cf1[a] <- lapply(cf1[a], cbind, NA_real_)
+    # types <- rep(names(cf1), sapply(cf1, NROW))
+    # cf1 <- do.call(rbind, cf1[])
+    # nm <- rownames(cf1)
+    # nm[nm == "(Intercept)"] <- "(Int)"
+    # nm <- paste0(types, "(", nm, ")")
+    # .makeCoefTable(cf1[, 1L], cf1[, 2L], dfs, coefNames = nm)
+# }
+
 coeffs.glmmTMB <-
 function(model) {
     coefTable(model)[, 1L]    
@@ -113,7 +131,9 @@ function(obj, termNames, opt, ...) {
 		rval[[i]] <- ~ 0
 		environment(rval[[i]]) <- opt$gmFormulaEnv
 	}
-	rval$formula <- as.formula(call("~", as.symbol(opt$response), rval$formula[[2L]]), opt$gmFormulaEnv)
+	
+	# XXX: Why it was `as.symbol(opt$response)` ?
+	rval$formula <- as.formula(call("~", opt$response, rval$formula[[2L]]), opt$gmFormulaEnv)
 		
 	rval
 }

@@ -14,52 +14,48 @@ model selection and carry out model averaging based on information criteria.
 The collection of functions includes:
 \describe{
 	\item{\code{\link{dredge}}}{performs an automated model selection with
-		subsets of the supplied \sQuote{global} model, and optional
+		subsets of the supplied \sQuote{global} model and optional
 		choices of other model properties (such as different link functions).
-		The set of models may be generated either with \sQuote{all possible}
+		The set of models can be generated with \sQuote{all possible}
 		combinations or tailored according to the conditions specified.
-
-		\code{\link{pdredge}} does the same, but can parallelize model fitting
-		process using a cluster.
 		}
 	\item{\code{\link{model.sel}}}{creates a model selection table from
-		hand-picked models. }
+		selected models. }
 	\item{\code{\link{model.avg}}}{ calculates model-averaged parameters,
-		with standard errors and confidence intervals.
+		along with standard errors and confidence intervals.
         Furthermore, the \code{\link[=predict.averaging]{predict}} method 
         produces model-averaged predictions. }
-	\item{\code{\link{AICc}}}{calculates second-order Akaike information
+	\item{\code{\link{AICc}}}{calculates the second-order Akaike information
 		criterion. Some other criteria are provided, see below. }
 		
 	\item{\code{\link{stdize}}, \code{\link{stdizeFit}}, \code{\link{std.coef}},
-		\code{\link{partial.sd}}}{can be used for standardization of data and
+		\code{\link{partial.sd}}}{can be used to standardise data and
 		model coefficients by Standard Deviation or Partial Standard Deviation.
 		}
 }
 
 For a complete list of functions, use \code{library(help = "MuMIn")}.
 
-By default, AIC\eqn{_{c}}{c} is used to rank the models and to obtain model
-weights, though any other information criteria can be utilised. At least the 
+By default, AIC\eqn{_{c}}{c} is used to rank the models and obtain model
+weights, although any other information criteria can be used. At least the 
 following ones are currently implemented in \R:
 \code{\link{AIC}} and \code{\link{BIC}} in package \pkg{stats}, and
 \code{\link{QAIC}}, \code{\link{QAICc}}, \code{\link{ICOMP}},
-\code{\link{CAICF}}, and \link{Mallows' Cp} in \pkg{MuMIn}. There is also
-\code{\link{DIC}} extractor for \acronym{MCMC} models, and \code{\link{QIC}} for
+\code{\link{CAICF}}, and \link{Mallows' Cp} in \pkg{MuMIn}. There is also a
+\code{\link{DIC}} extractor for \acronym{MCMC} models, and a \code{\link{QIC}} for
 \acronym{GEE}.
 
-Most of \R's common modelling functions are supported, for a full inventory
+Most of common modelling functions in \R are supported. For a full listing,
 see \link[=MuMIn-models]{the list of supported models}.
 
-Apart from the \dQuote{regular} information criteria, model averaging can be performed
-  using various types of model weighting algorithms:
+In addition to the \dQuote{regular} information criteria, model averaging can be performed using various types of model weighting algorithms:
   \link[=BGWeights]{Bates-Granger},
   \link[=BGWeights]{bootstrapped},
   \link[=cos2Weights]{cos-squared},
   \link[=jackknifeWeights]{jackknife},
   \link[=stackingWeights]{stacking}, or
   \link[=armWeights]{ARM}. 
-  These weighting functions apply mostly to \code{glm}s.
+  These weighting functions are mainly applicable to \code{glm}s.
 
 }
 

@@ -56,7 +56,7 @@ function(x, attrib, modif = NULL, rowchange = TRUE) {
 		if(rowchange && (length(oldrownames) != length(newrownames) ||
 						 any(oldrownames != newrownames))) {
 			rowattrib <- c("model.calls", "coefTables", "random.terms", "order",
-			   if(!is.null(attr(x, "modelList")))"modelList")
+			   if(!is.null(attr(x, "modelList"))) "modelList")
 			k <- match(newrownames, oldrownames)
 			attrib[rowattrib] <- lapply(attrib[rowattrib], `[`, k)
 		}

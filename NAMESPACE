@@ -23,15 +23,21 @@ export(
 	"bootWeights",
 	"loo",
 	
+    "coefplot",
+    
     # defunct and deprecated:
 	"mod.sel",  "tTable", "updateable2"
 )
 
 # Imports:
 importFrom("graphics", "axis", "box", "mtext", "par", "plot.new", "plot.window",
-	"rect",	"strheight", "strwidth", "title")
-#importFrom(grDevices, colorRamp, rgb)
+	"rect",	"strheight", "strwidth", "title", "abline", "lines", "matplot", 
+    "grconvertX", "grconvertY", "points", "segments")
+
+importFrom("grDevices", "n2mfrow", "col2rgb", "hcl.colors", "hcl.pals", "rgb")
+
 importFrom("methods", ".hasSlot", "isGeneric", "slot", "slotNames", "is")
+
 importFrom("stats", ".checkMFClasses", ".getXlevels", ".MFclass", "AIC",
 	"as.formula",
 	"BIC",
@@ -47,18 +53,15 @@ importFrom("stats", ".checkMFClasses", ".getXlevels", ".MFclass", "AIC",
     "gaussian", "binomial", "Gamma", "inverse.gaussian", "quasi", 
     "quasibinomial", "quasipoisson",
 	"dnorm", "pnorm", "qnorm", "dt", "pt", "qt",
-	"rbinom", "rgamma", "rpois" # for .simulateData
+	"rbinom", "rgamma", "rpois", # for .simulateData
+     "cor", "cov", "rnorm", "runif", "optim", "confint"
     )
+
 importFrom("stats4", "logLik", "coef", "vcov")
-#importFrom("utils", "capture.output", "setTxtProgressBar", "txtProgressBar")
+
 importFrom("utils", "capture.output")
 
 importFrom("Matrix", "t", "rowSums", "det", "diag", "solve")
-importFrom("grDevices", "n2mfrow")
-importFrom("graphics", "abline", "lines", "matplot")
-
-# model-averaging related functions:
-importFrom("stats", "cor", "cov", "rnorm", "runif", "optim")
 
 importFrom("nlme", fixef, VarCorr)
 
@@ -75,6 +78,7 @@ S3method(logLik, averaging)
 S3method(confint, averaging)
 S3method(vcov, averaging)
 S3method(model.matrix, averaging)
+S3method(formula, averaging)
 
 S3method(print, model.selection)
 S3method(subset, model.selection)
@@ -99,6 +103,7 @@ S3method(model.avg, model.selection)
 S3method(model.avg, default)
 
 S3method(plot, model.selection)
+S3method(plot, averaging)
 
 S3method(sw, averaging)
 S3method(sw, model.selection)
@@ -383,11 +388,14 @@ S3method(r.squaredGLMM, merMod)
 
 S3method(.numfixef, default)
 S3method(.numfixef, glmmTMB)
+
 S3method(.OLREFit, default)
 S3method(.OLREFit, merMod)
+
 S3method(.remodmat, default)
 S3method(.remodmat, lme)
 S3method(.remodmat, merMod)
+
 S3method(.nullFitRE, default)
 S3method(.nullFitRE, lme)
 
@@ -399,9 +407,14 @@ S3method(.varcorr, lme)
 S3method(sigma2, default)
 S3method(sigma2, glmmPQL)
 S3method(sigma2, glmmTMB)
+S3method(sigma2, glmerMod)
+
+S3method(.vcov, default)
+S3method(.vcov, glmmTMB)
    
 S3method(family, cplm)
 S3method(family, glmmadmb)
+
 S3method(sigma, glmmadmb)
 
 S3method(coeffs, gamlss)

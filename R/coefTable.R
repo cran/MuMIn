@@ -38,8 +38,9 @@ function(model, ...) {
 }
 
 `coefTable.lm` <-
+`coefTable.betareg` <- 
 function(model, ...)
-	.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))), model$df.residual)
+	.makeCoefTable(coef(model), sqrt(diag(vcov(model, ...))), df.residual(model))
 
 
 `coefTable.survreg` <- 
@@ -119,7 +120,6 @@ function(model, ...) {
 }
 
 `coefTable.aodql` <-
-`coefTable.betareg` <- 
 `coefTable.glimML` <-
 `coefTable.unmarkedFit` <- 
 function(model, ...)
@@ -295,7 +295,6 @@ function (x, y, labAsExpr = FALSE, n = 101, w = 5, ...) {
 	for(i in 1L:m) {
 		#cat("--", dimnames(x)[[1]][i], "--\n")
 
-		
 		mat <- matrix(0, n, 2L * nmodels + 1L)
 		for(k in 1L:nmodels) {
 			j <- seq.int(length.out = 2 + (k == 1), from = 1 + (k - 1)* 2 + (k != 1))
@@ -323,40 +322,47 @@ function (x, y, labAsExpr = FALSE, n = 101, w = 5, ...) {
 	invisible()
 }
 
+
 plot.coefTable <-
-function (x, y, labAsExpr = FALSE, n = 101, w = 5,...) {
-	lab_as_expr <- function(x) {
-		x <- gsub(":", "%*%", x, perl = TRUE)
-		x <- gsub("\\B_?(\\d+)(?![\\w\\._])", "[\\1]", x, perl = TRUE)
-		parse(text = x)
-	}
+function (x, y, labAsExpr = FALSE, n = 101, w = 5,
+		  include.zero = TRUE,
+		  col = 2, lwd = par("lwd"), lty = 1, lend = par("lend"),
+		  ...) {
+
 	xd <- function(z, n, w) {
-		rval <- matrix(NA_real_, ncol = 3L, nrow = n)
-		rval[, 1L] <- seq(z[1L] - w * z[2L], z[1L] + w * z[2L],
-			length.out = n)
-		if(!anyNA(z[3L]))
-			rval[, 2L] <- dt((rval[, 1L] - z[1L]) / z[2L], z[3L]) / z[2L]
-		rval[, 3L] <- dnorm(rval[, 1L], z[1L], z[2L])
+		#rval <- matrix(NA_real_, ncol = 3L, nrow = n)
+		rval <- matrix(NA_real_, ncol = 2L, nrow = n)
+     	x0 <- z[1L] - w * z[2L]
+	    x1 <- z[1L] + w * z[2L]
+		if(include.zero) {
+			x0 <- min(0, x0)
+			x1 <- max(0, x1)
+		}
+		rval[, 1L] <- seq(x0, x1, length.out = n)
+		rval[, 2L] <- if(!anyNA(z[3L])) {
+				dt((rval[, 1L] - z[1L]) / z[2L], z[3L]) / z[2L]
+			} else 
+				dnorm(rval[, 1L], z[1L], z[2L])
 		rval
 	}
 	
 	m <- nrow(x)
-	lab <- if(labAsExpr) lab_as_expr(rownames(x)) else rownames(x)
-	i <- 1
-	nmodels <- dim(x)[3L]
-
+	lab <- if(labAsExpr) .lab2expr(rownames(x)) else rownames(x)
+	
 	par(mfrow = n2mfrow(m))
 	for(i in 1L:m) {	
 		v <- xd(x[i, ], n = n, w = w)
 		plot.new()
-		plot.window(xlim = range(v[, 1L]), ylim = range(v[,-1L], na.rm = TRUE))
-		lines(v[, 1L], v[, 2L])
-		lines(v[, 1L], v[, 3L], col = "red")
+		plot.window(xlim = range(v[, 1L]),
+					ylim = range(v[,-1L], na.rm = TRUE))
+		#lines(v[, 1L], v[, 2L])
+		lines(v[, 1L], v[, 2L], col = col, lwd = lwd, lty = lty, lend = lend)
 		abline(v = c(x[i, 1L], 0), lty = c(1L, 3L))
 		axis(1L)
 		axis(2L)
 		box()
-		title(subst(expression(A == B %+-% C), A = lab[[i]], B = round(x[i, 1L], 1L), C = round(x[i, 2L], 2L)))
+		title(substitute(A == B %+-% C, list(A = lab[[i]],
+			B = round(x[i, 1L], 1L), C = round(x[i, 2L], 2L))))
 	}
 	invisible()
 }

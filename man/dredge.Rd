@@ -11,13 +11,15 @@
 \title{Automated model selection}
 \description{
 Generate a model selection table of models with combinations (subsets) of fixed 
-effect terms in the global model, with optional rules for model inclusion.
+effect terms in the global model, with optional model inclusion rules.
 }
 
 \usage{
 dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
-    rank = "AICc", fixed = NULL, m.lim = NULL, m.min, m.max, subset,
-    trace = FALSE, varying, extra, ct.args = NULL, ...)
+  rank = "AICc", fixed = NULL, m.lim = NULL, m.min, m.max, subset,
+  trace = FALSE, varying, extra, ct.args = NULL, deps = attr(allTerms0, "deps"),
+  cluster = NULL,
+  ...)
 
 \method{print}{model.selection}(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...)
 
@@ -39,8 +41,8 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	\item{evaluate}{whether to evaluate and rank the models. If \code{FALSE}, a
 	list of unevaluated \code{call}s is returned. }
 
-	\item{rank}{optional custom rank function (returning an information
-    criterion) to be used instead \code{AICc}, e.g. \code{AIC}, \code{QAIC} or
+	\item{rank}{optionally, the rank function returning a sort of an information
+    criterion, to be used instead \code{AICc}, e.g. \code{AIC}, \code{QAIC} or
     \code{BIC}.
 	See \sQuote{Details}. }
 
@@ -94,6 +96,19 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	\code{\link{coefTable}} (e.g. \code{dispersion} parameter for \code{glm}
 		affecting standard errors used in subsequent
 		\code{\link[=model.avg]{model averaging}}).}
+        
+  \item{deps}{a \dQuote{dependency matrix} as returned by \code{getAllTerms}, 
+        attribute \code{"deps"}. Can be used to fine-tune marginality 
+        exceptions. }
+
+  \item{cluster}{ if a valid \code{"cluster"} object is provided it is used for
+       parallel execution of the fitting function. If \code{NULL} or omitted 
+       single threaded execution is performed.
+       
+       With parallel calculation, an extra argument \code{check} is accepted.
+       
+       See \code{\link{pdredge}} for details and examples.
+       }
 
   \item{\dots}{ optional arguments for the \code{rank} function. Any can be
     an unevaluated expression, in which case any \code{x} within it will be 
@@ -111,21 +126,21 @@ Note that the number of combinations grows exponentially with the number of
 predictors (\ifelse{latex}{\eqn{2^{N}}}{\ifelse{html}{2ⁿ}{2^N}}, less when
 interactions are present, see below).
 
-The fitted model objects are not stored in the result. To get (possibly a subset of)
+The fitted model objects are not stored in the result. To get (a subset of)
 the models, use \code{\link{get.models}} on the object returned by \code{dredge}.
-Another way of getting all the models is to run 
+Another way to get all the models is to run 
 \code{lapply(dredge(..., evaluate = FALSE), eval)}, 
-which avoids fitting the models twice.
+which avoids fitting models twice.
 
 For a list of model types that can be used as a \code{global.model} see
-\link[=MuMIn-models]{the list of supported models}. Modelling functions not storing
-\code{call} in their result should be evaluated \emph{via} the wrapper function
+\link[=MuMIn-models]{the list of supported models}. Modelling functions that do not store a \code{call} in their result should be evaluated \emph{via} a wrapper function
 created by \code{\link{updateable}}.
 
 \subsection{Information criterion}{
 \code{rank} is found by a call to \code{match.fun} and may be specified as a
-function or a symbol or a character string specifying
-a function to be searched for from the environment of the call to \code{dredge}.
+function, a symbol, or as a character string specifying a function to be searched 
+for from the environment of the call to \code{dredge}. It can be also a 
+one-element named list, where the first element is taken as the rank function.
 The function \code{rank} must accept a model object as its first argument and
 always return a scalar.
 }
@@ -139,28 +154,23 @@ to a nested design such as \code{a / (b + d)}), this will be reflected in the
 subset models.
 }
 
+
 \subsection{Subsetting}{
 There are three ways to constrain the resulting set of models: setting limits to
-the number of terms in a model with \code{m.lim}, binding the
-term(s) to all models with \code{fixed}, and more complex rules can be applied
-using argument \code{subset}. To be included in the selection table, the model
+the number of terms in a model with \code{m.lim}, binding 
+term(s) to all models using \code{fixed}, and the \code{subset} argument can be used for more complex rules. For a model to be included in the selection table, its 
 formulation must satisfy all these conditions.
 
 %%Terms in \code{fixed} argument are applied before the combinations are
 %%generated, therefore more efficient than \code{subset}.
 
-\code{subset} can take either a form of an \emph{expression} or a \emph{matrix}.
-The latter should be a lower triangular matrix with logical values, where
+\code{subset} may be an \emph{expression} or a \emph{matrix}.
+The latter should be a lower triangular matrix with logical values, where the 
 columns and rows correspond to \code{global.model} terms. Value
-\code{subset["a", "b"] == FALSE} will exclude any model containing both terms
-\var{a} and \var{b}. \code{demo(dredge.subset)} has examples of using the
-\code{subset} matrix in conjunction with correlation matrices to exclude models
+\code{subset["a", "b"] == FALSE} will exclude any model containing both 
+\var{a} and \var{b} terms. \cr
+\code{demo(dredge.subset)} has examples of using the \code{subset} matrix in conjunction with correlation matrices to exclude models
 containing collinear predictors.
-
-Term names appearing in \code{fixed} and \code{subset} must be given in the
-exact form as returned by \code{getAllTerms(global.model)}, which can differ
-from the original term names (e.g. the interaction term components are ordered
-alphabetically).
 
 In the form of \code{expression}, the argument \code{subset} acts in a similar
 fashion to that in the function \code{subset} for \code{data.frames}: model
@@ -172,25 +182,28 @@ The expression can contain any of the \code{global.model} term names, as well as
  names of the \code{varying} list items. \code{global.model} term names take
 precedence when identical to names of \code{varying}, so to avoid ambiguity
 \code{varying} variables in \code{subset} expression should be enclosed in
-\code{V()} (e.g. \code{V(family) == "Gamma"} assuming that
+\code{V()} (e.g. \code{V(family) == "Gamma"}) assuming that
 \code{varying} is something like \code{list(family =} \code{c("Gamma", ...))}).
 
 If item names in \code{varying} are missing, the items themselves are coerced to
 names. Call and symbol elements are represented as character values (\emph{via}
-\code{deparse}), and everything except numeric, logical, character and
+\code{deparse}), and anything other than numeric, logical, character and
 \code{NULL} values is replaced by item numbers (e.g. \code{varying =}
-\code{list(family =} \code{list(..., Gamma)} should be referred to as
-\code{subset = V(family) == 2}. This can quickly become confusing, therefore it
-is recommended to use named lists. \code{demo(dredge.varying)} provides examples.
+\code{list(family =} \code{list(gaussian, Gamma)} should be referred to as
+\code{subset = V(family) == 2}. This can quickly become confusing, so it
+is recommended to use named lists. Examples can be found in \code{demo(dredge.varying)}.
 
+Term names appearing in \code{fixed} and \code{subset} must be given exactly 
+as they are returned by \code{getAllTerms(global.model)}, which may differ
+from the original term names (e.g. the interaction term components are ordered
+alphabetically).
 
-%% .(+x)
 The \code{with(x)} and \code{with(+x)} notation indicates, respectively, any and
 all interactions including the main effect term \code{x}. This is only effective
-with marginality exceptions. The extended form \code{with(x, order)} allows for
-specifying the order of interaction of terms which \code{x} is part of. For
+with marginality exceptions. The extended form \code{with(x, order)} allows to
+specify the order of interaction of terms of which \code{x} is a part. For
 instance, \code{with(b, 2:3)} selects models with at least one second- or
-third-order interaction of the variable \code{b}. The second (positional)
+third-order interaction of variable \code{b}. The second (positional)
 argument is coerced to an integer vector. The \dQuote{dot} notation \code{.(x)} is
 an alias for \code{with}.
 
@@ -216,7 +229,7 @@ Compound model terms (such as interactions, \sQuote{as-is} expressions within
  \bq{s(x, k = 2)}
  }{
  \code{`s(x, k = 2)`}
- }), unless they are arguments to \code{.} or \code{dc}.
+ }), except when they are arguments to \code{with} or \code{dc}.
  Backticks-quoted names must match exactly (including whitespace) the term names
  as returned by \code{getAllTerms}.
 
@@ -309,7 +322,7 @@ and \code{\link[bestglm]{bestglm}} (\pkg{bestglm}).
 \code{\link[leaps]{regsubsets}} in package \pkg{leaps} also performs all-subsets
 regression.
 
-\emph{Lasso} variable selection provided by various packages, e.g. \pkg{glmnet},
+Variable selection through regularization provided by various packages, e.g. \pkg{glmnet},
 	\pkg{lars} or \pkg{glmmLasso}.
 }
 

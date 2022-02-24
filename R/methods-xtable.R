@@ -25,7 +25,7 @@ xtable.model.selection <-
 function (x, caption = NULL, label = NULL, align = NULL, digits = NULL,
 		  display = NULL, ...) {
 	column.types <- attr(x, "column.types")
-	x <- as.data.frame(x)
+	x <- as.data.frame(x, stringsAsFactors = TRUE)
 	vclass <- vapply(x, function(v) {
 		if(is.integer(v)) return("integer")
 		if(is.factor(v) || is.character(v)) return("character")

@@ -18,7 +18,7 @@ function (object, ..., REML = NULL) {
     ret <- sapply(list(object, ...), function(x) {
         ll <- if (!is.null(REML) && inherits(x, c("mer", "lme",
             "gls", "lm"))) logLik(x, REML = REML) else logLik(x)
-        covmat <- vcov(x)
+        covmat <- .vcov(x)
         k <- nrow(covmat) # attr(ll, "df")
         switch(type, vcov = {
             mat <- covmat
@@ -52,8 +52,8 @@ function (object, ..., REML = NULL) {
 function (object, ..., REML = NULL) {
     ret <- sapply(list(object, ...), function(x) {
         ll <- if (!is.null(REML) && inherits(x, c("mer", "lme",
-            "gls", "lm"))) logLik(x, REML = REML) else logLik(x)
-        covmat <- vcov(x)
+            "gls", "lm", "glmmTMB"))) logLik(x, REML = REML) else logLik(x)
+        covmat <- .vcov(x)
         k <- attr(ll, "df")
 		n <- attr(ll, "nobs")
 		#log(det(solve(covmat))) == -log(det(covmat))

@@ -16,9 +16,9 @@ Build a model selection table.
 model.sel(object, ...)
 
 \method{model.sel}{default}(object, ..., rank = NULL, rank.args = NULL,
-    beta = c("none", "sd", "partial.sd"), extra)
+  beta = c("none", "sd", "partial.sd"), extra)
 \method{model.sel}{model.selection}(object, rank = NULL, rank.args = NULL, fit = NA,
-    ..., beta = c("none", "sd", "partial.sd"), extra)
+  ..., beta = c("none", "sd", "partial.sd"), extra)
 }
 
 \arguments{

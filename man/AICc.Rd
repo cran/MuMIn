@@ -53,8 +53,8 @@ Akaike's An Information Criterion: \code{\link{AIC}}
 
 Other implementations:
 \code{\link[AICcmodavg]{AICc}} in package \pkg{AICcmodavg},
-\code{\link[bbmle]{AICc}} in package \pkg{bbmle} and
-\code{\link[glmulti]{aicc}} in package \pkg{glmulti}
+\code{\link[bbmle:BIC-methods]{AICc}} in package \pkg{bbmle} and
+\code{\link[glmulti:aic]{aicc}} in package \pkg{glmulti}
 
 }
 

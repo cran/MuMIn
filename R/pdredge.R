@@ -1,11 +1,35 @@
 ## TODO: chunk size for evaluate = FALSE
 
+
+
 `pdredge` <-
-function(global.model, cluster = NA,
+function(global.model, cluster = NULL,
 	beta = c("none", "sd", "partial.sd"),
 	evaluate = TRUE,
 	rank = "AICc", fixed = NULL, m.lim = NULL, m.min, m.max, subset,
-	trace = FALSE, varying, extra, ct.args = NULL, check = FALSE, ...) {
+	trace = FALSE, varying, extra, ct.args = NULL, 
+    deps = attr(allTerms0, "deps"),
+    check = FALSE, ...) {
+    
+    .Deprecated("dredge")
+    
+    allTerms0 <- 0L # placeholder for Rcheck
+    
+    cl <- match.call()
+    cl[[1L]] <- as.symbol(".dredge.par")
+    # cl[[1L]] <- quote(MuMIn:::.dredge.par)
+    return(eval(cl))
+}
+
+
+`.dredge.par` <-
+function(global.model, cluster = NULL,
+	beta = c("none", "sd", "partial.sd"),
+	evaluate = TRUE,
+	rank = "AICc", fixed = NULL, m.lim = NULL, m.min, m.max, subset,
+	trace = FALSE, varying, extra, ct.args = NULL, 
+    deps = attr(allTerms0, "deps"),
+    check = FALSE, ...) {
 
 #FIXME: m.max cannot be 0 - e.g. for intercept only model
 
@@ -18,7 +42,7 @@ function(global.model, cluster = NA,
 ###PAR
 	qlen <- 25L
 	# Imports: clusterCall, clusterApply
-	doParallel <- evaluate && inherits(cluster, "cluster")
+	doParallel <- isTRUE(evaluate) && inherits(cluster, "cluster")
 	if(doParallel) {
 		.parallelPkgCheck() # XXX: workaround to avoid importing from 'parallel'
 		clusterCall <- get("clusterCall")
@@ -103,7 +127,7 @@ function(global.model, cluster = NA,
 		cry("RTFM", ngettext(sum(badargs),
 			"argument %s is not a name of formal argument of %s",
 			"arguments %s are not names of formal arguments of %s"),
-			prettyEnumStr(names(rankArgs[badargs])), "'pdredge' or 'rank'",
+			prettyEnumStr(names(rankArgs[badargs])), "'dredge' or 'rank'",
 			warn = TRUE)
 
 	ICName <- as.character(attr(IC, "call")[[1L]])
@@ -130,7 +154,7 @@ function(global.model, cluster = NA,
 ###PAR
 
 	# Check for na.omit
-	if(!(gmNaAction <- .checkNaAction(cl = gmCall, what = "'global.model'")))
+	if(!(gmNaAction <- .checkNaAction(cl = gmCall, what = "'global.model'", envir = gmEnv)))
 		cry(, attr(gmNaAction, "message"))
 
 
@@ -193,7 +217,7 @@ function(global.model, cluster = NA,
 		}
 	}
 
-	deps <- attr(allTerms0, "deps")
+	#deps <- attr(allTerms0, "deps")
 	fixed <- union(fixed, rownames(deps)[rowSums(deps, na.rm = TRUE) == ncol(deps)])
 	fixed <- c(fixed, allTerms[allTerms %in% interceptLabel])
 
@@ -437,16 +461,17 @@ function(global.model, cluster = NA,
 
 	retColIdx <- if(nVarying) -nVars - seq_len(nVarying) else TRUE
 
-	if(trace > 1L) {
-		progressBar <- if(.Platform$GUI == "Rgui") {
-			 utils::winProgressBar(max = ncomb, title = "'dredge' in progress")
-		} else utils::txtProgressBar(max = ncomb, style = 3L)
-		setProgressBar <- switch(class(progressBar),
-			   txtProgressBar = utils::setTxtProgressBar,
-			   winProgressBar = utils::setWinProgressBar,
-			function(...) {})
-		on.exit(close(progressBar))
-	}
+	dotrace <- if(trace == 1L) {
+		dotrace <- function()  {
+			cat(iComb, ": "); print(clVariant)
+			utils::flush.console()
+		}
+	} else if(trace > 1L) {
+		progressBar <- .progbar(max = ncomb, title = "\"dredge\" working...")
+		on.exit(.closeprogbar(progressBar))
+		function() progressBar(value = iComb,
+			title = sprintf("dredge: %d of ca. %.0f subsets", k, (k / iComb) * ncomb))
+	} else function() {}
 
 
 	warningList <- list()
@@ -503,13 +528,8 @@ function(global.model, cluster = NA,
 
 			if(isok2) {
 				if(evaluate) {
-					if(trace == 1L) {
-						cat(iComb, ": "); print(clVariant)
-						utils::flush.console()
-					} else if(trace == 2L) {
-						setProgressBar(progressBar, value = iComb,
-							title = sprintf("pdredge: %d of %.0f subsets", k, (k / iComb) * ncomb))
-					}
+					dotrace()
+
 					qi <- qi + 1L
 					queued[[(qi)]] <- list(call = clVariant, id = iComb)
 				} else { # if !evaluate
@@ -610,7 +630,7 @@ function(global.model, cluster = NA,
 		rval[, nVars + seq_len(nVarying)] <- variants[varlev, ]
 	}
 
-	rval <- as.data.frame(rval)
+	rval <- as.data.frame(rval, stringsAsFactors = TRUE)
 	row.names(rval) <- ord
 
 	# Convert columns with presence/absence of terms to factors
@@ -647,7 +667,11 @@ function(global.model, cluster = NA,
 		terms = structure(allTerms, interceptLabel = interceptLabel),
 		rank = IC,
 		beta = strbeta,
-		call = match.call(expand.dots = TRUE),
+		call = {
+            cl <- match.call(expand.dots = TRUE)
+            cl[[1L]] <- as.symbol("dredge")
+            cl
+        },
 		coefTables = coefTables,
 		nobs = gmNobs,
 		vCols = varyingNames, ## XXX: remove

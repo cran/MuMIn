@@ -10,7 +10,7 @@ Average a coefficient with standard errors based on provided weights.
 
 \usage{
 par.avg(x, se, weight, df = NULL, level = 1 - alpha, alpha = 0.05,
-    revised.var = TRUE, adjusted = TRUE)
+  revised.var = TRUE, adjusted = TRUE)
 }
 
 \arguments{

@@ -64,7 +64,11 @@ function (object, random = FALSE, ...) {
 family.betareg <-
 function (object, ...) {
 	ret <- binomial(object$link$mean)
-	attr(ret, "link-precision") <- object$link$precision
+    ret$family <- "Beta regression"
+    for(a in c("variance", "dev.resids", "aic", "simulate"))
+        body(ret[[a]]) <- quote({.NotImplemented()})	
+	ret$initialize <- expression()
+	ret$link.precision <- object$link$precision
 	ret
 }
 

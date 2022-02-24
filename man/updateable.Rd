@@ -46,6 +46,10 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 	that function to store the call. The resulting \dQuote{wrapper} should be
 	used in exactly the same way as the original function.
 	
+	\code{updateable} can also be used to repair an existing \code{call} element,
+	e.g. if it contains \link[=dots]{dotted names} that prevent re-evaluation
+	of such a call.
+	
 	Argument \code{eval.args} specifies names of function arguments that should
 	be evaluated in the stored call. This is useful when, for example, the model
 	object does not have \code{formula} element. The default \code{formula} 
@@ -53,6 +57,7 @@ uGamm(formula, random = NULL, ..., lme4 = inherits(random, "formula"))
 	which works unless the formula has been given as a variable and value of
 	that variable changed since the model was fitted (the last \sQuote{example}
 	demonstrates this).
+	
 	
 }
 

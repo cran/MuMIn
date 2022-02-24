@@ -1,14 +1,57 @@
 MuMIn package news:
 
+Version: 1.46.0 (2022-02-23)
+(fixed) r.squaredGLMM: now gives correct values for negative binomial models (thanks to Shuang Zhang for research)
+
+Version: 1.45.1 (2021-12-08)
+(added) .vcov a wrapper for vcov returning result in a consistent format (a matrix)
+
+Version: 1.45.0 (2021-11-25)
+pdredge is deprecated in favour of `dredge` with "cluster" argument.
+
+Version: 1.44.6 (2021-05-19)
+added stringsAsFactors=TRUE to most 'as.data.frame' occurences to bring back 
+    the desired behaviour (which changed in R 4.0.0).
+
+Version: 1.44.5 (2021-05-11)
+std.coef: now matches coefficient names with model matrix column names.
+
+Version: 1.44.4 (2021-04-20)
+coefTable.betareg - now includes residual df.
+
+Version: 1.44.3 (2021-03-05)
+(fixed) getAllTerms.zeroinfl: error when the function was called from non-global
+    environment (spotted by Richard Shefferson)
+
+Version: 1.44.2 (2020-07-14)
+(fixed) error with makeArgs (and hence dredge) with glmmTMB with non-symbol 
+    response.
+
+Version: 1.44.1 (2020-06-25)
+importance: is now formally deprecated with a warning. Use `sw` instead.
+
+Version: 1.44.0 (2020-05-28)
+(added) plot method for the class "averaging" produces a dot-and-whisker plot of 
+    coefficients. This uses a new general function `coefplot` that can be used 
+    to make plots for arbitrary model types.
+
+Version: 1.43.19 (2020-05-22)
+(fixed) plot titles in plot.coefTable.
+
+Version: 1.43.18 (2020-05-18)
+r.squaredGLMM: issues a warning about zero-inflation and dispersion model being
+    ignored in the calculation of R2 rather than an error as before (request 
+    from Alexander Bruckner, inspired by the code by Ben Bolker:
+    https://github.com/glmmTMB/glmmTMB/blob/master/glmmTMB/inst/misc/rsqglmm.R) 
+(fixed) some issues with evaluating in non-global environment (`updateable` and 
+    'na.action' checking)
+
 Version: 1.43.17 (2020-04-14)
 Merely refreshing date stamp to please CRAN policies.
 
 Version: 1.43.16 (2020-03-12)
-(added) new model structure for unmarkedFitPCount (pcount) with ZIP mixture
-   (found by Hannah Clyde)
-(fixed) r.squaredGLMM for binomial family models with N > 1 trials. The 
-    fixed effects variance now accounts for the number of trials (thanks to 
-    Daniel Schlaepfer)
+(added) specs for 'unmarkedFitPCount' with mixture = "ZIP" (spotted by Hannah 
+    Clyde)
 
 Version: 1.43.15 (2019-12-19)
 (fixed) fatal error with QIC.geem introduced in the previous version
@@ -41,8 +84,10 @@ Version: 1.43.9 (2019-06-21)
 (fixed) 'r.squaredGLMM' failed when order of interaction components in RE part
     of model formula were not in order of appearance (found by
     Gabriel Baud-Bovy)
-(removed) 'predict.merMod' replacement, since the original method (in 'lme4')
-    now accepts "se.fit" argument.
+(removed) 'predict.merMod' replacement to avoid the conflict of registered 
+    methods. Note that the original method does not calculate 'se.fit', so 
+    currently there is no out-of-box way to produce averaged predictions
+    with standard errors.
 
 Version: 1.43.8 (2019-04-15)
 (fixed) methods for 'gamlss' (reported by Andras Farkas)

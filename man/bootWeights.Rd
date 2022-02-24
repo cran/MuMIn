@@ -15,7 +15,7 @@ bootWeights(object, ..., R, rank = c("AICc", "AIC", "BIC"))
 for model ranking. Defaults to \code{\link{AICc}}.}
 }
 \value{
-The function returns a numeric vector of model weights.
+A numeric vector of model weights.
 }
 \description{
 Computes model weights using bootstrap.
@@ -39,16 +39,22 @@ Weights(am) <- bootWeights(am, data = Beetle, R = 25)
 summary(am)
 
 }
-\author{
-Kamil Barto\enc{ń}{n}, Carsten Dormann
+\references{
+Dormann, C. et al. (2018) Model averaging in ecology: a review of Bayesian,
+information-theoretic, and tactical approaches for predictive inference.
+\emph{Ecological Monographs}, 88, 485–504.
 }
 \seealso{
 \code{\link{Weights}}, \code{\link{model.avg}}
 
-Other model.weights: \code{\link{BGWeights}},
-  \code{\link{cos2Weights}},
-  \code{\link{jackknifeWeights}},
-  \code{\link{stackingWeights}}
+Other model weights: 
+\code{\link{BGWeights}()},
+\code{\link{cos2Weights}()},
+\code{\link{jackknifeWeights}()},
+\code{\link{stackingWeights}()}
 }
+\author{
+Kamil Barto\enc{ń}{n}, Carsten Dormann
+}
+\concept{model weights}
 \keyword{models}
-

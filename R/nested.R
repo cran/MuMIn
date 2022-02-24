@@ -13,7 +13,7 @@ function(x, indices = c("none", "numeric", "rownames"), rank = NULL) {
 		vtab <- as.matrix(vtab)
 	}	
 		
-	tab <- !is.na(x[, attr(x, "terms")])
+	tab <- !is.na(x[, attr(x, "terms")])  # TERMS
 	n <- nrow(tab)
 
 	if(indices == "none") {

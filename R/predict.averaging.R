@@ -16,6 +16,9 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 	models <- attr(object, "modelList")
 	if(is.null(models))
         stop("can predict only from 'averaging' object containing model list")
+		
+	if(is.null(names(models)))
+		names(models) <- seq.int(length(models))
 
 	# If all models inherit from lm:
 	if (
@@ -49,7 +52,7 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 		#}
 	} else {
 		# otherwise, use brute force:
-		if(full == FALSE) warning("argument 'full' ignored")
+		if(isFALSE(full)) warning("argument 'full' ignored")
 
 		cl <- as.list(match.call())
 		cl$backtransform <- cl$full <- NULL
@@ -74,7 +77,8 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 				))
 		}
 
-        .untransform <- function(fit, se.fit = NULL, models) {
+        .untransform <- 
+        function(fit, se.fit = NULL, models) {
 			links <- tryCatch(vapply(models, function(m) family(m)[["link"]], ""),
 							error = function(e) NULL)
 			if (!is.null(links)) {

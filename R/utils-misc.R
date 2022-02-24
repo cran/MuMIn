@@ -14,7 +14,8 @@ function(...) {
 	res
 }
 
-warnonce <- function(id, ...) {
+warnonce <- 
+function(id, ...) {
 	if(!isTRUE(get0(flag <- paste0("warned.", as.character(id)[1L]), .MuMInEnv,
 					ifnotfound = FALSE))) {
 		assign(flag, TRUE, envir = .MuMInEnv)
@@ -276,6 +277,7 @@ function(extra, r2nullfit = FALSE) {
 }
 
 ## matrix multiplication with option of calculating the diagonal only
+## It is more memory efficient and faster than `crossprod` for large matrices
 matmult <-
 function(x, y, diag.only = FALSE) {
 	if(ncol(x) != nrow(y)) stop('non-conformable arguments')
@@ -304,9 +306,29 @@ function(x, y, ty = t(y)) {
 }
 
 
-tmpvarname <- function(envir, n = 8L) {
+tmpvarname <-
+function(envir, n = 8L) {
 	while(exists(x <- paste0(c("*", sample(letters, n), "*"),
 		collapse = ""), envir)) {}
 	x
+}
+
+.lab2expr <-
+function(x) {
+	x <- gsub(":", "%*%", x, perl = TRUE)
+	x <- gsub("\\B_?(\\d+)(?![\\w\\._])", "[\\1]", x, perl = TRUE)
+    x <- gsub("[ _]", "~~", x)
+	x <- str2expression(x)
+	x[] <- lapply(x, function(x)
+		if(is.call(x) && x[[1L]] == "I"  && length(x) == 2L)
+			x[[2]] else x)
+	x
+}
+
+
+coefmatch <-
+function(x, y) {
+    match(fixCoefNames(names(coeffs(x))),
+    fixCoefNames(names(coeffs(y))))
 }
 

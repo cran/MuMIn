@@ -20,20 +20,20 @@ variables.
 \method{stdize}{default}(x, center = TRUE, scale = TRUE, ...)
 
 \method{stdize}{logical}(x, binary = c("center", "scale", "binary", "half", "omit"),
-    center = TRUE, scale = FALSE, ...)
+  center = TRUE, scale = FALSE, ...)
 ## also for two-level factors
 
 \method{stdize}{data.frame}(x, binary = c("center", "scale", "binary", "half", "omit"),
-    center = TRUE, scale = TRUE, omit.cols = NULL, source = NULL,
-    prefix = TRUE, append = FALSE, ...)
+  center = TRUE, scale = TRUE, omit.cols = NULL, source = NULL,
+  prefix = TRUE, append = FALSE, ...)
 
 \method{stdize}{formula}(x, data = NULL, response = FALSE,
-    binary = c("center", "scale", "binary", "half", "omit"),
-    center = TRUE, scale = TRUE, omit.cols = NULL, prefix = TRUE,
-    append = FALSE, ...)
+  binary = c("center", "scale", "binary", "half", "omit"),
+  center = TRUE, scale = TRUE, omit.cols = NULL, prefix = TRUE,
+  append = FALSE, ...)
 
-stdizeFit(object, data, which = c("formula", "subset", "offset", "weights"),
-    evaluate = TRUE, quote = NA)
+stdizeFit(object, newdata, which = c("formula", "subset", "offset", "weights",
+	"fixed", "random", "model"), evaluate = TRUE, quote = NA)
 }
 
 \arguments{
@@ -71,11 +71,11 @@ stdizeFit(object, data, which = c("formula", "subset", "offset", "weights"),
     \item{response}{logical, stating whether the response should be standardized. By
         default, only variables on the right-hand side of the formula are standardized. }
     \item{data}{ an object coercible to \code{data.frame}, containing the
-        variables in \code{formula}. Passed to, and used by 
-        \code{\link{model.frame}}.
-        
-        For \code{stdizeFit}, a \code{stdize}d \code{data.frame} to use.
+        variables in \code{formula}. Passed to, and used by \code{\link{model.frame}}.
         }
+    \item{newdata}{a \code{data.frame} returned by \code{stdize}, to be used 
+        by the modified model.}
+    
     \item{\dots}{ for the \code{formula} method, additional arguments passed to
         \code{\link{model.frame}}. For other methods, it is silently ignored. }
     \item{object}{a fitted model object or an expression being a \code{call} to
@@ -105,9 +105,10 @@ numeric centring and scalings used are stored in attributes
 \code{"scaled:center"} and \code{"scaled:scale"} (these can be \code{NA} if no
 centring or scaling has been done).
 
-\code{stdizeFit} returns a modified, unevaluated call where the variable names
-are replaced to point the transformed variables, or if \code{evaluate} is
-\code{TRUE}, a fitted model object.
+\code{stdizeFit} returns a modified, fitted model object that uses transformed 
+variables from \code{newdata}, or, if \code{evaluate} is \code{FALSE}, an 
+unevaluated call where the variable names are replaced to point the transformed 
+variables.
 }
 
 \details{
@@ -193,7 +194,7 @@ z.CO2 <- stdize(uptake ~ conc + Plant, data = CO2, omit = "Plant", scale = twosd
 summary(z.CO2)
 
 
-fmz <- stdizeFit(lmer(uptake ~ conc + I(conc^2) + (1 | Plant)), data = z.CO2)
+fmz <- stdizeFit(lmer(uptake ~ conc + I(conc^2) + (1 | Plant)), newdata = z.CO2)
 # produces:
 # lmer(uptake ~ z.conc + I(z.conc^2) + (1 | Plant), data = z.CO2)
 
@@ -202,10 +203,10 @@ fmz <- stdizeFit(lmer(uptake ~ conc + I(conc^2) + (1 | Plant)), data = z.CO2)
 z.CO2a <- stdize(CO2, source = z.CO2, append = TRUE)
 # Here, the "subset" expression uses untransformed variable, so we modify only
 # "formula" argument, keeping "subset" as-is. For that reason we needed the
-# untransformed variables in "data".
+# untransformed variables in "newdata".
 stdizeFit(lmer(uptake ~ conc + I(conc^2) + (1 | Plant),
     subset = conc > 100,
-    ), data = z.CO2a, which = "formula", evaluate = FALSE)
+    ), newdata = z.CO2a, which = "formula", evaluate = FALSE)
 
 
 # create new data as a sequence along "conc"

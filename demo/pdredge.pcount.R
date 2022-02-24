@@ -30,9 +30,10 @@ clusterExport(clust, "mallardUMF")
 #   subset = `p(date)` | !`p(I(date^2))`, rank = AIC)))
 
 system.time(pdd2 <-
-	pdredge(ufm.mallard, clust,
+	dredge(ufm.mallard, cluster = clust,
     subset = (`p(date)` || !`p(I(date^2))`),
 	rank = AIC, extra = "adjR^2", eval = TRUE))
+
 
 # select the top models and null model
 subset(pdd2, delta < 2 | df == min(df))
@@ -40,8 +41,8 @@ subset(pdd2, delta < 2 | df == min(df))
 # Remove the warnings permanently
 attr(pdd2, "warnings") <- NULL
 
-# Compare with the model selection table from unmarked
-# the statistics should be identical:
+# Compare with the model selection table from 'unmarked'.
+# The statistics should be identical:
 models <- get.models(pdd2, delta < 2 | df == min(df), cluster = clust)
 
 modSel(fitList(fits = structure(models, names = model.names(models,

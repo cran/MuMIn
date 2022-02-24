@@ -89,8 +89,9 @@ function(object, ..., data, force.update = FALSE) {
     #ginv <- if(use.MASS) getFrom("MASS", "ginv") else solve
     
     ones <- rep(1, M)
-    
-    fn1 <- function(ones, Sigma, ginv) ginv(t(ones) %*% ginv(Sigma) %*% ones) %*% ones %*% ginv(Sigma)
+        
+    #fn1 <- function(ones, Sigma, ginv) ginv(t(ones) %*% ginv(Sigma) %*% ones) %*% ones %*% ginv(Sigma)
+    fn1 <- function(ones, Sigma, ginv) ginv(crossprod(ones, ginv(Sigma)) %*% ones) %*% ones %*% ginv(Sigma)
 
     rval <- tryCatch(fn1(ones, Sigma, solve), error = function(e) {
         if(length(find.package("MASS", quiet = TRUE)) == 1L)

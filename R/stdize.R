@@ -62,7 +62,6 @@ function(x, center = TRUE, scale = TRUE, ...) {
 	x
 }
 
-
 stdize.factor <-
 function(x, binary = c("center", "scale", "binary", "half", "omit"),
 center = TRUE, scale = FALSE, 
@@ -227,10 +226,13 @@ append = FALSE, ...) {
 }
 
 stdizeFit <-
-function(object, data, which = c("formula", "subset", "offset", "weights"),
+function(object, newdata, which = c("formula", "subset", "offset", "weights",
+	"fixed", "random", "model"),
 		 evaluate = TRUE, quote = NA) {
 	thiscall <- match.call()
-	if(is.na(quote)) quote <- is.call(thiscall$object) && !is.primitive(match.fun(thiscall$object[[1L]]))
+	if(is.na(quote)) 
+        quote <- is.call(thiscall$object) && 
+            !is.primitive(match.fun(thiscall$object[[1L]]))
 	cl <- if(quote) thiscall$object
 		else if(is.expression(object)) object[[1L]]
 		else if(is.call(object)) object
@@ -239,16 +241,22 @@ function(object, data, which = c("formula", "subset", "offset", "weights"),
 	cl <- match.call(Fun <- match.fun(cl[[1L]]), cl)
 	
 	if(!("data" %in% (formalnames <- names(formals(Fun)))))
-		warning(gettextf("%s does not have a formal argument 'data'", as.character(cl[[1L]])))
+		warning(gettextf("%s does not have a formal argument 'data', which is required",
+            as.character(cl[[1L]])))
 	
 	which <- which[which %in% formalnames]
 	
-	i <- names(data) != attr(data, 'orig.names')
-	env <- structure(lapply(names(data)[i], as.name), names = attr(data, 'orig.names')[i])
-	if(isTRUE(which)) cl <- subst(cl, env)
-		else
-		for(i in which) if(!is.null(cl[[i]])) cl[[i]] <- subst(cl[[i]], env)
-	cl[['data']] <- thiscall[['data']] #substitute(data)
+	i <- names(newdata) != attr(newdata, 'orig.names')
+	env <- structure(lapply(names(newdata)[i], as.name), 
+        names = attr(newdata, 'orig.names')[i])
+	if(isTRUE(which)) 
+        cl <- subst(cl, env)
+    else
+		for(i in which) 
+            if(!is.null(cl[[i]])) 
+                cl[[i]] <- subst(cl[[i]], env)
+
+	cl[['data']] <- thiscall[['newdata']] #substitute(data)
 	if(evaluate) eval.parent(cl) else cl
 }
 

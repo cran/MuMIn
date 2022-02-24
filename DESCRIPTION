@@ -1,8 +1,8 @@
 Package: MuMIn
 Type: Package
 Title: Multi-Model Inference
-Version: 1.43.17
-Date: 2020-04-14
+Version: 1.46.0
+Date: 2022-02-23
 Encoding: UTF-8
 Author: Kamil Bartoń
 Maintainer: Kamil Bartoń <kamil.barton@go2.pl>
@@ -23,8 +23,8 @@ LazyData: yes
 ByteCompile: yes
 Repository: CRAN
 Repository/R-Forge/Project: mumin
-Repository/R-Forge/Revision: 471
-Repository/R-Forge/DateTimeStamp: 2020-04-14 21:31:49
-Date/Publication: 2020-04-15 15:00:03 UTC
+Repository/R-Forge/Revision: 488
+Repository/R-Forge/DateTimeStamp: 2022-02-24 09:44:44
+Date/Publication: 2022-02-24 11:30:02 UTC
 NeedsCompilation: no
-Packaged: 2020-04-14 21:50:09 UTC; rforge
+Packaged: 2022-02-24 09:52:07 UTC; rforge

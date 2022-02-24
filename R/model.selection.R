@@ -55,7 +55,7 @@ function(x) {
 function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 	origx <- x
 	class(x) <- "data.frame"
-	xterms <- attr(origx, "terms")
+	xterms <- attr(origx, "terms")  # TERMS
 	if(is.null(xterms) || !all(xterms %in% colnames(x)[seq_along(xterms)])) {
 		print.data.frame(x, ...)
 	} else {
@@ -69,7 +69,6 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 			random.terms <- attr(getAllTerms(attr(origx, "global")), "random.terms")
 			if(!is.null(random.terms)) random.terms <- list(random.terms)
 		} else random.terms <- attr(origx, "random.terms")
-		cat("Model selection table \n")
 		
 		dig <- c(terms = NA, varying = NA, extra = NA, df = 0L, loglik = 3L, ic = 1L, delta = 2L,
 				 weight = 3L)
@@ -115,18 +114,22 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 			x <- cbind(x[, 1L:(k - 1L), drop = FALSE], random = colran, x[, k:ncol(x), drop = FALSE], deparse.level = 0L)
 		}
 
+		cat("Model selection table \n")
 		if(nrow(x) == 0L) {
 			print.default(colnames(x), quote = FALSE)
 			cat("<0 rows>", "\n")
 		} else
 			print.default(as.matrix(x)[, !vapply(x, function(y) all(is.na(y)), FALSE),
 			drop = FALSE], na.print = "", quote = FALSE, right = TRUE)
+			
+		indent <- " "
 
 		if(abbrev.names && length(vLegend)) {
 			cat("Abbreviations:", sep = "\n")
-			for(i in names(vLegend)) {
+			lab <- format(paste0(indent, names(vLegend), ":"))
+			for(i in seq_along(vLegend)) {
 				cat(vLegend[[i]], sep = ", ", fill = TRUE, labels =
-					c(paste0(i, ":"), rep(paste(rep(" ", nchar(i) + 1L),
+					c(lab[i], rep(paste0(rep(" ", nchar(lab[i])),
 					collapse = ""), length(vLegend[[i]]) - 1L)))
 			}
 		}
@@ -135,15 +138,17 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 		if(!is.null(random.terms)) {
 			if(addrandcol) {
 				cat("Random terms: \n")
-				cat(paste(abbran, "=", sQuote(uqran)), sep = "\n")
+				cat(paste0(indent, format(abbran), ": ", uqran), sep = "\n")
 			} else {
 				cat("Random terms (all models): \n")
-				cat(paste(sQuote(uqran)), sep = ", ")
+				cat(paste(uqran), sep = ", ", fill = TRUE, labels = indent)
 				cat("\n")
 			}
 		}
+		
 		if (warnings && !is.null(attr(origx, "warnings"))) {
-			cat("\n"); print.warnings(attr(origx, "warnings"))
+			cat("\n")
+			print.warnings(attr(origx, "warnings"))
 		}
 	}
 	invisible(origx)

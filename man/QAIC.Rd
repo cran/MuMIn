@@ -45,13 +45,14 @@ within the \emph{quasi-} family. In case it is justified, it can be worked
 around by \sQuote{borrowing} the \code{aic} element from the corresponding
 \sQuote{non-quasi} family (see \sQuote{Example}).
 
-Consider using \code{negative.binomial} family models for overdispersed 
-count data.
+Consider using negative binomial family with overdispersed count data.
 }
 
 \seealso{
 \code{\link{AICc}}, \code{\link[stats:family]{quasi}} family used for models with
-over-dispersion
+over-dispersion.
+
+Tests for overdispersion in GLM[M]: \code{\link[performance]{check_overdispersion}}. 
 }
 
 \author{Kamil Barto\enc{ń}{n}}
@@ -73,7 +74,6 @@ budworm.lg <- glm(SF ~ sex*ldose, data = budworm, family = binomial)
 
 dredge(budworm.lg, rank = "QAIC", chat = chat)
 dredge(budworm.lg, rank = "AIC")
-
 
 
 \dontrun{
