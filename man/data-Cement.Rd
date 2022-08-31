@@ -28,11 +28,11 @@ variables expressed as a percentage of weight.
 \source{
 Woods H., Steinour H.H., Starke H.R. (1932) Effect of composition of Portland
 cement on heat evolved during hardening. \emph{Industrial & Engineering
-Chemistry} 24, 1207-1214.
+Chemistry} 24, 1207--1214.
 }
 
 \references{
-Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
+Burnham, K. P. and Anderson, D. R. 2002 \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed. New York,
 Springer-Verlag.
 }

@@ -5,57 +5,31 @@
 \title{Plot model coefficients}
 \usage{
 coefplot(
-  x,
-  lci,
-  uci,
-  labels = NULL,
-  width = 0.15,
-  shift = 0,
-  horizontal = TRUE,
-  main = NULL,
-  xlab = NULL,
-  ylab = NULL,
-  xlim = NULL,
-  ylim = NULL,
-  labAsExpr = TRUE,
-  mar.adj = TRUE,
-  lab.line = 0.5,
-  lty = par("lty"),
-  lwd = par("lwd"),
-  pch = 21,
-  col = par("col"),
-  bg = par("bg"),
-  dotcex = par("cex"),
-  dotcol = col,
-  staplelty = lty,
-  staplelwd = lwd,
-  staplecol = col,
-  zerolty = "dotted",
-  zerolwd = lwd,
-  zerocol = "gray",
-  las = 2,
-  ann = TRUE,
-  axes = TRUE,
-  add = FALSE,
+  x, lci, uci,
+  labels = NULL, width = 0.15,
+  shift = 0, horizontal = TRUE,
+  main = NULL, xlab = NULL, ylab = NULL,
+  xlim = NULL, ylim = NULL,
+  labAsExpr = TRUE, mar.adj = TRUE, lab.line = 0.5, 
+  lty = par("lty"), lwd = par("lwd"), pch = 21,
+  col = par("col"), bg = par("bg"),
+  dotcex = par("cex"), dotcol = col,
+  staplelty = lty, staplelwd = lwd, staplecol = col,
+  zerolty = "dotted", zerolwd = lwd, zerocol = "gray",
+  las = 2, ann = TRUE, axes = TRUE, add = FALSE,
   type = "p",
   ...
 )
 
 \method{plot}{averaging}(
   x,
-  full = TRUE,
-  level = 0.95,
-  intercept = TRUE,
-  parm = NULL,
-  labels = NULL,
-  width = 0.1,
+  full = TRUE, level = 0.95, intercept = TRUE,
+  parm = NULL, labels = NULL, width = 0.1,
   shift = max(0.2, width * 2.1 + 0.05),
-  horizontal = TRUE,
-  xlim = NULL,
-  ylim = NULL,
+  horizontal = TRUE, 
+  xlim = NULL, ylim = NULL,
   main = "Model-averaged coefficients",
-  xlab = NULL,
-  ylab = NULL,
+  xlab = NULL, ylab = NULL, 
   add = FALSE,
   ...
 )
@@ -97,7 +71,7 @@ expanded to fit the labels}
 \item{lty, lwd, pch, col, bg}{default line type, line width, point character,
 foreground colour for all elements, and background colour for open symbols.}
 
-\item{dotcex, dotcol}{dots point size expansion and color.}
+\item{dotcex, dotcol}{dots point size expansion and colour.}
 
 \item{staplelty, staplelwd, staplecol}{staple line type, width, and colour.}
 

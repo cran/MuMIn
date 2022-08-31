@@ -308,7 +308,8 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 	return(ret)
 }
 
-.checkFull <- function(object, full, warn = TRUE) {
+.checkFull <-
+function(object, full, warn = TRUE) {
 	if(isTRUE(attr(object, "arm")) && !full) {
 		if(warn) cry(-1L, "'subset' averaged coefficients are not available with ARM algorithm",
 					 warn = TRUE)

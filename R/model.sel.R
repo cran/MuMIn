@@ -1,7 +1,5 @@
 #TODO: checking if models are fitted to the same dataset <- model.avg
 
-`mod.sel` <- function (object, ...) .Defunct("model.sel")
-
 `model.sel` <-
 function (object, ...) UseMethod("model.sel")
 

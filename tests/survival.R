@@ -12,10 +12,9 @@ if (MuMIn:::testStart("survival")) {
     getAllTerms(fmcph)
     coef(fmcph)
 
-    ms <- dredge(fmcph, fixed=c("cluster(id)", "strata(enum)"), 
-        extra = list(R2 = "r.squared.coxph"))
+    ms <- dredge(fmcph, fixed=c("strata(enum)"), 
+        extra = list(R2 = "r.squared.coxph"), trace = TRUE)
 
-    summary(model.avg(ms))
 
     # BUG in survival
     if(! "logLik.coxph.null" %in% methods("logLik"))

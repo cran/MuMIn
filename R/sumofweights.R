@@ -40,6 +40,6 @@ function(x)
 	model.avg(x)$sw
 	
 importance <- function(x) {
-    .Deprecated("sw")
+    .Defunct("sw")
     sw
 }

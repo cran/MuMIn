@@ -1,22 +1,25 @@
 `rbind.model.selection` <-
 function (..., deparse.level = 1, make.row.names = TRUE) {
-	allargs <- list(...)
-	n <- length(allargs)
-	if(n == 1L) return(allargs[[1L]])
+	
+  	n <- ...length()
+	if(n == 1L) return(...elt(1L))
+    
+    items <- list(...)
 
-	if(!all(vapply(allargs, inherits, FALSE, "model.selection")))
-		stop("need all \"model.selection\" objects")
+	if(!all(vapply(items, inherits, FALSE, "model.selection")))
+		stop("not all objects are \"model.selection\"")
 
 	### XXX: This modifies original objects!!!
-	allargs <- lapply(allargs, "class<-", "data.frame")
+	items <- lapply(items, "class<-", "data.frame")
 	## ... reverting to original (?) class on exit:
-	on.exit(lapply(allargs, "class<-", c("model.selection", "data.frame")))
+	on.exit(lapply(items, "class<-", c("model.selection", "data.frame")))
 
-	allitemsidentical <- function(x) all(vapply(x[-1L], identical, FALSE, x[[1L]]))
+	.allitemsidentical <- 
+    function(x) all(vapply(x[-1L], identical, FALSE, x[[1L]]))
 
-	if(!allitemsidentical(lapply(lapply(allargs, attr, "rank"), attr, "call")))
+	if(!.allitemsidentical(lapply(lapply(items, attr, "rank"), attr, "call")))
 		stop("tables are not ranked by the same IC")
-	if(!allitemsidentical(lapply(allargs, "attr", "nobs")))
+	if(!.allitemsidentical(lapply(items, "attr", "nobs")))
 		stop("models are fitted to different number of observations")
 
 	.combine <-
@@ -32,7 +35,7 @@ function (..., deparse.level = 1, make.row.names = TRUE) {
 		x
 	}
 
-	ct <- unname(lapply(allargs, attr, "column.types"))
+	ct <- unname(lapply(items, attr, "column.types"))
 	vct <- unlist(ct, recursive = FALSE)
 	vct <- vct[order(as.integer(unlist(ct)))]
 
@@ -41,33 +44,51 @@ function (..., deparse.level = 1, make.row.names = TRUE) {
 	# TODO: check mismatch in column.types
 	nm <- names(vct)
 
-	rval <- as.data.frame(array(NA, dim = c(sum(sapply(allargs, nrow)), length(nm)),
+	rval <- as.data.frame(array(NA, dim = c(sum(sapply(items, nrow)), length(nm)),
 								dimnames = list(NULL, nm)))
 	row1 <- 1L
-	for(z in allargs) {
+	for(z in items) {
 		n <- nrow(z)
 		nmz <- nm[nm %in% names(z)]
-		for(j in nmz) rval[, j] <- .combine(rval[, j], z[, j], row1, n)
+		for(j in nmz) 
+            rval[, j] <- .combine(rval[, j], z[, j], row1, n)
 		row1 <- row1 + n
 	}
 
+    combineAttrs <- c("model.calls", "coefTables")
+
+    hasModelList <- 
+        vapply(items, function(x) is.list(attr(x, "modelList")), logical(1L))
+    if(any(hasModelList)) {
+        if(!all(hasModelList)) {
+            warning("not all combined tables include model lists. The missing items will be NULL.")
+            for(i in which(!hasModelList))
+                attr(items[[i]], "modelList") <-
+                    structure(vector("list", nrow(items[[i]])),
+                        names = rownames(items[[i]]))
+        }
+        combineAttrs[length(combineAttrs) + 1L] <- "modelList"
+    }
+
 	newattr <- list(column.types = vct)
-	for(i in c("model.calls", "coefTables"))
-		newattr[[i]] <- unlist(lapply(allargs, attr, i), recursive = FALSE, use.names = FALSE)
+	for(i in combineAttrs)
+		newattr[[i]] <- unlist(lapply(items, attr, i), recursive = FALSE, use.names = FALSE)
 	k <- c("rank", "nobs")
-	newattr[k] <- attributes(allargs[[1L]])[k]
+	newattr[k] <- attributes(items[[1L]])[k]
 
-	tmp <- lapply(allargs, attr, "terms")
-	newattr[["terms"]] <- structure(unique(unlist(tmp, recursive = FALSE, use.names = FALSE)),
-			  interceptLabel = unique(unlist(lapply(tmp, attr, "interceptLabel"))))
+	tmp <- lapply(items, attr, "terms")
+	newattr[["terms"]] <- 
+        structure(unique(unlist(tmp, recursive = FALSE, use.names = FALSE)),
+		  interceptLabel = unique(unlist(lapply(tmp, attr, "interceptLabel"))))
 
 
-	for(i in names(newattr)) attr(rval, i) <- newattr[[i]]
+	for(i in names(newattr)) 
+        attr(rval, i) <- newattr[[i]]
 	class(rval) <- c("model.selection", "data.frame")
 	if(make.row.names) {
-		rn1 <- rep(names(allargs), sapply(allargs, nrow))
+		rn1 <- rep(names(items), sapply(items, nrow))
 		rn1[i] <- paste0(rn1[i <- rn1 != ""], ".")
-		rlabs <- paste0(rn1, unlist(lapply(allargs, rownames)))
+		rlabs <- paste0(rn1, unlist(lapply(items, rownames)))
 		if(anyDuplicated(rlabs))
 			rlabs <- make.unique(as.character(rlabs), sep = "")
 	} else {

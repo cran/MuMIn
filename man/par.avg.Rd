@@ -47,12 +47,12 @@ coverage are returned (see Burnham and Anderson 2002, section 4.3.3).
 }
 
 \references{
-Burnham, K. P. and Anderson, D. R. (2002) \emph{Model selection and multimodel
+Burnham, K. P. and Anderson, D. R. 2002 \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed.
 
-Burnham, K. P. and Anderson, D. R. (2004) \emph{Multimodel inference -
-understanding AIC and BIC in model selection}. Sociological Methods & Research
-33(2): 261-304.
+Burnham, K. P. and Anderson, D. R. 2004 Multimodel inference -
+understanding AIC and BIC in model selection. \emph{Sociological Methods & Research}
+\bold{33}, 261--304.
 }
 
 \author{Kamil Barto\enc{ń}{n}}

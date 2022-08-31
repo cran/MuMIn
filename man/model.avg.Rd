@@ -161,13 +161,13 @@ The \sQuote{subset} (or \sQuote{conditional}) average only averages over the
 }
 
 \references{
-Burnham, K. P. and Anderson, D. R. (2002) \emph{Model selection and multimodel
+Burnham, K. P. and Anderson, D. R. 2002 \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed. New York,
 Springer-Verlag.
 
-Lukacs, P. M., Burnham K. P. and Anderson, D. R. (2009) \emph{Model selection
-bias and Freedman’s paradox}. Annals of the Institute of Statistical Mathematics
-62(1): 117–125.
+Lukacs, P. M., Burnham K. P. and Anderson, D. R. 2009 Model selection
+bias and Freedman’s paradox. \emph{Annals of the Institute of 
+Statistical Mathematics} \bold{62}, 117–125.
 
 }
 

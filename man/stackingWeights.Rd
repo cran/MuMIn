@@ -60,15 +60,15 @@ predict(ma)
 
 }
 \references{
-Wolpert, D. H. (1992) Stacked generalization. \emph{Neural Networks}, 5: 241-259.
+Wolpert, D. H. 1992 Stacked generalization. \emph{Neural Networks} \strong{5}, 241--259.
 
-Smyth, P. & Wolpert, D. (1998) \emph{An Evaluation of Linearly Combining
-Density Estimators via Stacking. Technical Report No. 98-25.} Information
+Smyth, P. and Wolpert, D. 1998 \emph{An Evaluation of Linearly Combining
+Density Estimators via Stacking. Technical Report No. 98--25.} Information
 and Computer Science Department, University of California, Irvine, CA.
 
-Dormann, C. et al. (2018) Model averaging in ecology: a review of Bayesian,
+Dormann, C. et al. 2018 Model averaging in ecology: a review of Bayesian,
 information-theoretic, and tactical approaches for predictive inference.
-\emph{Ecological Monographs}, 88, 485–504.
+\emph{Ecological Monographs} \strong{88}, 485--504.
 }
 \seealso{
 \code{\link{Weights}}, \code{\link{model.avg}}

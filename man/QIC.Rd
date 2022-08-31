@@ -38,10 +38,10 @@ This implementation is based partly on (revised) code from packages \pkg{yags}
 }
 
 \references{
-Pan W. (2001) Akaike's Information Criterion in Generalized Estimating Equations.
-\emph{Biometrics} 57: 120-125
+Pan, W. 2001 Akaike's Information Criterion in Generalized Estimating Equations.
+\emph{Biometrics} \bold{57}, 120--125
 
-Hardin J. W., Hilbe, J. M. (2003) \emph{Generalized Estimating Equations}.
+Hardin J. W., Hilbe, J. M. 2003 \emph{Generalized Estimating Equations}.
 Chapman & Hall/CRC
 }
 

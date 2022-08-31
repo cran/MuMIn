@@ -4,18 +4,10 @@
 \title{Jackknifed model weights}
 \usage{
 jackknifeWeights(
-  object,
-  ...,
-  data,
-  type = c("loglik", "rmse"),
-  family = NULL,
-  weights = NULL,
-  optim.method = "BFGS",
-  maxit = 1000,
-  optim.args = list(),
-  start = NULL,
-  force.update = FALSE,
-  py.matrix = FALSE
+  object, ..., data, type = c("loglik", "rmse"),
+  family = NULL, weights = NULL,
+  optim.method = "BFGS", maxit = 1000, optim.args = list(),
+  start = NULL, force.update = FALSE, py.matrix = FALSE
 )
 }
 \arguments{
@@ -91,12 +83,12 @@ coef(amAICc)
 
 }
 \references{
-Hansen, B. E. & Racine, J. S. (2012) Jackknife model averaging.
-\emph{Journal of Econometrics}, 979: 38–46
+Hansen, B. E. and Racine, J. S. 2012 Jackknife model averaging.
+\emph{Journal of Econometrics} \strong{979}, 38–46
 
-Dormann, C. et al. (2018) Model averaging in ecology: a review of Bayesian,
+Dormann, C. et al. 2018 Model averaging in ecology: a review of Bayesian,
 information-theoretic, and tactical approaches for predictive inference.
-\emph{Ecological Monographs}, 88, 485–504.
+\emph{Ecological Monographs} \strong{88}, 485–504.
 }
 \seealso{
 \code{\link{Weights}}, \code{\link{model.avg}}

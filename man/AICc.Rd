@@ -37,12 +37,12 @@ recommend its use when \eqn{n / K < 40}).
 }
 
 \references{
-Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
+Burnham, K. P. and Anderson, D. R. 2002 \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed. New York,
 Springer-Verlag.
 
-Hurvich, C. M. and Tsai, C.-L. (1989) Regression and time series model selection
-in small samples, \emph{Biometrika} 76: 297–307.
+Hurvich, C. M. and Tsai, C.-L. 1989 Regression and time series model selection
+in small samples, \emph{Biometrika} \bold{76}, 297–307.
 }
 
 

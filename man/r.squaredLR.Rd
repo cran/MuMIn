@@ -3,13 +3,14 @@
 \alias{null.fit}
 \encoding{utf-8}
 
-\newcommand{\Rsqx}{\ifelse{latex}{\eqn{R_{#1}^{2}}{R_#1^2}}{\ifelse{html}{\enc{R_#1²}{R_#1^2}}{R_#1^2}}}
-\newcommand{\Rsq}{\ifelse{latex}{\eqn{R^{2}}{R^2}}{\ifelse{html}{\enc{R²}{R^2}}{R^2}}}
+\newcommand{\mydequation}{\ifelse{latex}{\deqn{#1}{#3}}{\ifelse{html}{\enc{\deqn{#1}}{#3}}{#3}}}
+\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#1}}{#3}}{#3}}}
 
-\newcommand{\mydequation}{\ifelse{latex}{\deqn{#1}{#3}}{\ifelse{html}{\enc{\deqn{#2}}{#3}}{#3}}}
-\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#2}}{#3}}{#3}}}
+\newcommand{\logLik}{\myequation{\log\mathcal{L}(#1)}{XXXX}{logL(#1)}}
+\newcommand{\Rsq}{\myequation{R^{2}}{XXXX}{R^2}}
+\newcommand{\Rsqx}{\myequation{R_{#1}^{2}}{XXXX}{R_#1^2}}
 
-\newcommand{\logLik}{\myequation{\log\mathcal{L}(#1)}{㏒ℓ(#1)}{logL(#1)}}
+
 
 \title{Likelihood-ratio based pseudo-R-squared}
 \description{
@@ -59,7 +60,8 @@ This statistic is is one of the several proposed pseudo-\Rsq's for
 nonlinear regression models. It is based on an improvement from \emph{null}
 (intercept only) model to the fitted model, and calculated as
 
-\mydequation{R_{LR}^{2}=1-\exp(-\frac{2}{n}(\log\mathcal{L}(x)-\log\mathcal{L}(0)))
+\mydequation{
+  R_{LR}^{2}=1-\exp(-\frac{2}{n}(\log\mathcal{L}(x)-\log\mathcal{L}(0)))
 }{R² = 1 - exp(-2/n * ㏒ℓ(x) - ㏒ℓ(0))
 }{R^2 = 1 - exp(-2/n * logL(x) - logL(0))
 }
@@ -102,14 +104,14 @@ criteria.
 
 \references{
 
-Cox, D. R. and Snell, E. J. (1989) \emph{The analysis of binary data}, 2nd ed.
-London, Chapman and Hall
+Cox, D. R. and Snell, E. J. 1989 \emph{The analysis of binary data}, 2nd ed.
+London, Chapman and Hall.
 
-Magee, L. (1990) \Rsq measures based on Wald and likelihood ratio joint
-significance tests. \emph{Amer. Stat.} 44: 250-253
+Magee, L. 1990 \Rsq measures based on Wald and likelihood ratio joint
+significance tests. \emph{Amer. Stat.} \bold{44}, 250--253.
 
-Nagelkerke, N. J. D. (1991) A note on a general definition of the coefficient of
-determination. \emph{Biometrika} 78: 691-692
+Nagelkerke, N. J. D. 1991 A note on a general definition of the coefficient of
+determination. \emph{Biometrika} \bold{78}, 691--692.
 }
 
 \seealso{

@@ -38,23 +38,24 @@ function(obj, termNames, opt, ...) {
 
 
 getAllTerms.gamlss <-
-function(x, intercept = FALSE, ...) {
+function(x, intercept = FALSE, offset = TRUE, ...) {
+	
 	formlist <- list(mu = x$mu.formula, sigma = x$sigma.formula, 
         nu = x$nu.formula, tau = x$tau.formula)
 	
 	formlist <- formlist[!vapply(formlist, is.null, logical(1L))]
-
-	allterms <- lapply(formlist, getAllTerms.formula, intercept = FALSE)
+	
+	allterms <- lapply(formlist, getAllTerms.formula, intercept = FALSE, offset = offset, ...)
 	attrint <- vapply(allterms, attr, 0L, "intercept")
 	
     term.prefix <- names(allterms)
 	n <- length(allterms)
 	rval <- vector("list", n)
-	for(i in which(sapply(allterms, length) != 0L))
-		#rval[[i]] <- allterms[[i]]
+	for(i in which(sapply(allterms, length) != 0L)) {
 		rval[[i]] <- paste0(term.prefix[i], "(", allterms[[i]], ")")
+	}
 	rval <- unlist(rval)
-    
+
 	attrint <- vapply(allterms, attr, 0L, "intercept")
 	names(attrint) <- term.prefix[match(names(attrint), term.prefix)]
 
@@ -62,8 +63,14 @@ function(x, intercept = FALSE, ...) {
 		unlist(lapply(allterms, "attr", "interceptLabel")), ")")
 	ints <- sub("((Intercept))", "(Int)", ints, fixed = TRUE)
     
-	deps <- termdepmat_combine(lapply(allterms, attr, "deps"))
-	dimnames(deps) <- list(rval, rval)
+	depslist <- lapply(allterms, attr, "deps")
+	deps <- termdepmat_combine(depslist)
+	if(ncol(deps) != 0L)
+		colnames(deps) <- rownames(deps) <-
+			paste0(rep(term.prefix, sapply(depslist, ncol)),
+				"(", colnames(deps), ")")
+
+	#dimnames(deps) <- list(rval, rval)
 	if(intercept) rval <- c(ints, rval)
 	mode(rval) <- "character"		
 	attr(rval, "intercept") <- attrint

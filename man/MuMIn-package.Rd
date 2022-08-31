@@ -62,7 +62,7 @@ In addition to the \dQuote{regular} information criteria, model averaging can be
 \author{ Kamil Barto\enc{ń}{n} }
 
 \references{
-Burnham, K. P. and Anderson, D. R (2002) \emph{Model selection and multimodel
+Burnham, K. P. and Anderson, D. R. 2002 \emph{Model selection and multimodel
 inference: a practical information-theoretic approach}. 2nd ed. New York,
 Springer-Verlag.
 }

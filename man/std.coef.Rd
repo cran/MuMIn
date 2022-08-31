@@ -4,7 +4,7 @@
 \alias{partial.sd}
 
 \encoding{utf-8}
-\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#2}}{#3}}{#3}}}
+\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#1}}{#3}}{#3}}}
 
 \title{Standardized model coefficients}
 \description{
@@ -56,7 +56,7 @@ beta.weights(model)
     \myequation{X_i}{Xᵢ}{Xi} with the other \eqn{X} variables
 	included in the regression equation. The partial standard deviation is
 	calculated as 
-    \myequation{s_{X_{i}}^{*}=s_{X_{i}} \var{VIF}(X_i)^{-0.5} (\frac{n-1}{n-p} )^{0.5}
+    \myequation{s_{X_{i}}^{*}=s_{X_{i}} VIF(X_i)^{-0.5} (\frac{n-1}{n-p} )^{0.5}
         }{s*ₓᵢ = sₓᵢ √(VIFₓᵢ⁻¹) √((n-1)/(n-p))
         }{sXi* = SXi * sqrt(1/VIF(Xi)) * sqrt((n-1)/(n-p))}, 
     where \var{VIF} is the variance inflation factor,
@@ -81,15 +81,14 @@ Fox.
 }
 
 \references{
+Cade, B.S. 2015 Model averaging and muddled multimodel inferences. 
+    \emph{Ecology} \bold{96}, 2370-2382.
 
-Cade, B.S. (2015) Model averaging and muddled multimodel inferences. 
-    \emph{Ecology} 96, 2370-2382.
-
-Afifi A., May S., Clark V.A. (2011) \emph{Practical Multivariate Analysis},
+Afifi, A., May, S., Clark, V.A. 2011 \emph{Practical Multivariate Analysis},
 Fifth Edition. CRC Press.
 
-Bring, J. (1994). How to standardize regression coefficients. \emph{The American
-Statistician} 48, 209-213.
+Bring, J. 1994 How to standardize regression coefficients. \emph{The American
+Statistician} \bold{48}, 209--213.
 }
 
 \seealso{

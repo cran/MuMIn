@@ -3,54 +3,106 @@
 \alias{plot.model.selection}
 \title{Visualize model selection table}
 \usage{
-\method{plot}{model.selection}(x, ylab = NULL, xlab = NULL, labels = attr(x, "terms"),
-  labAsExpr = TRUE, mar.adj = TRUE,
-  col = c("SlateGray", "SlateGray2"), col2 = "white", border = par("col"),
+\method{plot}{model.selection}(
+  x,
+  ylab = NULL, xlab = NULL, main = "Model selection table",
+  labels = NULL, terms = NULL, labAsExpr = TRUE,
+  vlabels = rownames(x), mar.adj = TRUE,
+  col = NULL, col.mode = 2,
+  bg = "white", border = par("col"),
   par.lab = NULL, par.vlab = NULL,
-  axes = TRUE, ann = TRUE, ...)
+  axes = TRUE, ann = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{a \code{"model.selection"} object.}
 
-\item{xlab, ylab}{labels for the \emph{x} and \emph{y} axes.}
+\item{xlab, ylab, main}{labels for the \emph{x} and \emph{y} axes, and the
+main title for the plot.}
 
 \item{labels}{optional, a character vector or an expression containing model
 term labels (to appear on top side of the plot).
-Its length must be equal to number of model terms in the table. Defaults
+Its length must be equal to number of displayed model terms. Defaults
 to the model term names.}
 
-\item{labAsExpr}{a logical indicating whether the character labels should be
-interpreted (\code{\link{parse}}d) as \R expressions.}
+\item{terms}{which terms to include (default \code{NULL} means all terms).}
 
-\item{mar.adj}{logical indicating whether the upper margin should be
-expanded to fit the labels}
+\item{labAsExpr}{logical, indicating whether the term names should be
+interpreted (\code{\link{parse}}d) as \R expressions for prettier labels.
+See also \code{\link{plotmath}}.}
 
-\item{col, col2}{vector of colors for columns (if more than one \code{col} is
-given, columns will be filled with alternating colors). If \code{col2} is
-specified cells will be filled with gradient from \code{col} to \code{col2}.
-\code{col2 = NA} produces no gradient.}
+\item{vlabels}{alternative labels for the table rows (i.e. model names)}
 
-\item{border}{border color for cells and axes.}
+\item{mar.adj}{logical indicating whether the top and right margin should be
+enlarged if necessary to fit the labels.}
 
-\item{par.lab, par.vlab}{optional lists of \link[=par]{graphical parameters} for the
-term labels (top axis) and model names (right axis), respectively.}
+\item{col}{vector or a \code{matrix} of colours for the non-empty grid cells.
+See 'Details'.
+If \code{col} is given as a matrix, the colours are applied to rows and columns. How it
+is done is governed by the argument \code{col.mode}.}
+
+\item{col.mode}{either numeric or \code{"value"}, specifies cell colouring mode.
+See 'Details'.}
+
+\item{bg}{background colour for the empty cells.}
+
+\item{border}{border colour for cells and axes.}
+
+\item{par.lab, par.vlab}{optional lists of arguments and
+\link[=par]{graphical parameters} for drawing
+term labels (top axis) and model names (right axis), respectively.
+Items of \code{par.lab} are passed as arguments to \code{\link{mtext}}, and those of
+\code{par.vlab} are passed to \code{\link{axis}}.}
 
 \item{axes, ann}{logical values indicating whether the axis and annotation
 should appear on the plot.}
 
 \item{\dots}{further \link[=par]{graphical parameters} to be set for the plot.}
 }
-\value{
-A numeric vector of model weights.
-}
 \description{
-Produces a graphical representation of model weights per model term.
+Produces a graphical representation of model weights and terms.
+}
+\details{
+\subsection{Colours}{
+
+If \code{col.mode = 0}, the colours are recycled: if \code{col} is a matrix,
+recycling takes place both per row and per column. If \code{col.mode > 0}, the
+colour values in the columns are interpolated and assigned according to
+the model weights. Higher values shift the colours for models with lower
+model weights more forward. See also \code{\link{colorRamp}}. If \code{col.mode < 0} or
+\code{"value"} (partially matched, case-insensitive) and \code{col} has two or more
+elements, colours are used to represent coefficient values: the first
+element in \code{col} is used for categorical predictors, the rest for
+continuous values. The default is \code{grey} for factors and
+\code{"Blue-Red 3"} palette
+%% \link[=grDevices:Palettes]{\code{"Blue-Red 3"} palette}
+ otherwise, ranging from blue
+for negative values to red for positive ones.
+}
+
+The following arguments are useful for adjusting label size and
+position in \code{par.lab} and \code{par.vlab} : \code{cex}, \code{las} (see \code{\link{par}}),
+\code{line} and \code{hadj} (see \code{\link{mtext}} and \code{\link{axis}}).
 }
 \examples{
-# For examples, see \sQuote{[MuMIn-package]}
+\dontshow{if (require(graphics)) withAutoprint(\{ # examplesIf}
+dd <- dredge(lm(formula = y ~ ., data = Cement, na.action = na.fail))
+plot(dd,
+    # colours by coefficient value:
+    col.mode = "value",
+    par.lab = list(las = 2, line = 1.2, cex = 1),
+    bg = "gray30",
+    # change labels for the models to Akaike weights:
+    vlabels = parse(text = paste("omega ==", round(Weights(dd), 2)))
+    )
+plot(dd, col = 2:3, col.mode = 0) # colour recycled by row
+plot(dd, col = cbind(2:3, 4:5), col.mode = 0) # colour recycled by row and column
+plot(dd, col = 2:3, col.mode = 1) # colour gradient by model weight
+\dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link{plot.default}}, \code{\link{par}}
+\code{\link{plot.default}}, \code{\link{par}}, \code{\link{MuMIn-package}}
 }
 \author{
 Kamil Barto\enc{ń}{n}

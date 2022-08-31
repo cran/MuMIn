@@ -317,6 +317,7 @@ function(envir, n = 8L) {
 function(x) {
 	x <- gsub(":", "%*%", x, perl = TRUE)
 	x <- gsub("\\B_?(\\d+)(?![\\w\\._])", "[\\1]", x, perl = TRUE)
+    x <- gsub("((?<=[,=]) +(?=[\\w\"'])|(?<=[\\w\"']) +(?==))", "", x, perl = TRUE)
     x <- gsub("[ _]", "~~", x)
 	x <- str2expression(x)
 	x[] <- lapply(x, function(x)

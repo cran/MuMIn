@@ -62,12 +62,12 @@ coefTable(ma, full = TRUE)
 
 }
 \references{
-Bates, J. M. & Granger, C. W. J. (1969) The combination of forecasts.
-\emph{Journal of the Operational Research Society}, 20: 451-468.
+Bates, J. M. and Granger, C. W. J. 1969 The combination of forecasts.
+\emph{Journal of the Operational Research Society} \strong{20}, 451-468.
 
 Dormann, C. et al. (2018) Model averaging in ecology: a review of Bayesian,
 information-theoretic, and tactical approaches for predictive inference.
-\emph{Ecological Monographs}, 88, 485–504.
+\emph{Ecological Monographs} \strong{88}, 485–504.
 }
 \seealso{
 \code{\link{Weights}}, \code{\link{model.avg}}

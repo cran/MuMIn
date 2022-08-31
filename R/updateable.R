@@ -29,11 +29,8 @@ function (FUN, eval.args = NULL, Class) {
     FUNV
 }
 
-`updateable2` <-
-function (FUN, Class) .Defunct("updateable")
-
-
-`get_call` <- function(x) {
+`get_call` <- 
+function(x) {
 	rval <-
 	if(isS4(x)) {
 		if(any(i <- (sln <- c("call", "CALL", "Call")) %in% methods::slotNames(x)))

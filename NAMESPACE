@@ -23,10 +23,7 @@ export(
 	"bootWeights",
 	"loo",
 	
-    "coefplot",
-    
-    # defunct and deprecated:
-	"mod.sel",  "tTable", "updateable2"
+    "coefplot"
 )
 
 # Imports:

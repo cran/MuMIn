@@ -1,7 +1,5 @@
 ## TODO: chunk size for evaluate = FALSE
 
-
-
 `pdredge` <-
 function(global.model, cluster = NULL,
 	beta = c("none", "sd", "partial.sd"),
@@ -10,9 +8,9 @@ function(global.model, cluster = NULL,
 	trace = FALSE, varying, extra, ct.args = NULL, 
     deps = attr(allTerms0, "deps"),
     check = FALSE, ...) {
-    
+
     .Deprecated("dredge")
-    
+	
     allTerms0 <- 0L # placeholder for Rcheck
     
     cl <- match.call()
@@ -220,6 +218,8 @@ function(global.model, cluster = NULL,
 	#deps <- attr(allTerms0, "deps")
 	fixed <- union(fixed, rownames(deps)[rowSums(deps, na.rm = TRUE) == ncol(deps)])
 	fixed <- c(fixed, allTerms[allTerms %in% interceptLabel])
+    fixed <- fixed[!duplicated(fixed)]
+
 
 	nFixed <- length(fixed)
 	if(nFixed != 0L) message(sprintf(ngettext(nFixed, "Fixed term is %s", "Fixed terms are %s"),

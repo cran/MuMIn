@@ -151,8 +151,8 @@ unless \code{center} or \code{scale} are explicitly given.
 \author{Kamil Barto\enc{ń}{n}}
 
 \references{
-Gelman, A. (2008) Scaling regression inputs by dividing by two standard 
-deviations. \emph{Statistics in medicine} 27, 2865-2873.
+Gelman, A. 2008 Scaling regression inputs by dividing by two standard 
+deviations. \emph{Statistics in medicine} \bold{27}, 2865--2873.
 }
 
 

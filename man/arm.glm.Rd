@@ -51,11 +51,11 @@ description.
 }
 
 \references{
-Yang Y. (2001) Adaptive Regression by Mixing. 
-\emph{Journal of the American Statistical Association} 96: 574–588.
+Yang, Y. 2001 Adaptive Regression by Mixing. 
+\emph{Journal of the American Statistical Association} \bold{96}, 574–588.
 
-Yang Y. (2003) Regression with multiple candidate models: selecting or mixing? 
-\emph{Statistica Sinica} 13: 783–810.
+Yang, Y. 2003 Regression with multiple candidate models: selecting or mixing? 
+\emph{Statistica Sinica} \bold{13}, 783–810.
 }
 
 

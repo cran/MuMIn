@@ -4,11 +4,12 @@
 
 \encoding{utf-8}
 
-\newcommand{\Rsqx}{\ifelse{latex}{\eqn{R_{#1}^{2}}{R_#1^2}}{\ifelse{html}{\enc{R_#1²}{R_#1^2}}{R_#1^2}}}
-\newcommand{\Rsq}{\ifelse{latex}{\eqn{R^{2}}{R^2}}{\ifelse{html}{\enc{R²}{R^2}}{R^2}}}
+\newcommand{\mydequation}{\ifelse{latex}{\deqn{#1}{#3}}{\ifelse{html}{\enc{\deqn{#1}}{#3}}{#3}}}
+\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#1}}{#3}}{#3}}}
 
-\newcommand{\mydequation}{\ifelse{latex}{\deqn{#1}{#3}}{\ifelse{html}{\enc{\deqn{#2}}{#3}}{#3}}}
-\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#2}}{#3}}{#3}}}
+\newcommand{\logLik}{\myequation{\log\mathcal{L}(#1)}{XXXX}{logL(#1)}}
+\newcommand{\Rsq}{\myequation{R^{2}}{XXXX}{R^2}}
+\newcommand{\Rsqx}{\myequation{R_{#1}^{2}}{XXXX}{R_#1^2}}
 
 \title{Pseudo-R-squared for Generalized Mixed-Effect models}
 \description{
@@ -125,17 +126,17 @@ Nakagawa et al. (2017).
 }
 
 \references{
-Nakagawa, S., Schielzeth, H. (2013) A general and simple method for obtaining
+Nakagawa, S., Schielzeth, H. 2013 A general and simple method for obtaining
 \Rsq from Generalized Linear Mixed-effects Models. \emph{Methods in
-Ecology and Evolution} 4: 133–142
+Ecology and Evolution} \bold{4}, 133--142.
 
-Johnson, P.C.D. (2014) Extension of Nakagawa & Schielzeth’s \Rsqx{GLMM} to random 
-slopes models. \emph{Methods in Ecology and Evolution} 5: 44-946
+Johnson, P. C. D. 2014 Extension of Nakagawa & Schielzeth’s \Rsqx{GLMM} to random 
+slopes models. \emph{Methods in Ecology and Evolution} \bold{5}, 44--946.
 
-Nakagawa, S., Johnson, P.C.D., Schielzeth, H. (2017) The coefficient of
+Nakagawa, S., Johnson, P. C. D., Schielzeth, H. 2017 The coefficient of
 determination \Rsq and intra-class correlation coefficient from generalized
 linear mixed-effects models revisited and expanded.
-\emph{J. R. Soc. Interface} 14: 20170213.
+\emph{J. R. Soc. Interface} \bold{14}, 20170213.
 
 }
 

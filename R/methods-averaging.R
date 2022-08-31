@@ -42,7 +42,8 @@ function (object, ...) {
 	## XXX: backward compatibility:
 	object <- upgrade_averaging_object(object)
 
-	.makecoefmat <- function(cf) {
+	.makecoefmat <-
+	function(cf) {
 		no.ase <- all(is.na(cf[, 3L]))
 		z <- abs(cf[, 1L] / cf[, if(no.ase) 2L else 3L])
 		pval <- 2 * pnorm(z, lower.tail = FALSE)

@@ -25,12 +25,12 @@ Beetle
 }
 
 \source{
-Bliss C. I. (1935) The calculation of the dosage-mortality curve.
-\emph{Annals of Applied Biology}, 22: 134-167.
+Bliss, C. I. 1935 The calculation of the dosage-mortality curve.
+\emph{Annals of Applied Biology} \bold{22}, 134--167.
 }
 
 \references{
-	Burnham, K. P. and Anderson, D. R. (2002) \emph{Model selection and multimodel
+	Burnham, K. P. and Anderson, D. R. 2002 \emph{Model selection and multimodel
 	inference: a practical information-theoretic approach}. 2nd ed. New York,
 	Springer-Verlag.
 }

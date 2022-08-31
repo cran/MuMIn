@@ -64,12 +64,12 @@ example in \code{Beetle}).
 
 \references{
 
-Richards, S. A., Whittingham, M. J., Stephens, P. A (2011). Model selection and 
+Richards, S. A., Whittingham, M. J., Stephens, P. A. 2011 Model selection and 
 model averaging in behavioural ecology: the utility of the IT-AIC framework. 
-\emph{Behavioral Ecology and Sociobiology}, 65: 77-89
+\emph{Behavioral Ecology and Sociobiology} \bold{65}, 77--89.
 
-Richards, S. A (2008) Dealing with overdispersed count data in applied
-ecology. \emph{Journal of Applied Ecology} 45: 218–227
+Richards, S. A. 2008 Dealing with overdispersed count data in applied
+ecology. \emph{Journal of Applied Ecology} \bold{45}, 218--227.
 
 }
 

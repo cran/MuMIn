@@ -45,9 +45,9 @@ legend("topleft", legend = c("AIC", "AICc"), pch = c(1, 19))
 
 }
 \references{
-Dormann, C. et al. (2018) Model averaging in ecology: a review of Bayesian,
+Dormann, C. et al. 2018 Model averaging in ecology: a review of Bayesian,
 information-theoretic, and tactical approaches for predictive inference.
-\emph{Ecological Monographs}, 88, 485–504.
+\emph{Ecological Monographs} \strong{88}, 485–504.
 }
 \author{
 Kamil Barto\enc{ń}{n}, based on code by Carsten Dormann

@@ -1,9 +1,3 @@
-`tTable` <-
-function (model, ...) 	{
-	.Deprecated("coefTable")
-	coefTable(model, ...)
-}
-
 `coefTable` <-
 function (model, ...) UseMethod("coefTable")
 

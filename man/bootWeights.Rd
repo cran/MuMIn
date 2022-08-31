@@ -40,9 +40,9 @@ summary(am)
 
 }
 \references{
-Dormann, C. et al. (2018) Model averaging in ecology: a review of Bayesian,
+Dormann, C. et al. 2018 Model averaging in ecology: a review of Bayesian,
 information-theoretic, and tactical approaches for predictive inference.
-\emph{Ecological Monographs}, 88, 485–504.
+\emph{Ecological Monographs} \strong{88}, 485–504.
 }
 \seealso{
 \code{\link{Weights}}, \code{\link{model.avg}}
