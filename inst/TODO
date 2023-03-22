@@ -1,11 +1,12 @@
 TODO list for the MuMIn package:
 
-* UPDATE THIS LIST
+# BUGS:
+* unify null.fit and .nullFitRE
+* arm.glm does not show all combinations 
 
+# Extensions:
 * response in plot title in plot.model.selection 
 * effects for "averaging" object?
-
-** WAIC
 
 **  fit.args - additional arguments for updated models (underwrite)
 **  handling random effects in 'dredge' (with 'lme', 'lmer', etc). Currently
@@ -18,4 +19,3 @@ TODO list for the MuMIn package:
         row names and no columns for terms.
 *   pdredge: checking if 'nobs' for all generated models in are equal (already 
         done in 'dredge')
-		

@@ -71,15 +71,15 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	otherwise the result may be visually unpleasant. See example in
 	\code{\link{Beetle}}. }
 
-	\item{extra}{ optional additional statistics to include in the result,
-	provided as functions, function names or a list of such (best if named
-	or quoted). Similarly as in \code{rank} argument, each function must accept
-	fitted model object as an argument and return (a value coercible to) a
+	\item{extra}{ optional additional statistics to be included in the result,
+	provided as functions, function names or a list of such (preferably named
+	or quoted). As with the \code{rank} argument, each function must accept as 
+    an argument a fitted model object and return (a value coercible to) a
 	numeric vector.
-	These can be e.g. additional information criteria or goodness-of-fit
+	This could be, for instance, additional information criteria or goodness-of-fit
 	statistics. The character strings \code{"R^2"} and \code{"adjR^2"} are
-	treated in a special way, and will add a likelihood-ratio based \Rsq and
-	modified-\Rsq respectively to the result (this is more efficient than using
+	treated in a special way and add a likelihood-ratio based \Rsq and
+	modified-\Rsq to the result, respectively (this is more efficient than using
 	\code{\link{r.squaredLR}} directly). }
 
   \item{x}{ a \code{model.selection} object, returned by \code{dredge}. }
@@ -117,13 +117,13 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 
 
 \details{
-Models are fitted through repeated evaluation of modified call extracted from
-the \code{global.model} (in a similar fashion as with \code{update}). This
-approach, while robust in that it can be applied to most model types through the
-usual formula interface, may have considerable computational overhead.
+Models are fitted through repeated evaluation of the modified call extracted from
+the \code{global.model} (in a similar fashion to \code{update}). This
+approach, while having the advantage that it can be applied to most model types through the
+usual formula interface, can have a considerable computational overhead.
 
 Note that the number of combinations grows exponentially with the number of
-predictors (\ifelse{latex}{\eqn{2^{N}}}{\ifelse{html}{2ⁿ}{2^N}}, less when
+predictors (\ifelse{latex}{\eqn{2^{N}}}{\ifelse{html}{\eqn{2^{N}}}{2^N}}, less when
 interactions are present, see below).
 
 The fitted model objects are not stored in the result. To get (a subset of)
@@ -133,7 +133,8 @@ Another way to get all the models is to run
 which avoids fitting models twice.
 
 For a list of model types that can be used as a \code{global.model} see
-\link[=MuMIn-models]{the list of supported models}. Modelling functions that do not store a \code{call} in their result should be evaluated \emph{via} a wrapper function
+\link[=MuMIn-models]{the list of supported models}. Modelling functions that 
+do not store a \code{call} in their result should be evaluated \emph{via} a wrapper function
 created by \code{\link{updateable}}.
 
 \subsection{Information criterion}{
@@ -158,7 +159,8 @@ subset models.
 \subsection{Subsetting}{
 There are three ways to constrain the resulting set of models: setting limits to
 the number of terms in a model with \code{m.lim}, binding 
-term(s) to all models using \code{fixed}, and the \code{subset} argument can be used for more complex rules. For a model to be included in the selection table, its 
+term(s) to all models using \code{fixed}, and the \code{subset} argument can be 
+used for more complex rules. For a model to be included in the selection table, its 
 formulation must satisfy all these conditions.
 
 %%Terms in \code{fixed} argument are applied before the combinations are
@@ -169,8 +171,9 @@ The latter should be a lower triangular matrix with logical values, where the
 columns and rows correspond to \code{global.model} terms. Value
 \code{subset["a", "b"] == FALSE} will exclude any model containing both 
 \var{a} and \var{b} terms. \cr
-\code{demo(dredge.subset)} has examples of using the \code{subset} matrix in conjunction with correlation matrices to exclude models
-containing collinear predictors.
+\code{demo(dredge.subset)} has examples of using the \code{subset} matrix in 
+conjunction with correlation matrices to exclude models containing collinear 
+predictors.
 
 In the form of \code{expression}, the argument \code{subset} acts in a similar
 fashion to that in the function \code{subset} for \code{data.frames}: model

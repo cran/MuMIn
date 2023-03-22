@@ -74,12 +74,6 @@ function (model, ...) {
 	.makeCoefTable(coeffs(model), sqrt(diag(vcov(model, ...))))
 }
 
-`coefTable.sarlm` <-
-`coefTable.spautolm` <-
-function(model, ...) {
-	x <- coef(model)
-	.makeCoefTable(x, sqrt(diag(summary(model, ...)$resvar))[names(x)])
-}
 
 `coefTable.coxme` <-
 `coefTable.lmekin` <-

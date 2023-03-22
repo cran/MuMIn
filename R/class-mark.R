@@ -24,7 +24,7 @@
 }
 
 `formula.mark` <- function (x, expand = TRUE, ...) {
-	param <- if(is.null(x$model.parameters)) x$parameters else  x$model.parameters
+	param <- if(is.null(x$model.parameters)) x$parameters else x$model.parameters
 	f <- lapply(param, "[[", 'formula')
 	f <- f[!vapply(f, is.null, FALSE)]
 	

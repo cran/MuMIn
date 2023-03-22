@@ -1,49 +1,70 @@
-- MuMIn package news:
+MuMIn package news:
+
+
+Changes in version 1.47.5 (2023-03-15)
+- r.squaredGLMM: added support for additional families using 
+  insight::get_variance. This requires the addition of 'insight' to the package 
+  dependencies, something done very reluctantly as, as a principle with MuMIn, 
+  new dependencies are only added as a last resort.
+- null.fit and hence r.squaredLR now work also with "survreg" class (reported by
+  Caroline Zanchi).
+
+Changes in version 1.47.4 (2023-03-13)
+- (fixed) removed remaining references to stats:::format.perc
+
+Changes in version 1.47.3 (2023-02-27)
+- (fixed) model.avg.default: duplicated interaction coefficients were returned
+  when the main effect coefficients appeared in different order in the 
+  component models (spotted by Derek Corcoran).
+
+Changes in version 1.47.2 (2023-01-06)
+- Updated methods for models of class 'Sarlm' and 'Spautolm' from the 
+  package 'spatialreg' (reported by Iwona Dembicz)
 
 Changes in version 1.47.1 (2022-08-31)
 - Pleasing RCheck: updated NEWS file so that it can be parsed by the 
-    `news` function.
+  `news` function.
 
 Changes in version 1.47.0 (2022-08-30)
 - (changed) plot.model.selection: Most notable change is the way the 
-    'col' argument is interpreted. The default colours use now 
-    `hcl.palette` and differ from the previous version. There is no backward 
-    compatibility.
+  'col' argument is interpreted. The default colours use now 
+  `hcl.palette` and differ from the previous version. There is no backward 
+  compatibility.
 - Long defunct `mod.sel`, `tTable` and `updateable2` have been removed.
-    `importance` is now defunct (use `sw` instead).
+  `importance` is now defunct (use `sw` instead).
 
 Changes in version 1.46.7 (2022-08-24)
 - Rd files have been updated to meet changes in the HTML R help system, 
-    starting with R 4.2.0. Hence, the minimum required version of R is now 
-    4.2.0.
+  starting with R 4.2.0. Hence, the minimum required version of R is now 
+  4.2.0.
 
 Changes in version 1.46.6 (2022-07-31)
-- (fixed) print.model.selection: Abbreviations now only include existing 
-    values (i.e. after subsetting).
+- (fixed) print.model.selection: Abbreviations now only include existing        
+  values (i.e. after subsetting).
 - (fixed) merge.model.selection: "modelList" attributes are now preserved.
 
 Changes in version 1.46.5 (2022-06-07)
 - (fixed) getAllTerms.gamlss: error with intercept only models and formulas
-    containing offset (reported multiple times on Stackoverflow)
+  containing offset (reported multiple times on Stackoverflow)
 
 Changes in version 1.46.4 (2022-06-07)
 - (fixed) dredge: in a rare case when intercept terms were passed as "fixed", 
-    some variable combinations were erroneously dropped from the result. 
+  some variable combinations were erroneously dropped from the result. 
 
 Changes in version 1.46.0 (2022-02-23)
 - (fixed) r.squaredGLMM: now gives correct values for negative binomial models
-    (thanks to Shuang Zhang for research)
+  (thanks to Shuang Zhang for research)
 
 Changes in version 1.45.1 (2021-12-08)
-- (added) .vcov a wrapper for vcov returning result in a consistent format
-    (a matrix)
+- (added) .vcov a wrapper for vcov returning result in a consistent format (a
+  matrix)
 
 Changes in version 1.45.0 (2021-11-25)
 - pdredge is deprecated in favour of `dredge` with "cluster" argument.
 
 Changes in version 1.44.6 (2021-05-19)
 - added stringsAsFactors=TRUE to most 'as.data.frame' occurences to bring back 
-    the desired behaviour (which changed in R 4.0.0).
+  the desired behaviour (which changed in R 4.0.0).
 
 Changes in version 1.44.5 (2021-05-11)
 - std.coef: now matches coefficient names with model matrix column names.
@@ -52,83 +73,83 @@ Changes in version 1.44.4 (2021-04-20)
 - coefTable.betareg - now includes residual df.
 
 Changes in version 1.44.3 (2021-03-05)
-- (fixed) getAllTerms.zeroinfl: error when the function was called from non-global
-    environment (spotted by Richard Shefferson)
+- (fixed) getAllTerms.zeroinfl: error when the function was called from 
+  non-global environment (spotted by Richard Shefferson)
 
 Changes in version 1.44.2 (2020-07-14)
 - (fixed) error with makeArgs (and hence dredge) with glmmTMB with non-symbol 
-    response.
+  response
 
 Changes in version 1.44.1 (2020-06-25)
 - importance: is now formally deprecated with a warning. Use `sw` instead.
 
 Changes in version 1.44.0 (2020-05-28)
-- (added) plot method for the class "averaging" produces a dot-and-whisker plot of 
-    coefficients. This uses a new general function `coefplot` that can be used 
-    to make plots for arbitrary model types.
+- (added) plot method for the class "averaging" produces a dot-and-whisker plot
+  of coefficients. This uses a new general function `coefplot` that can be used 
+  to make plots for arbitrary model types.
 
 Changes in version 1.43.19 (2020-05-22)
-- (fixed) plot titles in plot.coefTable.
+- (fixed) plot titles in plot.coefTable
 
 Changes in version 1.43.18 (2020-05-18)
-- r.squaredGLMM: issues a warning about zero-inflation and dispersion model being
-    ignored in the calculation of R2 rather than an error as before (request 
-    from Alexander Bruckner, inspired by the code by Ben Bolker:
-    https://github.com/glmmTMB/glmmTMB/blob/master/glmmTMB/inst/misc/rsqglmm.R) 
-- (fixed) some issues with evaluating in non-global environment (`updateable` and 
-    'na.action' checking)
+- r.squaredGLMM: issues a warning about zero-inflation and dispersion model 
+  being ignored in the calculation of R2 rather than an error as before (request 
+  from Alexander Bruckner, inspired by the code by Ben Bolker:
+  https://github.com/glmmTMB/glmmTMB/blob/master/glmmTMB/inst/misc/rsqglmm.R) 
+- (fixed) some issues with evaluating in non-global environment (`updateable` 
+  and 'na.action' checking)
 
 Changes in version 1.43.17 (2020-04-14)
 - Merely refreshing date stamp to please CRAN policies.
 
 Changes in version 1.43.16 (2020-03-12)
 - (added) specs for 'unmarkedFitPCount' with mixture = "ZIP" (spotted by Hannah 
-    Clyde)
+  Clyde)
 
 Changes in version 1.43.15 (2019-12-19)
 - (fixed) fatal error with QIC.geem introduced in the previous version
-    (reported by Lee McDaniel)
+  (reported by Lee McDaniel)
 
 Changes in version 1.43.14 (2019-12-18)
 - (fixed) example(QIC) causing an error after recent update of 'geepack'.
 - Added quasiLik/QIC for the negative binomial family (reportedly supported only 
-    by 'geeM::geem').
+  by 'geeM::geem').
 
 Changes in version 1.43.13 (2019-12-14)
 - (fixed) get.models: in the absence of a 'global model', the argument 'subset' 
-    was ignored and a list of all models was returned. 
+  was ignored and a list of all models was returned. 
 
 Changes in version 1.43.12 (2019-12-11)
 - (fixed) [p]dredge: error while formatting the error message about an overlarge 
-    number of predictors (found by a certain 89_Simple on Stackoverflow).
+  number of predictors (found by a certain 89_Simple on Stackoverflow).
 
 Changes in version 1.43.11 (2019-12-09)
-- (fixed) getAllTerms now recognizes structured terms of form `struc(terms|group)`
-    properly as random effect terms;
+- (fixed) getAllTerms now recognizes structured terms of form 
+  `struc(terms|group)` properly as random effect terms;
 - (fixed) dredge, model.sel: delta was not calculated if any rank was NA.
 
 Changes in version 1.43.10 (2019-12-05)
-- (removed) conflicting methods which are now defined in their 'survival' package
-    (nobs.coxph, nobs.survreg). Because of that, MuMIn now depends on 
-    survival >= 3.1.0.
+- (removed) conflicting methods which are now defined in their 'survival' 
+  package (nobs.coxph, nobs.survreg). Because of that, MuMIn now depends on 
+  survival >= 3.1.0.
 
 Changes in version 1.43.9 (2019-06-21)
 - (fixed) 'r.squaredGLMM' failed when order of interaction components in RE part
-    of model formula were not in order of appearance (found by
-    Gabriel Baud-Bovy)
-- (removed) 'predict.merMod' replacement to avoid the conflict of registered 
-    methods. Note that the original method does not calculate 'se.fit', so 
-    currently there is no out-of-box way to produce averaged predictions
-    with standard errors.
+  of model formula were not in order of appearance (found by
+  Gabriel Baud-Bovy)
+- (removed) 'predict.merMod' replacement to avoid the conflict of registered
+  methods. Note that the original method does not calculate 'se.fit', so
+  currently there is no out-of-box way to produce averaged predictions with
+  standard errors.
 
 Changes in version 1.43.8 (2019-04-15)
 - (fixed) methods for 'gamlss' (reported by Andras Farkas)
 
 Changes in version 1.43.6 (2019-04-08)
-- (fixed) if conditions with "length > 1 in coercion to logical" error produced by
-    the new Rcheck.
+- (fixed) if conditions with "length > 1 in coercion to logical" error produced 
+  by the new Rcheck.
 - (fixed) updated 'tests' to make up for 'spautolm' moved from 'spdep' to 
-    'spatialreg'.
+  'spatialreg'.
 
 Changes in version 1.43.4 (2019-04-04)
 - (fixed) minor changes to the quasi-likelihood function
@@ -136,308 +157,307 @@ Changes in version 1.43.4 (2019-04-04)
 Changes in version 1.43.3 (2019-03-19)
 - (added) methods for 'gamlss' (suggested by Anne Loosen)
 - (fixed) QIC,quasiLik: now gives results compatible with those of 
-    wgeesel::QIC.gee.
+  wgeesel::QIC.gee.
 
 Changes in version 1.43.2 (2019-03-16)
-- 'sw' (for "Sum of Weights") is now preferred to 'importance' (which is 
-    still available, but is going to be deprecated in future). This is because
-    of the controversies about SoW being a valid measure of actual variable 
-    importance.
+- 'sw' (for "Sum of Weights") is now preferred to 'importance' (which is still
+  available, but is going to be deprecated in future). This is because of the
+  controversies about SoW being a valid measure of actual variable importance.
 - [p]dredge: max. number of predictors is now correctly calculated (depending on 
-    the number of variants)
+  the number of variants)
 
 Changes in version 1.43.1 (2019-03-06)
-- (added) new model structure for unmarkedFitGDS (gdistsamp) with alpha parameter
-   (thanks to Alba Estrada)
+- (added) new model structure for unmarkedFitGDS (gdistsamp) with alpha
+  parameter (thanks to Alba Estrada)
 
 Changes in version 1.43.0 (2019-02-28)
 - (fixed) in QICu, the number of parameters was mistaken for number of 
-    observations (reported by Richard Fredrickson)
+  observations (reported by Richard Fredrickson)
 - (added) some methods for wgeesel::wgee objects.
 
 Changes in version 1.42.5 (2019-01-02)
-- r.squaredGLMM: added the argument "envir" which is passed to `.nullFitRE`. This 
-    can be used in case of issues with model data not being found (reported by
-    Eliot McIntire)
+- r.squaredGLMM: added the argument "envir" which is passed to `.nullFitRE`. 
+  This can be used in case of issues with model data not being found (reported 
+  by Eliot McIntire)
 
 Changes in version 1.42.4 (2018-12-05)
-- (fixed) r.squaredGLMM.merMod: error when the function was called in an 
-    environment different than .GlobalEnv (spotted by a certain Martin on 
-    Stackoverflow)
+- (fixed) r.squaredGLMM.merMod: error when the function was called in an
+  environment different than .GlobalEnv (spotted by a certain Martin on
+  Stackoverflow)
 
 Changes in version 1.42.3 (2018-07-31)
-- (added) dredge: the subset expression `.(x)` now accepts an additional argument
-    for the allowed term orders. For example `.(X, 2:10)` means 
-	"at least one 2nd or 3rd order interaction of 'X'". The `.` pseudo-function
-	has also a new alias: "with", e.g. `with(X, 2:10)`.
+- (added) dredge: the subset expression `.(x)` now accepts an additional
+  argument for the allowed term orders. For example `.(X, 2:10)` means "at least
+  one 2nd or 3rd order interaction of 'X'". The `.` pseudo-function has also a
+  new alias: "with", e.g. `with(X, 2:10)`.
 
 Changes in version 1.42.2 (2018-07-27)
-- (fixed) r.squaredGLMM: handle the case when some coefficients are not estimated 
-	and NA
+- (fixed) r.squaredGLMM: handle the case when some coefficients are not
+  estimated and NA
 
 Changes in version 1.42.1 (2018-07-21)
 - tests have been modified to prevent CRAN check errors on some systems. 
 - (fixed) arm.glm, armWeights: now use a random sample to select a training set.
-    armWeights: no longer give a warning about "longer object length" 
+  armWeights: no longer give a warning about "longer object length" 
 	
 Changes in version 1.42.0 (2018-07-17)
 - (updated) methods for "unmarkedFit" models have been rewritten and should work
-	properly with all subclasses. Added missing support for 
-	"unmarked::unmarkedFitOccuFP" (reported by Tara Hohoff)
-	R2GLMM added an option to disable "null fit warning"
+  properly with all subclasses. Added missing support for
+  "unmarked::unmarkedFitOccuFP" (reported by Tara Hohoff)
+- R2GLMM added an option to disable "null fit warning"
 - (fixed) getAllTerms.lme: now gives a correct value for response in "binomial" 
-    glmmPQL ("zz" previously)
+  glmmPQL ("zz" previously)
 - (fixed) testSmoothKConsistency: (used by `model.avg` with 'gam' models) works 
-    now with 'gam's including no smooth terms.
+  now with 'gam's including no smooth terms.
 
 Changes in version 1.41.1 (2018-07-13)
 - (fixed) workaround for clmm's (package "ordinal") annoyance: it needs explicit 
-	"1" in the formula if there are no other fixed terms. That resulted in 
-	intercept-only model calls generated by `dredge` being rejected. 
-	(kindly reported by Jörg Albrecht)
+  "1" in the formula if there are no other fixed terms. That resulted in 
+  intercept-only model calls generated by `dredge` being rejected. 
+  (kindly reported by Jörg Albrecht)
 
 Changes in version 1.41.0 (2018-07-12)
 - (updated) r.squaredGLMM: revised to incorporate new developments in 
-	Nakagawa et al (2017). Methods exist for merMod, glmmTMB, glmmADMB, glmmPQL,
-	cpglmm, and lm classes.
+  Nakagawa et al (2017). Methods exist for merMod, glmmTMB, glmmADMB, glmmPQL,
+  cpglmm, and lm classes.
 
 Changes in version 1.40.8 (2018-06-18)
 - Model description - simplified handling of the model's family description in
-    the model selection tables, so it does not require `family()$family` string 
-	being an existing function name. The drawback is that now a default link
-	function is not detected and its name always appears in the column (
-	before e.g. "binomial(logit)" appeared as "binomial()").
+  the model selection tables, so it does not require `family()$family` string
+  being an existing function name. The drawback is that now a default link
+  function is not detected and its name always appears in the column (before
+  e.g. "binomial(logit)" appeared as "binomial()").
 
 Changes in version 1.40.7 (2018-06-14)
 - Addad a workaround to accommodate glmmTMB specific families (which do not have 
-	a matching function) (reported by a certain Gitu on Stackoverflow)
+  a matching function) (reported by a certain Gitu on Stackoverflow)
 
 Changes in version 1.40.6 (2018-05-16)
 - (fixed) makeArgs, getAllTerms: compatibility with glmmTMB - random terms in 
-	formulas other than cond have not been handled properly (discovered via 
-	Mollie Brooks on GitHub)
+  formulas other than cond have not been handled properly (discovered via 
+  Mollie Brooks on GitHub)
 
 Changes in version 1.40.5 (2018-05-14)
-- `.checkNAAction` now handles a case of 'na.action' formal argument being a call
-	(e.g. `getOption(na.action)` in glmmTMB) (spotted by Ben Bolker)
+- `.checkNAAction` now handles a case of 'na.action' formal argument being a
+  call (e.g. `getOption(na.action)` in glmmTMB) (spotted by Ben Bolker)
 
 Changes in version 1.40.4 (2018-01-30)
 - Elaborated the Description field.
 
 Changes in version 1.40.3 (2018-01-29)
 - Removed superfluous method replacements for models from package "survival".
-    `predict` functions for "gls" and "lme" are no longer registered as S3 
-	methods in NAMESPACE.
+  `predict` functions for "gls" and "lme" are no longer registered as S3 
+  methods in NAMESPACE.
 
 Changes in version 1.40.2 (2018-01-19)
 - (fixed) getAllTerms.glmmTMB: error with models including offset term 
-    (spotted by Kate Plummer)
+  (spotted by Kate Plummer)
 
 Changes in version 1.40.1 (2017-11-30)
 - (added) Support for "glmmTMB" models (incentive from Kaitlyn Zerr)
 
 Changes in version 1.40.0 (2017-09-30)
 - (fixed) long broken support for "unmarkedFit" models has been restored 
-	(because of the utterly inconsistent structure of these objects it is not 
-	guaranteed to work in all cases).
-- (fixed) R.squaredGLMM: error with very long RE formulas (reported by Siti Binte 
-    Faizal)
+  (because of the utterly inconsistent structure of these objects it is not 
+  guaranteed to work in all cases).
+- (fixed) R.squaredGLMM: error with very long RE formulas (reported by Siti
+  Binte Faizal)
 
 Changes in version 1.16.7 (2017-08-10)
 - A few minor things fixed.
 
 Changes in version 1.16.6 (2017-07-11)
 - (fixed) print.summary.averaging: warning when fitting function name was a call 
-	rather than a symbol, e.g. lme4::lme (reported by Chen Lei).
+  rather than a symbol, e.g. lme4::lme (reported by Chen Lei).
 
 Changes in version 1.16.5 (2017-05-24)
 - (fixed) predict.gls updated to match current version in nlme (reported by a 
-	certain Asteraceae on Stackoverflow)
+  certain Asteraceae on Stackoverflow)
 
 Changes in version 1.16.4 (2016-11-21)
-- (fixed) makeArgs.mark: reverted to a working version (this bug was introduced in 
-	1.15.2/rev. 373. Reported by Jay Rotella)
+- (fixed) makeArgs.mark: reverted to a working version (this bug was introduced
+  in 1.15.2/rev. 373. Reported by Jay Rotella)
 
 Changes in version 1.16.3 (2016-09-14)
 - (fixed) dredge: recognizes when global model's data is a function in a smarter 
-	way
+  way
 
 Changes in version 1.16.2 (2016-09-01)
-- (fixed) plot.model.selection: problem in case with only one model in the 
-    table (reported by Ryan Rothman on Stackoverflow)
-- dredge: recognizes when global model's data is a function (which is not allowed 
-	as it may cause sub-models being fitted to different datasets)
+- (fixed) plot.model.selection: problem in case with only one model in the table
+  (reported by Ryan Rothman on Stackoverflow)
+- dredge: recognizes when global model's data is a function (which is not
+  allowed as it may cause sub-models being fitted to different datasets)
 
 Changes in version 1.16.1 (2016-07-29)
 - New suite of functions to support model averaging. It is based on original
-    code developed by Carsten Dormann, as an outcome of the model-averaging
-    workshop held in Freiburg in 2015.
+  code developed by Carsten Dormann, as an outcome of the model-averaging
+  workshop held in Freiburg in 2015.
 - (added) cos2Weights, BGWeights, jackknifeWeights, stackingWeights: calculate
-    various types of model weights.
+  various types of model weights.
 - (added) loo: RMSE/log-likelihood based on leave-one-out cross-validation
 - (added) armWeights: similar to `arm.glm` but produces model weights.
 - (fixed) model.avg/model.sel: problems with intercept only models
-    (spotted by a certain Teresa on Stackoverflow)
+  (spotted by a certain Teresa on Stackoverflow)
 
 Changes in version 1.15.8 (2016-07-05)
 - (fixed) dredge: no longer produces an error in the rare case when dependency
-    matrix was an empty matrix [0x0].
+  matrix was an empty matrix [0x0].
 - (fixed) r.squaredGLMM: error with naming of variance components in 'lmer'
-    models. (both problems reported by a certain Teresa on Stackoverflow)
+  models. (both problems reported by a certain Teresa on Stackoverflow)
 - (added) Weights: has an assignment version, so weights can be applied to an
-    "averaging" object.
+  "averaging" object.
 - get.models: now can extract models also from an "averaging" object (only when
-    it was created with model objects).
+  it was created with model objects).
 
 Changes in version 1.15.7 (2016-01-21)
 - (fixed) dredge: number of variables is limited to 30 to avoid integer overflow
-    (reported by Sarah Grogan).
+  (reported by Sarah Grogan).
 
 Changes in version 1.15.6 (2015-12-21)
 - (fixed) get.models, dredge, subset.model.selection: enclosure for the subset
-    expression evaluation is now `parent.frame()` rather than `.GlobalEnv` as it
-    was before (incentive from Philipp Maier).
+  expression evaluation is now `parent.frame()` rather than `.GlobalEnv` as it
+  was before (incentive from Philipp Maier).
 - (fixed) coeffs.survreg, coefTable.survreg: log(scale) added to coefficients,
-    when it is estimated (suggested by Nicolas Rode).
+  when it is estimated (suggested by Nicolas Rode).
 
 Changes in version 1.15.5 (2015-11-25)
 - (fixed) [p]dredge: error with model with offsets in formula when 'subset'
-    expression was given (reported by Adam Cummings)
+  expression was given (reported by Adam Cummings)
 - (fixed) [p]dredge: in some cases the generated combinations did not obey the
-    subset matrix (reported by Ben Augustine)
-- (fixed) model.selection column assignment "[<-" was broken when (spotted by
-    a certain abmiller8 on Stackoverflow)
+  subset matrix (reported by Ben Augustine)
+- (fixed) model.selection column assignment "[<-" was broken when (spotted by a
+  certain abmiller8 on Stackoverflow)
 - model.avg: warns when averaged 'gam' models have smooths with different
-    dimension for the same variable.
+  dimension for the same variable.
 
 Changes in version 1.15.4 (2015-10-16)
 - (fixed) rbind, merge methods for "model.selection": wrong order of names of
-    columns and rows (spotted by Ben Augustine)
+  columns and rows (spotted by Ben Augustine)
 
 Changes in version 1.15.3 (2015-09-06)
 - (fixed) Weights: bug that caused that NaN's were returned (reported by Carles
-    Alcaraz)
+  Alcaraz)
 
 Changes in version 1.15.2 (2015-07-07)
 - (added) summary.coefTable: tries to calculate p-values for coefficients, nicer
-    printing using printCoefmat
+  printing using printCoefmat
 
 Changes in version 1.15.1 (2015-07-02)
 - added imports from all the default packages added to NAMESPACE in order to
-    satisfy CRAN's new stricter RCheck.
+  satisfy CRAN's new stricter RCheck.
 
 Changes in version 1.15.0 (2015-07-01)
 - (added) arm.glm: implements model averaging with weights calculated via ARM
-    ("adaptive regression by mixing") algorithm.
-- "averaging" object: the elements "coef.shrinkage" and "coefTable" are
-    replaced by matrix named "coefficients". The "Pval-tables" are accessed via
-    summary(averaging)'s elements "coefmat.full" and "coefmat.subset". Objects
-    created with previous versions will be automatically converted if needed.
+  ("adaptive regression by mixing") algorithm.
+- "averaging" object: the elements "coef.shrinkage" and "coefTable" are replaced
+  by matrix named "coefficients". The "Pval-tables" are accessed via
+  summary(averaging)'s elements "coefmat.full" and "coefmat.subset". Objects
+  created with previous versions will be automatically converted if needed.
 - [p]dredge: argument 'm.lim' replaces 'm.min' and 'm.max' (which are still
-    present, but deprecated).
+  present, but deprecated).
 - "model.selection" object: changing or removing essential columns (i.e.
-    everything except 'varying' and 'extra') converts the object to a plain
-    "data.frame" and drops all additional attributes.
+  everything except 'varying' and 'extra') converts the object to a plain
+  "data.frame" and drops all additional attributes.
 - (added) rbind.model.selection: combine multiple "model.selection" objects.
 - (added) 'xtable' methods for "averaging" and "model.selection" objects.
-- (fixed) updateable: does not cause infinite recursion when the resulting wrapper
-    has the same name as the wrapped function.
+- (fixed) updateable: does not cause infinite recursion when the resulting
+  wrapper has the same name as the wrapped function.
 - (fixed) exprApply: now can deal with function expressions and 'expression's
-    longer than one.
+  longer than one.
 
 Changes in version 1.14.1 (2015-06-12)
 - (fixed) [p]dredge no longer gives coefficient values as NA with [g]lmer
-    (reported by Aitor Cevidanes).
+  (reported by Aitor Cevidanes).
 - Some tidying-up of manual and data (response in 'Cement' and 'Beetle' moved to
-    first column so that formula(data) is correct).
+  first column so that formula(data) is correct).
 
 Changes in version 1.14.0 (2015-06-03)
 - (added) partial.sd, std.coef: calculate partial std. deviation and standardize
-    model coefficients. 'beta.weights' is now deprecated in favour of
-    'std.coef'.
+  model coefficients. 'beta.weights' is now deprecated in favour of
+  'std.coef'.
 - dredge, model.avg, model.sel: argument 'beta' is modified to allow for
-    standardizing with SD or partial SD.
+  standardizing with SD or partial SD.
 - coefTable, coeffs: method for class 'aodml' (package 'aod3') no longer return
-    'phi' coefficients. This is for consistency with results of 'vcov' and
-    'coef', as well as their counterparts for 'glimML' models.
+  'phi' coefficients. This is for consistency with results of 'vcov' and
+  'coef', as well as their counterparts for 'glimML' models.
 - Removed all methods for 'mer' objects (used in lme4 < 1.0.0)
 
 Changes in version 1.13.10 (2015-06-01)
-- (fixed) compatibility with lme4-1.1.8, 'null.fit' now works properly with 'gamm'
-    objects.
+- (fixed) compatibility with lme4-1.1.8, 'null.fit' now works properly with
+  'gamm' objects.
 
 Changes in version 1.13.9 (2015-05-28)
 - stdize: improved interpretation of the argument "scale".
-- new dataset "GPA" ("First-year college Grade Point Average" referred in Burnham
-    & Anderson (2002)).
+- new dataset "GPA" ("First-year college Grade Point Average" referred in
+  Burnham & Anderson (2002)).
 
 Changes in version 1.13.8 (2015-05-22)
 - (added) QIC support for 'geem' models (request from Lee McDaniel).
 
 Changes in version 1.13.7 (2015-05-14)
 - coefTable: method for 'averaging' objects gains new arguments "full" and
-    "adjust.se".
+  "adjust.se".
 - (fixed) getAllTerms: now correctly names coefficients of 'unmarked::gdistsamp'
-    models (reported by Nathan Hostetter)
+  models (reported by Nathan Hostetter)
 
 Changes in version 1.13.6 (2015-05-01)
-- (fixed) model.avg, model.sel: now better distinguish model objects from lists of
-    objects.
+- (fixed) model.avg, model.sel: now better distinguish model objects from lists
+  of objects.
 
 Changes in version 1.13.5 (2015-04-15)
 - (fixed) r.squaredGLMM: method for 'lme' class with a multilevel grouping
-    structure (reported by Alex Gunderson)
+  structure (reported by Alex Gunderson)
 
 Changes in version 1.13.4 (2015-02-24)
 - coefTable.coxph: added workaround for the case when variance-covariance matrix
-    is NA (as in results of 'intcox') (reported by Vanessa Boukili)
+  is NA (as in results of 'intcox') (reported by Vanessa Boukili)
 
 Changes in version 1.13.3 (2015-02-19)
 - get.models+subset.model.selection: unified 'subset' expression interpretation
 - dredge: no longer exceeds memory limit with very complex models, and its
-    efficiency has somewhat improved. With trace=2 a progress bar is displayed.
+  efficiency has somewhat improved. With trace=2 a progress bar is displayed.
 - model.sel: has new attribute 'fit'.
 - "averaging" object now stores component models.
 - model.sel,subset,get.models: unified interpretation of the "subset" expression
-- (fixed) extracting random effects formula (affected 'r.squaredGLMM' for 'lmer',
-    reported by Yevgen Matusevych)
+- (fixed) extracting random effects formula (affected 'r.squaredGLMM' for
+  'lmer', reported by Yevgen Matusevych)
 - (fixed) makeArgs (and hence 'dredge'): formulas with no intercept are now
-    handled correctly in 'zeroinfl' models.
+  handled correctly in 'zeroinfl' models.
 
 Changes in version 1.13.2 (2015-01-08)
-- (fixed) makeArgs (and hence 'dredge'): gave error if no random effects
-    was specified in 'glmmadmb' model (reported by Szymek Drobniak).
+- (fixed) makeArgs (and hence 'dredge'): gave error if no random effects was
+  specified in 'glmmadmb' model (reported by Szymek Drobniak).
 
 Changes in version 1.13.1 (2015-01-06)
 - (fixed) getAllTerms: now properly handles single formula in 'hurdle' and
-    'zeroinfl' models (package 'pscl').
+  'zeroinfl' models (package 'pscl').
 
 Changes in version 1.13.0 (2015-01-03)
 - (added) get.response: utility to extract response variable.
 
 Changes in version 1.12.4 (2014-12-26)
 - (added) stdizeFit: utility to modify model object or a call to modelling
-    function to use standardized data.
+  function to use standardized data.
 
 Changes in version 1.12.3 (2014-12-23)
-- (fixed) checkModels: workaround for the "dotted argument identity" issue (namely
-    sometimes equal "..1"s are not identical).
+- (fixed) checkModels: workaround for the "dotted argument identity" issue 
+  (namely sometimes equal "..1"s are not identical).
 
 Changes in version 1.12.2 (2014-12-19)
 - (fixed) [Q]AICc: previously they ignored REML argument for some model classes.
-    The code has been rewritten so that most of the core calculation is done by
-    a common internal function.
+  The code has been rewritten so that most of the core calculation is done by
+  a common internal function.
 
 Changes in version 1.12.1 (2014-12-16)
 - minor corrections to the documentation
 
 Changes in version 1.12.0 (2014-12-16)
 - (added) exprApply: new function to manipulate expressions (with example of use
-    with 'dredge' to manipulate terms inside formula).
+  with 'dredge' to manipulate terms inside formula).
 - dredge, subset.model.selection: curly braces can be used to indicate complex
-    terms (e.g. {I(x)} or {s(x,k=2}) instead of backtick quotes. Spacing in
-    these expressions is irrelevant (as both whitespace and backticks seem to be
-    a problem for some users).
+  terms (e.g. {I(x)} or {s(x,k=2}) instead of backtick quotes. Spacing in these
+  expressions is irrelevant (as both whitespace and backticks seem to be a
+  problem for some users).
 
 Changes in version 1.11.3 (2014-12-10)
 - (added) stdize: new function for standardizing data
@@ -446,30 +466,30 @@ Changes in version 1.11.3 (2014-12-10)
 
 Changes in version 1.11.2 (2014-12-01)
 - (fixed) r.squaredGLMM: in "binomial" family models the residual variance is
-    used for additive dispersion (thanks to Paul Johnson).
-    There is still issue with 'lmer' with 'subset' argument, and
-    observation-level random term has to be specified manually.
+  used for additive dispersion (thanks to Paul Johnson). There is still issue
+  with 'lmer' with 'subset' argument, and observation-level random term has to
+  be specified manually.
 - (fixed) some formula-decomposition related functions (that sometimes caused
-    problems with 'r.squaredGLMM' for 'lmer', reported by Yevgen Matusevych)
+  problems with 'r.squaredGLMM' for 'lmer', reported by Yevgen Matusevych)
 - dredge: warns about potentially misspecified arguments
 - (added) predict method for 'gamm' class
 
 Changes in version 1.11.1 (2014-11-19)
 - dredge: more efficient checking for marginality in model terms (~10x faster in
-    case of 4-way interaction). The argument 'marg.ex' is removed (exceptions
-    to marginality rule are inferred from the global model).
+  case of 4-way interaction). The argument 'marg.ex' is removed (exceptions to
+  marginality rule are inferred from the global model).
 - getAllTerms: result has a new attribute 'deps' with a "term dependency matrix".
 - nested: new function listing nested models (suggested by Giacomo Assandri).
 - updateable: added new argument 'eval.args'
 
 Changes in version 1.10.8 (2014-11-14)
 - dredge, subset.model.selection: improved interpretation of 'subset' expressions.
-    "Term(x)" notation can be used instead of backtick quotes for complex term
-    names.
+  "Term(x)" notation can be used instead of backtick quotes for complex term
+  names.
 
 Changes in version 1.10.7 (2014-09-24)
 - (fixed) coef.multinom: gave a wrong order of coefficients for multiple level
-    responses (thanks to Alistair Senior who spotted this)
+  responses (thanks to Alistair Senior who spotted this)
 
 Changes in version 1.10.6 (2014-08-17)
 - (added) methods for 'maxlike' (from package with the same name)
@@ -478,20 +498,20 @@ Changes in version 1.10.6 (2014-08-17)
 
 Changes in version 1.10.5 (2014-08-08)
 - get.models: can now use parallel computation if a valid 'cluster' is provided.
-    It takes over the functionality of 'pget.models', which is now deprecated.
-    Also, the argument 'subset' must be now explicitely provided (so all models
-    are no longer fitted by default).
+  It takes over the functionality of 'pget.models', which is now deprecated.
+  Also, the argument 'subset' must be now explicitely provided (so all models
+  are no longer fitted by default).
 
 Changes in version 1.10.4 (2014-08-02)
 - (fixed) importance, model.avg: wrong order of 'N containing models' attribute
-    (bug reported by Alba Estrada)
+  (bug reported by Alba Estrada)
 - r.squaredGLMM: should be considerably faster and memory efficient due to
-    improved calculation of random effects variance (slow performance with large
-    datasets reported by Daniel Ezra Johnson).
+  improved calculation of random effects variance (slow performance with large
+  datasets reported by Daniel Ezra Johnson).
 
 Changes in version 1.10.3 (2014-06-27)
 - (fixed) dredge: no longer drops random term in 'glmmadmb' models (spotted by
-    Carlos Le¢n)
+  Carlos Le¢n)
 
 Changes in version 1.10.2
 - mystery update
@@ -503,210 +523,213 @@ Changes in version 1.10.1 (2014-05-19)
 
 Changes in version 1.10.0 (2014-05-02)
 - r.squaredGLMM: throws an error if contrasts that have been used for random
-    factors in the "merMod" model do not match the ones in model matrix. This
-    happens if there are factors in random slope formula and user has changed
-    relevant 'options(contrasts)' since the model was fitted.
-- dredge: 'na.action' checking now allows "option(na.action)" to be a function and
-    not only character string.
+  factors in the "merMod" model do not match the ones in model matrix. This
+  happens if there are factors in random slope formula and user has changed
+  relevant 'options(contrasts)' since the model was fitted.
+- dredge: 'na.action' checking now allows "option(na.action)" to be a function
+  and not only character string.
 
 Changes in version 1.9.26 (2014-03-16)
 - (fixed) dredge: when columns/rows in a subset matrix were in different order
-    than model terms, the values became wrongly rearranged (spotted by
-    a certain Frank on Stackoverflow).
+  than model terms, the values became wrongly rearranged (spotted by a certain
+  Frank on Stackoverflow).
 
 Changes in version 1.9.25 (2014-03-13)
 - (added) methods for 'cpglm' and 'cpglmm' (from package 'cplm') (suggested by
-    Andrew Cooper)
+  Andrew Cooper)
 
 Changes in version 1.9.24 (2014-02-26)
 - (fixed) 'getAllTerms.unmarkedFit' gave error when 'alpha' was estimated in
-    pcount model (reported by Lindsey Garner)
+  pcount model (reported by Lindsey Garner)
 
 Changes in version 1.9.23 (2014-02-24)
-- (added) methods 'model.matrix' and 'model.frame' for 'lme', because the default
-    ones give wrong results when there is 'subset' or 'contrasts' set, or
-    'na.omit'ting.
+- (added) methods 'model.matrix' and 'model.frame' for 'lme', because the
+  default ones give wrong results when there is 'subset' or 'contrasts' set, or
+  'na.omit'ting.
 
 Changes in version 1.9.22 (2014-02-20)
 - r.squaredGLMM: can be now applied to models with random slopes (based on idea
-    and R code by Paul Johnson). Added calculation of conditional R^2 for
-    Poisson family models.
+  and R code by Paul Johnson). Added calculation of conditional R^2 for Poisson
+  family models.
 
 Changes in version 1.9.21 (2014-02-17)
 - logLik.asreml: number of estimated parameters ('df') is now calculated as the
-    number of fixed effect coefficients + number of variance parameters
-    (non-fixed and non-constained). This gives comparable numbers to similar
-    lmer models. In 'Asreml-R manual', however, only the number of variance
-    components is used as K for AIC calculation (page 15). The log-likelihood
-    values of asreml are far different from those from lmer(REML = TRUE), even
-    though coefficients are very close. Note also that REstricted-likelihood is
-    returned, so model comparisions based on it are invalid.
+  number of fixed effect coefficients + number of variance parameters (non-fixed
+  and non-constained). This gives comparable numbers to similar lmer models. In
+  'Asreml-R manual', however, only the number of variance components is used as
+  K for AIC calculation (page 15). The log-likelihood values of asreml are far
+  different from those from lmer(REML = TRUE), even though coefficients are very
+  close. Note also that REstricted-likelihood is returned, so model comparisions
+  based on it are invalid.
 - r.squaredGLMM: checks if it is applied to a random intercepts model, otherwise
-    error is given. This is a limitation of the original formula by Nakagawa &
-    Schiezlich.
+  error is given. This is a limitation of the original formula by Nakagawa and
+  Schiezlich.
 
 Changes in version 1.9.20 (2014-02-12)
 - (added) methods for 'phylolm' (suggestion by Rafael Maia)
 
 Changes in version 1.9.19 (2013-12-21)
-- (added) 'merge.model.selection' combines two 'model.selection' tables. Note that
-    this is different than 'merge' for 'data.frame's (requested by Rafael Maia)
+- (added) 'merge.model.selection' combines two 'model.selection' tables. Note
+  that this is different than 'merge' for 'data.frame's (requested by Rafael
+  Maia)
 
 Changes in version 1.9.18 (2013-12-18)
 - (added) methods for 'asreml' model (in commercial package 'asreml'). Note this
-    has not been tested extensively (thanks to Emeline Mourocq for an incentive
-    and testing)
+  has not been tested extensively (thanks to Emeline Mourocq for an incentive
+  and testing)
 
 Changes in version 1.9.17 (2013-12-14)
-- full-averaged coefficients and standard errors are now calculated by 'model.avg'
-    and relevant methods (argument full = TRUE) (suggested by Candan Soykan)
-- importance: result gives now also number of models containg each variable
+- full-averaged coefficients and standard errors are now calculated by
+  'model.avg' and relevant methods (argument full = TRUE) (suggested by Candan
+  Soykan)
+- importance: result gives now also number of models containg each variable.
 
 Changes in version 1.9.16 (2013-11-24)
-- model.sel: now accepts arguments 'extra' and 'beta', like 'dredge' (requested by
-    D. Duro on R-Forge).
+- model.sel: now accepts arguments 'extra' and 'beta', like 'dredge' (requested
+  by D. Duro on R-Forge).
 
 Changes in version 1.9.15 (2013-11-17)
 - [p]dredge: improved checking for whether the global model removes missing data
-    (na.action = "na.omit" or "na.exclude"). Note that code working with
-    previous versions may give you an error now, setting options(na.action =
-    "na.fail") prevents it.
+  (na.action = "na.omit" or "na.exclude"). Note that code working with
+  previous versions may give you an error now, setting options(na.action =
+  "na.fail") prevents it.
 
 Changes in version 1.9.14 (2013-11-03)
-- (added) support for 'betareg' (from package 'betareg') (suggested by Marie-Line
-    Gentes)
+- (added) support for 'betareg' (from package 'betareg') (suggested by
+  Marie-Line Gentes)
 - (added) support for 'aodml' and 'aodql' (from package 'aods3') (suggested by
-    Renaud Lancelot)
+  Renaud Lancelot)
 [p]dredge: fixed a bug that occurred when there was 'na.action=na.omit' in
-    global model (spotted by Laura Busia on R-help).
+  global model (spotted by Laura Busia on R-help).
 
 Changes in version 1.9.13 (2013-10-28)
 - (fixed) handling response variables with more than two levels in
-    'nnet::multinom' models (reported by Ludo Duvaux on Stackoverflow)
+  'nnet::multinom' models (reported by Ludo Duvaux on Stackoverflow)
 
 Changes in version 1.9.12 (2013-10-21)
 - further adjustments to deal with unavailability of 'lme4' on CRAN
 
 Changes in version 1.9.11 (2013-09-30)
 - Documentation: examples that depend on suggested packages have been made
-    conditional on availability of the package
+  conditional on availability of the package
 - getCall method for 'model.selection' can retrieve a component model call if
-    index is given as a second argument.
+  index is given as a second argument.
 
 Changes in version 1.9.10 (2013-08-27)
 - pdredge: removed global assignments (within cluster nodes).
 
 Changes in version 1.9.9 (2013-05-21)
 - (fixed) beta.weights: bug with dimensions dropped (spotted by Dennis Duro,
-    thanks to Ben Bolker for tracking it down)
+  thanks to Ben Bolker for tracking it down)
 
 Changes in version 1.9.8 (2013-05-02)
 - (fixed) handling bar in formulas for 'hurdle' class of models (reported by
-    Jean-Yves Barnagaud)
+  Jean-Yves Barnagaud)
 
 Changes in version 1.9.7 (2013-04-19)
 - dredge: 'subset' expression now recognizes ".(x)" notation to indicate a
-    variable rather than a model term. Error message from within a 'rank'
-    function gives now a more meaningfull call (apparently it is a common
-    mistake to have some misspelled arguments that get passed to 'rank' function
-    through '...').
+  variable rather than a model term. Error message from within a 'rank' function
+  gives now a more meaningfull call (apparently it is a common mistake to have
+  some misspelled arguments that get passed to 'rank' function through '...').
 
 Changes in version 1.9.6 (2013-04-12)
 - model.sel: better model naming in the result table
-- (fixed) logLik.coxme: 'nobs' attribute now uses a correct number of observations
-    (model$n[2]). "penalized" log-lik. is the default type now (Note that
-    "logLik.coxme"'s argument "type" is undocumented).
+- (fixed) logLik.coxme: 'nobs' attribute now uses a correct number of
+  observations (model$n[2]). "penalized" log-lik. is the default type now (Note
+  that "logLik.coxme"'s argument "type" is undocumented).
 
 Changes in version 1.9.5 (2013-04-04)
-- (fixed) AICc: now takes number of observations from "nall" (if it is available)
-    attribute of the 'logLik' object. If not present, "nobs" attribute is used.
+- (fixed) AICc: now takes number of observations from "nall" (if it is
+  available) attribute of the 'logLik' object. If not present, "nobs" attribute
+  is used.
 - r.squaredGLMM: current implementation does not calculate the marginal variant
-    correctly for Poisson family models, so until it is resolved 'NA' is
-    returned, with a warning.
+  correctly for Poisson family models, so until it is resolved 'NA' is returned,
+  with a warning.
 
 Changes in version 1.9.4 (2013-04-01)
 - (fixed) pdredge: bug with wrong number of updated rows.
 - Replaced all calls to the soon-to-be deprecated ".find.package" with
-    "find.package".
+  "find.package".
 
 Changes in version 1.9.3 (2013-02-21)
 - (fixed) method registration for 'getAllTerms.gam' was missing (reported by
-    Steven Delean).
+  Steven Delean).
 
 Changes in version 1.9.2 (2013-02-01)
 - updateable: new function to create a wrapper for functions returning
-    non-updateable objects (adds a 'call' element to the function's result).
+  non-updateable objects (adds a 'call' element to the function's result).
 - (renamed) removed 'gamm' wrapper, which is now replaced by 'uGamm'.
-- (added) 'predict' method replacement for 'gls' models (adds 'se.fit' argument).
+- (added) 'predict' method replacement for 'gls' models (adds 'se.fit'
+  argument).
 - model.avg: no longer returns residuals (this is because residuals for models
-    other than 'lm' can be calculated in several different ways - with different
-    results).
+  other than 'lm' can be calculated in several different ways - with different
+  results).
 
 Changes in version 1.9.1 (2013-01-24)
 - (fixed) bugs with 'MCMCglmm' models and 'varying' lists in 'dredge'.
 
 Changes in version 1.9.0 (2013-01-23)
 - This version brings in more elaborated subsetting of models in 'dredge' and
-    'model.selection' object, and a new variant of pseudo-R^2.
-[p]dredge: 'subset' can use 'varying' variables (as "V(varying.variable)") and
-    number of model terms (as `*nvar*`). This allows for better fine-tuning of
-    the selection table.
-    'fixed' argument can be set to TRUE to fix all terms of 'global.model'.
+  'model.selection' object, and a new variant of pseudo-R^2.
+- [p]dredge: 'subset' can use 'varying' variables (as "V(varying.variable)") and
+  number of model terms (as `*nvar*`). This allows for better fine-tuning of
+  the selection table.
+  'fixed' argument can be set to TRUE to fix all terms of 'global.model'.
 [p]dredge, subset.model.selection: 'subset' expressions can now make use of a
-    new function 'dc' ("dependency chain") to make inclusion of variables
-    conditional on other variables.
-- r.squaredGLMM: new function to calculate R^2 statistic for mixed effect models,
-    described by Nakagawa & Schiezlich (2012).
+  new function 'dc' ("dependency chain") to make inclusion of variables
+  conditional on other variables.
+- r.squaredGLMM: new function to calculate R^2 statistic for mixed effect
+  models, described by Nakagawa & Schiezlich (2012).
 - (added) support for 'splm' (from package 'splm'), and 'logistf' models (from
-    package 'logistf').
+  package 'logistf').
 - Cp: now accepts more than one model (like 'AIC').
 - New demos "dredge.varying", "dredge.subset" and "gees".
 
 Changes in version 1.8.2 (2012-12-07)
 - (added) support for models of class 'mark' (from package 'RMark'). 'dredge'
-    can currently only manipulate 'formula' element of argument
-    'model.parameters'.
+  can currently only manipulate 'formula' element of argument
+  'model.parameters'.
 - simplify.formula, expand.formula: new functions to convert formula between
-    expanded and shorthand notation (i.e. between 'a+b+a:b' and 'a*b').
+  expanded and shorthand notation (i.e. between 'a+b+a:b' and 'a*b').
 - model.names: has new argument "use.letters".
 
 Changes in version 1.8.1 (2012-11-23)
 - (added) methods for class 'merMod' to accommodate recent changes in
-    lme4_0.99999911-0.
+  lme4_0.99999911-0.
 - getAllTerms: now recognizes random effects in 'MCMCglmm'.
 
 Changes in version 1.8.0 (2012-11-21)
 - This version introduces support for GEE models ('gee','geeglm' and 'yags')
-    ranked by QIC (note that 'yags' seems to be still quite buggy).
-    Also 'clmm' and 'clm' from package 'ordinal' are now handled properly.
+  ranked by QIC (note that 'yags' seems to be still quite buggy). Also 'clmm'
+  and 'clm' from package 'ordinal' are now handled properly.
 - QIC, quasiLik: new functions for use with GEE models.
-[p]dredge: argument 'subset' can be now a logical matrix representing allowed
-    parameter combinations. Some improvements for speed have been made.
-[p]dredge, model.avg: new argument 'ct.args' for passing extra arguments
-    to 'coefTable'.
+- [p]dredge: argument 'subset' can be now a logical matrix representing allowed
+  parameter combinations. Some improvements for speed have been made.
+- [p]dredge, model.avg: new argument 'ct.args' for passing extra arguments to
+  'coefTable'.
 
 Changes in version 1.7.12 (2012-11-11)
 - tests/classes.R: fixed compatibility spdep-0.5.53. (spdep::spautolm now uses
-    method = "eigen", was "full")
+  method = "eigen", was "full")
 
 Changes in version 1.7.11 (2012-07-13)
 - coefTable.multinom: fixed an error when coefficients and standard errors were
-    matrices.
+  matrices.
 - get.models: now checks for the object class of the passed arguments.
 
 Changes in version 1.7.10 (2012-06-07)
 - (fixed) dredge: bug with an error message when number of predictor exceeded
-    maximum (thanks to Corina Logan for spotting this).
+  maximum (thanks to Corina Logan for spotting this).
 - manual: added 'glmmADMB' to the list of supported classes (reported by Rocio
-    Jana).
-'coxme' moved from 'Suggested' to 'Enhances' (to avoid build error when the
-    dependency is missing).
+  Jana).
+- 'coxme' moved from 'Suggested' to 'Enhances' (to avoid build error when the
+  dependency is missing).
 
 Changes in version 1.7.9 (2012-04-03)
 - (added) 'predict' methods for 'lme' and 'lmer' (both can calculate 'se.fit').
-    'predict.lme' is a wrapper for its namesake from 'nlme' package (it is
-    not exported, so it's visibility depends on the order the packages were
-    loaded - but is always visible from MuMIn namespace).
+  'predict.lme' is a wrapper for its namesake from 'nlme' package (it is
+  not exported, so it's visibility depends on the order the packages were
+  loaded - but is always visible from MuMIn namespace).
 
 Changes in version 1.7.8 (2012-04-01)
 - (fixed) 'coef.model.selection' returns now proper coefficients
@@ -716,25 +739,25 @@ Changes in version 1.7.7 (2012-04-01)
 
 Changes in version 1.7.6 (2012-04-01)
 - dredge: with nested formula designs, 'marg.ex' is now found automatically
-- predict.averaging: is now more flexible in how the predictions from generalized
-    models are calculated (new attribute "backtransform").
+- predict.averaging: is now more flexible in how the predictions from
+  generalized models are calculated (new attribute "backtransform").
 
 Changes in version 1.7.5 (2012-03-27)
-- (added) methods for 'MCMCglmm' class, and function 'DIC': works with 'model.sel'
-    and 'dredge' (but not 'model.avg').
+- (added) methods for 'MCMCglmm' class, and function 'DIC': works with
+  'model.sel' and 'dredge' (but not 'model.avg').
 'unmarked' is removed from 'Suggested' packages (recently it is often
-    unavailable on CRAN and causes errors during R CHECK). Added workarounds to
-    pass (=cheat) the R CHECK.
+  unavailable on CRAN and causes errors during R CHECK). Added workarounds to
+  pass (or trick) the R CHECK.
 
 Changes in version 1.7.3 (2012-02-01)
 - (added) methods for 'glimML' class from package 'aod'
 
 Changes in version 1.7.2 (2012-01-30)
 - (fixed) 'nobs.coxme' returned the number of events was returned rather than
-    the number of observations.
+  the number of observations.
 - (fixed) 'coefTable' gave an error for 'coxph' null model.
 - (fixed) 'r.squaredLR' was evaluating the null model for 'lme' in a wrong
-    environment.
+  environment.
 - (fixed) 'getAllTerms' method for 'zeroinfl' was not registered.
 - dredge: checks each generated model for the correct number of observations.
 
@@ -742,102 +765,103 @@ Changes in version 1.7.2 (2012-01-30)
 Changes in version 1.7.1 (2012-01-26)
 - (added) methods for 'hurdle' and 'zeroinfl' classes (package 'pscf').
 - coef, coefTable: new methods to extract coefficients from model selection
-    tables.
+  tables.
 - Documentation: list of supported models put into a separate page.
 
 Changes in version 1.7.0 (2012-01-25)
 - This version adds possibility to model average and re-rank (with another IC) a
-    model selection table without recreating the fitted models. Models from
-    package 'coxme' are now supported. Model selection tables include now extra
-    columns showing differences in attributes of the modelling function call.
+  model selection table without recreating the fitted models. Models from
+  package 'coxme' are now supported. Model selection tables include now extra
+  columns showing differences in attributes of the modelling function call.
 - model.avg: use 'model.selection' without refitting the models. Fixed a problem
-    with averaging different types of models together (happened when 'df's were
-    available only for some of component models).
+  with averaging different types of models together (happened when 'df's were
+  available only for some of component models).
 - dredge: coefficient tables added to the result (attribute "coefTables"). The
-    code has been simplified.
+  code has been simplified.
 - print.model.selection: now reports random terms also for objects generated by
-    'model.sel'.
+  'model.sel'.
 - get.models: can handle 'model.selection' objects from 'model.sel'
 - model.sel: re-ranking 'model.selection' without recreating original models
-    (works only if the IC can be applied to logLik). Output has additional
-    columns showing differences between models (based on call's arguments)
+  (works only if the IC can be applied to logLik). Output has additional columns
+  showing differences between models (based on call's arguments)
 - (added) generic methods for 'coxme' and 'lmekin' classes (package 'coxme').
 
 Changes in version 1.6.6 (2012-01-07)
-- model.avg: fixed error occurring when non-estimable coefficients existed in the
-    component models (problem reported by Annabel Smith)
+- model.avg: fixed error occurring when non-estimable coefficients existed in
+  the component models (problem reported by Annabel Smith)
 
 Changes in version 1.6.5 (2011-11-28)
 - pdredge example changed to use SOCK cluster type (portability issue).
 
 Changes in version 1.6.4 (2011-11-26)
 - coefTable: replaces 'tTable' (which still exists, but is deprecated), it
-    accepts an argument 'dispersion'. The dispersion parameter can be also
-    passed from 'model.avg'.
+  accepts an argument 'dispersion'. The dispersion parameter can be also passed
+  from 'model.avg'.
 - pdredge: collects all the warnings and errors which occur during fitting, and
-    stores them. They are printed below the table.
-    The function does more thorough checking of the cluster nodes' environment,
-    for possible missing variables and functions.
-- get.models:  "subset" argument can be now a character vector giving model names.
+  stores them. They are printed below the table.
+  The function does more thorough checking of the cluster nodes' environment,
+  for possible missing variables and functions.
+- get.models: "subset" argument can be now a character vector giving model
+  names.
 - (added) demos for model selection with models from 'unmarked' package using
-    'dredge' and 'pdredge'.
+  'dredge' and 'pdredge'.
 
 Changes in version 1.6.3 (2011-11-15)
 - pget.models: new function, parallel version of 'get.models'.
 - (p)get.models: important change of the default behaviour: without the 'subset'
-    argument, ALL models are returned. Also the '...' arguments were not used to
-    update the returned models - this is corrected now.
+  argument, ALL models are returned. Also the '...' arguments were not used to
+  update the returned models - this is corrected now.
 
 Changes in version 1.6.2 (2011-11-13)
 - pdredge: new function, a parallel version of dredge (experimental).
 
 Changes in version 1.6.1 (2011-11-11)
 - dredge: added generic support for all 'unmarked' models, and fixed some bugs
-    with it.
+  with it.
 - model.names: new function (previously was internal only)
 - CAICF: adds to the collection of rarely used information criteria.
 
 Changes in version 1.6.0 (2011-11-07)
-- dredge: most important change (although invisible to the user) is in the way the
-    model objects are updated. The new function 'makeArgs' is used to generate
-    the updated call. This results in a very flexible interface to the modelling
-    functions. The default method updates the 'formula' argument, other methods
-    can be used to deal with more problematic calls (the models from package
-    'unmarked' were a challenge). Apart from the model classes previously
-    supported by 'dredge', support for 'unmarkedFitOccu', 'unmarkedFitColExt'
-    and several other 'unmarkedFit' objects has been added.
+- dredge: most important change (although invisible to the user) is in the way
+  the model objects are updated. The new function 'makeArgs' is used to generate
+  the updated call. This results in a very flexible interface to the modelling
+  functions. The default method updates the 'formula' argument, other methods
+  can be used to deal with more problematic calls (the models from package
+  'unmarked' were a challenge). Apart from the model classes previously
+  supported by 'dredge', support for 'unmarkedFitOccu', 'unmarkedFitColExt' and
+  several other 'unmarkedFit' objects has been added.
 - dredge: has new argument 'extra' to add additional statistics into the model
-    selection table.
+  selection table.
 - r.squared: new function to calculate likelihood-ratio based pseudo-R-squared
 - subset method for 'model.selection': accepts a shorthand notation "has(x)" to
-    select rows where a variable is present.
+  select rows where a variable is present.
 - (added) support for 'survreg' and 'rq' models (packages 'survival' and
-    'quantreg')
+  'quantreg')
 
 Changes in version 1.5.2 (2011-10-21)
 - dredge: fixed a bug with wrong ordering of column names in the returned
-    data.frame (thanks to Staffan Roos for reporting this).
+  data.frame (thanks to Staffan Roos for reporting this).
 
 Changes in version 1.5.1 (2011-10-20)
 - compatibility with R prior to 2.13.0: added workarounds for missing generic
-    function 'nobs'.
+  function 'nobs'.
 
 Changes in version 1.5.0 (2011-10-18)
 - model.avg: removed the argument "method", the standard errors and confidence
-    intervals are calculated only for coefficients averaged within a subset of
-    models where they are present (method = "NA"). The "full" coefficients are
-    also returned, but without std. errors.
+  intervals are calculated only for coefficients averaged within a subset of
+  models where they are present (method = "NA"). The "full" coefficients are
+  also returned, but without std. errors.
 - plot.model.selection: new function to visualize the model selection table
 - manuals expanded, examples revised
 - getAllTerms: should work for most of the classes derived from 'unmarkedFit'
 - a load of small improvements, polishings and fixes, generally invisible to the
-    user.
+  user.
 
 Changes in version 1.4.4 (2011-10-16)
 - QAIC: no longer uses model deviance, as it gave biased values.
 - ICOMP, Cp: new information criteria
-- model.avg: now performs a smarter check for duplicate models, fixed calculation
-    of importance values
+- model.avg: now performs a smarter check for duplicate models, fixed
+  calculation of importance values
 - model.sel: new alias to 'mod.sel' (eventually will replace 'mod.sel').
 
 Changes in version 1.4.3 (2011-10-13)
@@ -849,7 +873,7 @@ Changes in version 1.4.3 (2011-10-13)
 Changes in version 1.4.2 (2011-10-11)
 - support for 'gamm' and 'gamm4'
 - gamm: added a wrapper for gamm, that allows for updating the object (hopefully
-    needed only temporarily)
+  needed only temporarily)
 
 Changes in version 1.4.1 (2011-10-10)
 - A few changes to vignette 'gamm'
@@ -859,8 +883,8 @@ Changes in version 1.4.0 (2011-10-05)
 - mod.sel: added method for a 'model.selection' object
 
 Changes in version 1.3.10 (2011-09-23)
-- Reverted changes made in previous version (package dependencies) to succesfully
-    pass checks.
+- Reverted changes made in previous version (package dependencies) to
+  pass R check.
 
 Changes in version 1.3.9 (2011-09-17)
 - removed  *.lmer *.glmer methods, added dependency on lme4 >= 0.999375-16
@@ -879,11 +903,11 @@ Changes in version 1.3.6 (2011-09-12)
 Changes in version 1.3.5 (2011-08-05)
 - mod.sel: new function
 - added methods for 'unmarkedFit' objects (package 'unmarked'), to provide
-    (limited) support in 'model.avg'
+  (limited) support in 'model.avg'
 
 Changes in version 1.3.4 (2011-08-03)
 - Added vignette document on model selection with 'gamm' and 'gamm4'
-    (thanks to Graham MacDonald for an incentive)
+  (thanks to Graham MacDonald for an incentive)
 
 Changes in version 1.3.3 (2011-08-01)
 - dredge: small improvements, no longer dependent on 'bitops'
@@ -901,12 +925,12 @@ Changes in version 1.3.0 (2011-07-29)
 
 Changes in version 1.2.4 (2011-07-29)
 - fixed handling of spatial parameters (lambda, rho) in models from package
-    'spdep'
+  'spdep'
 - dredge: modified for better performance
 - dredge, get.models: can deal with glms with starting values provided ('start'
-    argument)
+  argument)
 - QAIC: added a note in documentation stating that is uses deviance rather than
-    logLik in the calculation
+  logLik in the calculation
 
 Changes in version 1.2.3 (2011-04-07)
 - fixed some REML/ML issues, AICc rewritten (based on the new AIC code in stats)
@@ -918,16 +942,16 @@ Changes in version 1.2.1 (2011-04-05)
 - .GetLogLik - hidden helper function (returns the proper logLik to use)
 
 Changes in version 1.2.0 (2011-04-04)
-- AICc has new argument REML used with mixed models. Thanks to Benjamin Augustine
-    for suggestion.
+- AICc has new argument REML used with mixed models. Thanks to Benjamin
+  Augustine for suggestion.
 
 Changes in version 1.1.2 (2011-03-19)
-- removed arguments 'alpha' and 'level' from model.avg. 'confint' is used instead
-    to obtain CI
+- removed arguments 'alpha' and 'level' from model.avg. 'confint' is used
+  instead to obtain CI.
 
 Changes in version 1.1.1 (2011-03-18)
 - the printed output of 'averaging' has been made consistent with that of lm and
-    glm: 'print' gives concise information and 'summary' gives more details.
+  glm: 'print' gives concise information and 'summary' gives more details.
 - confint.averaging: new function.
 - print.summary.averaging: new function.
 
@@ -937,12 +961,12 @@ Changes in version 1.1.0 (2011-03-10)
 Changes in version 1.0.0 (2011-02-10)
 - get.models: fixed - arguments in ... were not passed to updated models
 - predict.averaging: predictions on response scale can be calculated
-    (type=response)
+  (type=response)
 - new functions (not exported): nobs, coefDf
 - model.avg: now makes use of correct DF from component models in calculation of
-    adjusted SE
+  adjusted SE
 - par.avg: calculates ASE if df are provided, example(QAIC) now demonstrates
-    predictions with confidence intervals
+  predictions with confidence intervals
 
 Changes in version 0.14.2 (2011-02-05)
 - dredge: small changes, slightly faster
@@ -964,11 +988,12 @@ Changes in version 0.13.21 (2011-01-16)
 
 Changes in version 0.13.20 (2011-01-16)
 - Namespace exports updated (coxph methods)
-- dredge: uses now QAIC for glms with 'quasi*' family, and if no rank is specified
+- dredge: uses now QAIC for glms with 'quasi*' family, and if no rank is
+  specified
 
 Changes in version 0.13.19 (2011-01-15)
 - model.avg: fixed wrong ordering of model names (thanks to Dennis Jonason for
-    noticing this)
+  noticing this)
 
 Changes in version 0.13.18 (2010-10-16)
 - Support for coxph (package survival)
@@ -996,17 +1021,17 @@ Changes in version 0.13.12 (2010-08-29)
 
 Changes in version 0.13.11 (2010-08-28)
 - getAllTerms: improved handling of interactions, random terms (lmer) and
-    "offset()"
+  "offset()"
 - formulaAllowed: now allows for exceptions in margins presence checking (new
-    argument: "except")
+  argument: "except")
 - dredge: now tries to call fitting function directly rather than through update
-    (more effective in case when model not passed as a variable). New arguments:
-    "trace", and "marg.ex" - marginality checking exceptions.
+  (more effective in case when model not passed as a variable). New arguments:
+  "trace", and "marg.ex" - marginality checking exceptions.
 
 Changes in version 0.13.10 (2010-08-26)
-- getAllTerms: fixed a bug with with wrong ordering of interaction terms (resulted
-    with a:b or b:a depending on the set of terms). Improved handling of random
-    terms in lme.
+- getAllTerms: fixed a bug with with wrong ordering of interaction terms
+  (resulted with a:b or b:a depending on the set of terms). Improved handling of
+  random terms in lme.
 
 Changes in version 0.13.9 (2010-08-24)
 - dredge: fixed bugs introduced in the previous version
@@ -1016,19 +1041,19 @@ Changes in version 0.13.8 (2010-08-03)
 
 Changes in version 0.13.7 (2010-08-02)
 - dredge: prints errors generated by models as warnings (previously these were
-    skipped silently)
+  skipped silently)
 
 Changes in version 0.13.6 (2010-08-01)
 - print.model.selection: improved column abbreviation.
 
 Changes in version 0.13.5 (2010-07-31)
 - dredge: fixed a bug causing interaction coefficients to be stripped from
-    model.selection table, new function 'fixCoefNames' (not exported) handles proper
-    ordering of interaction components in coefficient names.
+  model.selection table, new function 'fixCoefNames' (not exported) handles
+  proper ordering of interaction components in coefficient names.
 
 Changes in version 0.13.4 (2010-07-21)
 - 'beta.weights' now uses 'tTable' (support for more model types), 'dredge' with
-    beta=TRUE tries out if it can get beta.weights working.
+  beta=TRUE tries out if it can get beta.weights working.
 - Manual: added gls and rlm to the list of supported models
 
 Changes in version 0.13.3 (2010-07-15)
@@ -1036,12 +1061,12 @@ Changes in version 0.13.3 (2010-07-15)
 
 Changes in version 0.13.2 (2010-07-14)
 - Attributes for custom rank function in "dredge" and "model.avg" are now
-    evaluated model-wise, if provided as expressions.
+  evaluated model-wise, if provided as expressions.
 
 Changes in version 0.13.0-1 (2010-07-12)
 - Fixed compatibility issues with models of class "lme" and "sarlm".
 - "model.avg" does now some checking whether all models were fitted to the same
-    data and have the same response.
+  data and have the same response.
 
 Changes in version 0.12.13 (2010-07-09)
 - 'recalc.weights' argument added to "subset.model.selection".
@@ -1055,8 +1080,8 @@ Changes in version 0.12.11 (2010-07-07)
 
 Changes in version 0.12.10 (2010-07-05)
 - Fixed "predict.averaging" for missing 'newdata' handling; Table returned by
-    "dredge" now has factors for terms with more than one level (they were
-    previously shown as '1')
+  "dredge" now has factors for terms with more than one level (they were
+  previously shown as '1')
 
 Changes in version 0.12.9 (2010-07-03)
 - Finally fixed problems with variable exporting and hidden methods
@@ -1078,21 +1103,21 @@ Changes in version 0.12.1 (2009-04-20)
 - fixed: method="NA" in model.avg, par.avg now accepts NA's in 'weight'
 
 Changes in version 0.12.0 (2009-03-24)
-- Change in version number only. Had to make this jump in numbering, as there was
-    a typo in DESCRIPTION file of an early version, (0.11.2 instead of 0.1.0), and
-    since then R-forge mechanism seemed to ignore actual newer versions, as they had
-    lower number.
+- Change in version number only. Had to make this jump in numbering, as there
+  was a typo in DESCRIPTION file of an early version, (0.11.2 instead of 0.1.0),
+  and since then R-forge mechanism seemed to ignore actual newer versions, as
+  they had lower number.
 
 Changes in version 0.1.1 (2009-03-22)
 - Modified: dredge: added "fixed" and "m.max" arguments.
 
 Changes in version 0.1.1 (2009-03-17)
 - Fixed: par.avg: Variance estimate corrected (previous estimate was square root
-    of variance). Thanks to Mick Wu.
-- Fixed: dredge: Apparently "expand.grid" cannot handle too many combinations, so
-    now dredge stops with a more explanatory message
+  of variance). Thanks to Mick Wu.
+- Fixed: dredge: Apparently "expand.grid" cannot handle too many combinations,
+  so now dredge stops with a more explanatory message
 
 Changes in version 0.1.0
 - dRedging (0.11.2) moved to R-Forge.
-- Since model averaging is now the main focus of the package, its name changed
-    to MuMIn (from MUlti Model INference).
+- Since model averaging is now the main focus of the package, the name changed
+  to MuMIn (from MUlti Model INference).

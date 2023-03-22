@@ -1,61 +1,58 @@
 
 # general function
 r2glmm <-
-function(family, vfe, vre, vol, link, pmean, lambda, omega, n) {
-    
-    #message("lambda=", lambda)
-    #message("omega=", omega)
-    
+function(family, varFE, varRE, varResid, link, pmean, lambda, omega, n) {
     if(inherits(family, "family")) {
         link <- family$link
         family <- family$family
     }
-    
-    if(missing(vol) || !is.numeric(vol) || is.na(vol))
-    vol <- switch(paste(family, link, sep = "."),
-        gaussian.identity = vol,
-        quasibinomial.logit =,
-        binomial.logit = c(
-            theoretical = 3.28986813369645 / n,
-            delta = 1 / (n * pmean * (1 - pmean))
-            ),
-        quasibinomial.probit =,
-        binomial.probit = c(
-            theoretical = 1 / n,
-            delta =
-                6.2831853071795862 / n * pmean * (1 - pmean) *
-                    exp((qnorm(pmean) / 1.4142135623730951)^2)^2
-            ),
-        quasibinomial.cloglog =,
-		binomial.cloglog = c(
-			theoretical = 1.6449340668482264 / n,  #  pi^2 / 6
-			delta = pmean / n / log(1 - pmean)^2 / (1 - pmean)
-			),
-		Gamma.log =, poisson.log =, quasipoisson.log =, nbinom1.log = c(
-			delta = omega / lambda,
-			lognormal = log1p(omega / lambda),
-			trigamma = trigamma(lambda / omega)
-			),
-        quasipoisson.sqrt =, nbinom1.sqrt =,
-        "poisson.mu^0.5" =, poisson.sqrt = c(
-            delta = 0.25 * omega
-            ),
-        nbinom2.log = {
-            vdelta <- (1 / lambda) + (1 / omega)
-            c(
-            delta = vdelta,
-            lognormal =  log1p(vdelta),
-            trigamma = trigamma(1 / vdelta)
-            )},
-		Gamma.inverse =, # c( delta = 1 / nu / lambda^2 ),
-        NotImplementedFamily =
-            stop("not implemented yet for ", family, " and ", link),
-        cry(sys.call(-1L), "do not know how to calculate variance for %s(%s)", family, dQuote(link))
-    )
 	
-	vtot <- sum(vfe, vre)
-	matrix(c(vfe, vtot) / (vtot + rep(vol, each = 2L)),
-        ncol = 2L, byrow = TRUE, dimnames = list(names(vol), c("R2m", "R2c")))
+    if(missing(varResid) || !is.numeric(varResid) ||
+		(is.na(varResid) && !is.nan(varResid))) {	
+		varResid <- switch(paste(family, link, sep = "."),
+			gaussian.identity = varResid,
+			quasibinomial.logit =,
+			binomial.logit = c(
+				theoretical = 3.28986813369645 / n,
+				delta = 1 / (n * pmean * (1 - pmean))
+				),
+			quasibinomial.probit =,
+			binomial.probit = c(
+				theoretical = 1 / n,
+				delta = 6.2831853071795862 / n * pmean * (1 - pmean) *
+					exp((qnorm(pmean) / 1.4142135623730951)^2)^2
+				),
+			quasibinomial.cloglog =,
+			binomial.cloglog = c(
+				theoretical = 1.6449340668482264 / n,  #  pi^2 / 6
+				delta = pmean / n / log(1 - pmean)^2 / (1 - pmean)
+				),
+			Gamma.log =, poisson.log =, quasipoisson.log =, nbinom1.log = c(
+				delta = omega / lambda,
+				lognormal = log1p(omega / lambda),
+				trigamma = trigamma(lambda / omega)
+				),
+			quasipoisson.sqrt =, nbinom1.sqrt =,
+			"poisson.mu^0.5" =, poisson.sqrt = c(
+				delta = 0.25 * omega
+				),
+			nbinom2.log = {
+				vdelta <- (1 / lambda) + (1 / omega)
+				c(
+				delta = vdelta,
+				lognormal =  log1p(vdelta),
+				trigamma = trigamma(1 / vdelta)
+				)},
+			#Gamma.inverse =, # c( delta = 1 / nu / lambda^2 ),
+			NotImplementedFamily =
+				stop("not implemented yet for ", family, " and ", link), {
+			cry(sys.call(-1L), "do not know how to calculate variance for %s(%s)", family, dQuote(link))
+				}
+			)
+	}
+	vtot <- sum(varFE, varRE)
+	matrix(c(varFE, vtot) / (vtot + rep(varResid, each = 2L)),
+        ncol = 2L, byrow = TRUE, dimnames = list(names(varResid), c("R2m", "R2c")))
 }
 
 
@@ -82,7 +79,6 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
     ok <- !is.na(fe)
     fitted <- (model.matrix(object)[, ok, drop = FALSE] %*% fe[ok])[, 1L]
     varFE <- var(fitted)
-	
    
 	mmRE <- .remodmat(object)
     ##Note: Argument 'contrasts' can only be specified for fixed effects
@@ -110,11 +106,14 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
         "binomial", "quasibinomial")) {
 		if(missing(null) || !is.object(null)) null <- .nullFitRE(object, envir)
         fixefnull <- unname(.numfixef(null))
-    }
+    } else if(familyName == "Gamma" && fam$link == "inverse") {
+		familyName <- "Gamma.inverse" # directs to "other" family and uses
+									  # insight::get_variance_residual
+	}
     
     switch(familyName,
     gaussian =
-        r2glmm(fam, varFE, varRE, vol = sigma2(object)^2),
+        r2glmm(fam, varFE, varRE, varResid = sigma2(object)^2),
     binomial =, quasibinomial = {
         vt <- .varRESum(.varcorr(null), mmRE)
 		# XXX: inverse-link seems to give more reasonable value for non-logit
@@ -125,14 +124,10 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
         vt <- .varRESum(.varcorr(null), mmRE)
         lambda <- unname(exp(fixefnull + 0.5 * vt))
         theta <- sigma2(object)
-        
-        #koBrowseHere()
-
         r2glmm(familyName, varFE, varRE, lambda = lambda, omega = theta, link = fam$link)
-
     }, Gamma = {
-        nu <- sigma2(object)^-2
-        omega <- 1
+		nu <- sigma2(object)^-2
+		omega <- 1
         r2glmm(fam, varFE, varRE, lambda = nu, omega = omega)
     }, quasipoisson = , nbinom1 = {
         vt <- .varRESum(.varcorr(null), mmRE)
@@ -158,10 +153,16 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
             varresid <- vc[[vname]][1L]
             rval <- rbind(pj2014 = r2glmm(fam, var(fitted),
                 .varRESum(vc, mmRE) - varresid,
-                vol = log1p(1 / exp(mean(fitted))) + varresid)[1L, ], rval)
+                varResid = log1p(1 / exp(mean(fitted))) + varresid)[1L, ], rval)
         }
         rval
-    }, r2glmm(fam, varFE, varRE))
+    }, {
+	    #message("using 'insight::get_variance_residual'")
+		varResid <- insight::get_variance_residual(object, ...)[[1L]]
+		if(!is.finite(varResid))
+			warning("residual variance cannot be calculated.")
+		r2glmm(fam, varFE, varRE, varResid)
+	})
 }
 
 
@@ -171,9 +172,11 @@ function(object, null, ...) r.squaredGLMM.merMod(object, null, ...)
 `r.squaredGLMM.glmmTMB` <-
 function(object, null, envir = parent.frame(), ...) {
     w <- c(fixef(object)$zi != 0L,
-        !identical(object$modelInfo$allForm$dispformula, ~0, ignore.environment = TRUE))
+        !identical(object$modelInfo$allForm$dispformula, ~0,
+			ignore.environment = TRUE))
     if(any(w)) warning("the effects of ",
-            prettyEnumStr(c("zero-inflation", "dispersion model"), quote = FALSE), " are ignored")
+        prettyEnumStr(c("zero-inflation", "dispersion model"),
+			quote = FALSE), " are ignored")
     r.squaredGLMM.merMod(object, null, envir, ...)
 }
 
@@ -200,7 +203,7 @@ function(object, null, envir = parent.frame(), ...) {
     
     switch(familyName,
     gaussian =
-        r2glmm(fam, varFE, 0, vol = sigma2(object)^2),
+        r2glmm(fam, varFE, 0, varResid = sigma2(object)^2),
     binomial =, quasibinomial = {
         r2glmm(fam, varFE, 0, pmean = fam$linkinv(unname(fixefnull)),
             n = .binomial.sample.size(object))
@@ -251,4 +254,3 @@ function(object, null, envir = parent.frame(), ...) {
     varO <- c(delta = phi * mu^(p - 2), lognormal = log1p(phi * mu^(p - 2)))
 	r2glmm(NA, varFE, varRE, varO)
 }
-

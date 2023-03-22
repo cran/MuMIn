@@ -158,23 +158,36 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 
 	#if(is.null(names(models))) names(models) <- allmodelnames
 	
-	coefTableCall <- as.call(c(alist(coefTable, models[[i]],
-		dispersion = dispersion[i]), ct.args))
-	if(is.null(dispersion)) coefTableCall$dispersion <- NULL
-	
-	if(betaMode == 2L) {
-		coefTableCall[[1L]] <- as.name("std.coef")
-		coefTableCall[['partial.sd']] <- TRUE
-	}
-	
-	.DebugPrint(coefTableCall)
+	coefTableCall <- if(betaMode == 2L) 
+		 call("std.coef", as.symbol("m"), partial.sd = TRUE)
+		else call("coefTable", as.symbol("m"))
+	if(!is.null(dispersion))
+		coefTableCall[['dispersion']] <- as.symbol("d")
+	for(a in names(ct.args))
+		coefTableCall[[a]] <- ct.args[[a]]
+		
 
-	# check if models are unique:
-	if(!is.null(dispersion)) dispersion <- rep(dispersion, length.out = nModels)
-	coefTables <- vector(nModels, mode = "list")
-	for(i in seq_len(nModels))
-		coefTables[[i]] <-  eval(coefTableCall)
+	.DebugPrint(coefTableCall)
+    
+    # NOTE: first argument in coefTableCall is "m" and "d" for dispersion
+	coefTables <-
+	    mapply(function(m, d) {
+	        rval <- eval(coefTableCall)
+	        rownames(rval) <- fixCoefNames(rownames(rval))
+	        rval
+	    }, m = models, d = if(is.null(dispersion)) NA else dispersion,
+			SIMPLIFY = FALSE)
 	
+    
+	#coefTables <- vector(nModels, mode = "list")
+    # # NOTE: first argument in coefTableCall is "models[[i]]"
+	# for(i in seq_len(nModels)) {
+		# coefTables[[i]] <- eval(coefTableCall)
+		# rownames(coefTables[[i]]) <- fixCoefNames(rownames(coefTables[[i]]))
+	# }
+	
+	
+	# check if models are unique:
 	mcoeffs <- lapply(coefTables, "[", , 1L)
 	dup <- unique(sapply(mcoeffs, function(i) which(sapply(mcoeffs, identical, i))))
 	dup <- dup[sapply(dup, length) > 1L]
@@ -205,14 +218,13 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 
 	if (betaMode == 1L) {
 		response.sd <- sd(model.response(model.frame(object)))
-		for(i in seq_along(coefTables)) {
-			X <- model.matrix(models[[i]])
-			coefTables[[i]][, 1L:2L] <-
-				coefTables[[i]][, 1L:2L] *
-				#apply(model.matrix(models[[i]]), 2L, sd) / response.sd
-				apply(X[, match(rownames(coefTables[[i]]), colnames(X)),
-					drop = FALSE], 2L, sd) / response.sd
-		}
+		coefTables <-
+			mapply(function(m, ct) {
+				X <- model.matrix(m)
+				ct[, 1L:2L] <- ct[, 1L:2L] *
+					apply(X[, match(rownames(ct), colnames(X)), drop = FALSE],
+						2L, sd) / response.sd
+			}, models, coefTables, SIMPLIFY = FALSE)
 	}
 
 	cfarr <- coefArray(coefTables)

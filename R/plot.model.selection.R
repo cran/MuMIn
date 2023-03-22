@@ -1,4 +1,21 @@
 
+
+#stop("TODO plot.model.selection")
+#z <- MuMIn:::itemByType(dd, c("terms", "varying"), drop = FALSE)
+#z[] <- lapply(z, function(x) {
+#    if(is.factor(x)) {
+#        as.integer(x) + (if(nlevels(x) == 1L) 0L else 20L)
+#    } else
+#    findInterval(x, all.inside = TRUE, seq(min(x, na.rm = TRUE),
+#        max(x, na.rm = TRUE), length.out = 20L))
+#})
+#z <- as.matrix(z)
+#mode(z) <- "integer"
+#col <- c(gray.colors(20), rainbow(2))[z]
+##col <- c(rainbow(22))[z]
+#dim(col) <- dim(z)
+
+
 `plot.model.selection` <-
 function(x,
 	ylab = NULL, xlab = NULL, main = "Model selection table",

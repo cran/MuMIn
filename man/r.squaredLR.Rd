@@ -116,6 +116,10 @@ determination. \emph{Biometrika} \bold{78}, 691--692.
 
 \seealso{
 \code{\link{summary.lm}}, \code{\link{r.squaredGLMM}}
+
+\code{\link[performance]{r2}} from package \CRANpkg{performance} calculates
+many different types of \Rsq.
+
 }
 
 \keyword{models}

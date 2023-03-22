@@ -83,33 +83,33 @@ function(object, type = c("loglik", "rmse"), start, etastart, mustart,
 		# XXX: problem with RMSE with binomial and y = 0 or 1 (= Inf on link scale) 
 	})
 	
-	.DebugPrint(type)
-	.Debug(if(type == "loglik") {
-		.DebugPrint(y0)
-		message("running test 1...")
-		# XXX: DEBUG test // lm has no $family
-		testLL1 <- llik(y, X, object$coefficients, family(object), n, wt, offset)
-		
-		.DebugPrint(testLL1)
-		.DebugPrint(logLik(object))
-		.DebugPrint(testLL1 - logLik(object))
-		.DebugPrint(rbind(n, wt, offset))
-
-		stopifnot(all.equal(-testLL1, c(logLik(object)), tolerance = 1e-5))
-		message("OK")
-		message("running test 2...")
-		testFm <- glm.fit(y = y0, x = X, family = fam, offset = offset, weights = wt0)
-		.DebugPrint(rbind(testFm$coefficients, object$coefficients))
-		stopifnot(all.equal(testFm$coefficients, object$coefficients))
-		message("OK")
-		message("running test 3...")
-		testLL2 <- llik(y, X, testFm$coefficients, testFm$family, n, wt, offset)
-		.DebugPrint(c(testLL2, logLik(object)))
-		stopifnot(all.equal(-testLL2, c(logLik(object)), tolerance = 1e-5))
-		message("OK")
-		.DebugPrint(testLL2)
-		.DebugPrint(logLik(object))
-	})
+	#.DebugPrint(type)
+	#.Debug(if(type == "loglik") {
+	#	.DebugPrint(y0)
+	#	message("running test 1...")
+	#	# XXX: DEBUG test // lm has no $family
+	#	testLL1 <- llik(y, X, object$coefficients, family(object), n, wt, offset)
+	#	
+	#	.DebugPrint(testLL1)
+	#	.DebugPrint(logLik(object))
+	#	.DebugPrint(testLL1 - logLik(object))
+	#	.DebugPrint(rbind(n, wt, offset))
+	#
+	#	stopifnot(all.equal(-testLL1, c(logLik(object)), tolerance = 1e-5))
+	#	message("OK")
+	#	message("running test 2...")
+	#	testFm <- glm.fit(y = y0, x = X, family = fam, offset = offset, weights = wt0)
+	#	.DebugPrint(rbind(testFm$coefficients, object$coefficients))
+	#	stopifnot(all.equal(testFm$coefficients, object$coefficients))
+	#	message("OK")
+	#	message("running test 3...")
+	#	testLL2 <- llik(y, X, testFm$coefficients, testFm$family, n, wt, offset)
+	#	.DebugPrint(c(testLL2, logLik(object)))
+	#	stopifnot(all.equal(-testLL2, c(logLik(object)), tolerance = 1e-5))
+	#	message("OK")
+	#	.DebugPrint(testLL2)
+	#	.DebugPrint(logLik(object))
+	#})
 	
 	fdat <- if(type == "loglik") {
 		data.frame(X = 0, y = y, n = n, wt = wt, offset = offset)

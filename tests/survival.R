@@ -36,14 +36,23 @@ if (MuMIn:::testStart("survival")) {
     ####
 
     fmsrvrg <- survreg(Surv(futime, fustat) ~ ecog.ps + rx, ovarian, dist='weibull',
-        scale = 1)
+        scale = 1, cluster = rx)
 
+    r.squaredLR(fmsrvrg)
+    
+    #null <- survreg(Surv(futime, fustat) ~ 1, ovarian, dist='weibull', scale = 1)
+    #R2survreg <- function(x) r.squaredLR(x, null = null)
+    #dredge(fmsrvrg, extra = "R2survreg")
+    
     summary(model.avg(dredge(fmsrvrg), delta  < 4))
 
     fmsrvrg2 <- survreg(Surv(futime, fustat) ~ ecog.ps + rx, ovarian, dist='weibull')
 
     fmsrvrg3 <- survreg(Surv(time, status) ~ ph.ecog + age + strata(sex), lung,
           na.action = "na.omit")
+    
+    r.squaredLR(fmsrvrg3)
+
 
     coefTable(fmsrvrg)
     coefTable(fmsrvrg2)

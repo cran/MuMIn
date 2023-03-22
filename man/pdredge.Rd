@@ -35,8 +35,8 @@ pdredge(global.model, cluster = NULL,
 
 \details{
 All the dependencies for fitting the \code{global.model}, including the data
-	and any objects the modelling function will use must be exported
-	into the cluster worker nodes (e.g. \emph{via} \code{clusterExport}). 
+	and any objects that the modelling function will use must be exported
+	to the cluster worker nodes (e.g. \emph{via} \code{clusterExport}). 
 	The required packages must be also loaded thereinto (e.g. \emph{via}
 	\code{clusterEvalQ(..., library(package))}, before the cluster is used by
 	\code{pdredge}.
@@ -44,13 +44,13 @@ All the dependencies for fitting the \code{global.model}, including the data
 If \code{check} is \code{TRUE} or positive, \code{pdredge} tries to check whether
 	all the variables and functions used in the call to \code{global.model} are
 	present in the cluster nodes' \code{.GlobalEnv} before proceeding further.
-	This causes false errors if some arguments of the model call (other than
-	\code{subset}) would be evaluated in \code{data} environment. In that case
-	using \code{check = FALSE} (the default) is desirable.
+	This will cause false errors if some arguments of the model call (other than
+	\code{subset}) would be evaluated in the \code{data} environment. In that 
+    case is desirable to use \code{check = FALSE} (the default).
 	
 	If \code{check} is \code{TRUE} or greater than one, \code{pdredge} will
-	compare the \code{global.model} updated at the cluster nodes with the one
-	given as argument.
+	compare the \code{global.model} updated on the cluster nodes with the one
+	given as an argument.
 
 }
 

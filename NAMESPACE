@@ -139,11 +139,11 @@ S3method(coefTable, lm)
 
 S3method(getAllTerms, gam)
 
-S3method(nobs, sarlm)
-S3method(coefTable, sarlm)
+S3method(nobs, Sarlm)
+S3method(coefTable, Sarlm)
 
-S3method(coefTable, spautolm)
-S3method(nobs, spautolm)
+S3method(coefTable, Spautolm)
+S3method(nobs, Spautolm)
 
 S3method(logLik, glmmML)
 S3method(coefTable, glmmML)

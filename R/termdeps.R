@@ -1,4 +1,4 @@
-# gives formula terms as a list of symbols (interactions as sub-list)
+# returns formula's terms as a list of symbols (interactions as sub-lists)
 # [note that it does not expand formulas]
 # termlist(terms(~a * b+ c, simplify = TRUE))
 ## termlist(~a+b+a:b) --> list(a, b, list(a, b))
@@ -29,8 +29,9 @@ termlist <- function(x) {
 }
 
 # calculates all lower order term names:
-# expandintr(1:3) --> c("1", "2", "1:2", "3", "1:3", "2:3", "1:2:3")
-expandintr <- function(x) {
+# expandinteraction(1:3) --> c("1", "2", "1:2", "3", "1:3", "2:3", "1:2:3")
+expandinteraction <-
+function(x) {
 	asstr <- function(x) asChar(x, backtick = TRUE)
 	if(!is.language(x)) {
 		a <- sapply(x, asstr)
@@ -40,34 +41,37 @@ expandintr <- function(x) {
 	} else asstr(x)
 }
 
-# given a formula, 'term dependency matrix', i.e. dependency of higer
-# order terms on other lower order terms
-termdepmat <- function(f) {
+# given a formula, returns 'term dependency matrix', i.e. dependency of higher
+# order terms on lower order terms
+termdepmat <-
+function(f) {
 	trm <- terms(f, simplify = TRUE)
 	tl <- termlist(trm)
 	v <- attr(trm, "term.labels")
 	n <- length(v)
 	mat <- matrix(FALSE, n, n, dimnames = list(v, v))
-	for(i in seq.int(n)) mat[match(expandintr(tl[[i]]), v), i] <- TRUE
+	for(i in seq.int(n)) mat[match(expandinteraction(tl[[i]]), v), i] <- TRUE
 	mat
 }
 
-# alternative to 'termdepmat', gives matrix dimension names as numbers
-# so a,b,a:b  become 1,2,1:2 
-termdepmat2 <- function(f) {
+# like 'termdepmat', but dimnames of the returned matrix are term indices rather
+# than names. So a,b,a:b become 1,2,1:2. (seems to be slightly less efficient
+# than termdepmat (~1.5x)) 
+termdepmat2 <-
+function(f) {
 	filist <- formula2idx(f, asCall = FALSE)
 	n <- length(filist)
 	v <- vapply(filist, paste0, "", collapse = ":")
 	mat <- matrix(FALSE, n, n, dimnames = list(v, v))
-	for(i in seq.int(n)) mat[match(expandintr(filist[[i]]), v), i] <- TRUE
+	for(i in seq.int(n)) mat[match(expandinteraction(filist[[i]]), v), i] <- TRUE
 	mat
 }
 
 ## combines term-dependency-matrices
 #termdepmat_list <- function(fl) 
 #	termdepmat_combine(lapply(fl, termdepmat))
-
-termdepmat_combine <- function(x) {
+termdepmat_combine <-
+function(x) {
 	dm <- sum(vapply(x, nrow, 1L))
 	mat <- matrix(FALSE, dm, dm)
 	j <- 1L
@@ -82,9 +86,10 @@ termdepmat_combine <- function(x) {
 	mat
 }
 
-# converts formula to a(n unevaluated) list of numeric indices
+# converts formula to an unevaluated list of numeric indices
 # e.g. a*b --> list(1,2,1:2)
-formula2idx <- function(x, asCall = TRUE) {
+formula2idx <-
+function(x, asCall = TRUE) {
 	if(!is.call(x) || !inherits(x, "formula")) stop("'x' is not a formula")
 	fac <- attr(delete.response(terms(x)), "factors")
 	dimnames(fac) <- NULL
@@ -92,7 +97,8 @@ formula2idx <- function(x, asCall = TRUE) {
 	if(asCall) as.call(c(as.name("list"), ret)) else ret 
 }
 
-formula_margin_check <- function(j, m) {
-	stopifnot(is.logical(j))
+formula_margin_check <-
+function(j, m) {
+	mode(j) <- "logical"
 	!any(m[!j, j], na.rm = TRUE)
 }

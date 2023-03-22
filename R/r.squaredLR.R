@@ -1,9 +1,13 @@
 `null.fit` <-
 function(object, evaluate = FALSE, RE.keep = FALSE, envir = NULL, ...) {
+	# backward compatibility:
 	if("x" %in% names(list(...))) {
 		object <- list(...)$x
-		warning("the argument ", sQuote("x"), " has been removed. Use ", dQuote("object"), " instead")
+		warning("the argument ", sQuote("x"), " has been removed. Use ",	
+		dQuote("object"), " instead")
 	}
+	
+	# TODO: detect if RE.keep is TRUE and object is not a mixed model
 
 	cl <- get_call(object)
 	if(!is.environment(envir)) envir <- environment(as.formula(formula(object)))
@@ -48,8 +52,9 @@ function(object, evaluate = FALSE, RE.keep = FALSE, envir = NULL, ...) {
 	}	
 	
 	mClasses <- c("glmmML", "lm", "lme", "gls", "mer", "merMod", "lmekin",
-				  "unmarkedFit", "coxph", "coxme", "zeroinfl", "gamm")
-	mClass <- mClasses[inherits(object, mClasses, which = TRUE) != 0L][1]
+				  "unmarkedFit", "coxph", "coxme", "zeroinfl", "gamm",
+                  "survreg")
+	mClass <- mClasses[inherits(object, mClasses, which = TRUE) != 0L][1L]
 
 	if(is.na(mClass)) mClass <- "default"
 	formulaArgName <- "formula"
@@ -71,7 +76,7 @@ function(object, evaluate = FALSE, RE.keep = FALSE, envir = NULL, ...) {
 			if("formula" %in% nm) {
 				cl$formula <- ~1~1
 			} else {
-				formula.arg <- nm[grep(".+formula$", nm[1:7])]
+				formula.arg <- nm[grep(".+formula$", nm[1L:7L])]
 				for (i in formula.arg) cl[[i]] <- ~1
 			}
 			cl$starts <- NULL
@@ -79,7 +84,7 @@ function(object, evaluate = FALSE, RE.keep = FALSE, envir = NULL, ...) {
 		}, coxph =, coxme = {
 			Fun <- "coxph"
 			cl$formula <- update.formula(eval(cl$formula), . ~ 1)
-		}, zeroinfl =, lm = {
+		}, survreg = , zeroinfl =, lm = {
 			Fun <- NA
 			cl$formula <- update.formula(as.formula(cl$formula), . ~ 1)
 		}, gamm = {

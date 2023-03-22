@@ -4,6 +4,7 @@
 
 \encoding{utf-8}
 
+\newcommand{\CRANpkg}{\href{https://cran.r-project.org/package=#1}{\pkg{#1}}} 
 \newcommand{\mydequation}{\ifelse{latex}{\deqn{#1}{#3}}{\ifelse{html}{\enc{\deqn{#1}}{#3}}{#3}}}
 \newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#1}}{#3}}{#3}}}
 
@@ -102,7 +103,6 @@ al. (2017) paper. The returned value's format also has changed (it is a
 function calculated the \dQuote{theoretical} \Rsqx{GLMM} for \code{binomial}
 models.
 
-
 \Rsqx{GLMM} can be calculated also for fixed-effect models. In
 the simpliest case of \acronym{OLS} it reduces to \code{var(fitted) /
 (var(fitted) + deviance / 2)}. Unlike likelihood-ratio based \Rsq for 
@@ -112,6 +112,10 @@ the classical \Rsq.
 Currently methods exist for classes: \code{merMod}, \code{lme},
 \code{glmmTMB}, \code{glmmADMB}, \code{glmmPQL}, \code{cpglm}(\code{m}) and
 (\code{g})\code{lm}.
+
+For families other than gaussian, Gamma, poisson, binomial and negative binomial,
+the residual variance is obtained using \code{\link[insight]{get_variance}} 
+from package \CRANpkg{insight}.
 
 See note in \code{\link{r.squaredLR}} help page for comment on using \Rsq in 
 model selection.
@@ -142,6 +146,11 @@ linear mixed-effects models revisited and expanded.
 
 \seealso{
 \code{\link{summary.lm}}, \code{\link{r.squaredLR}}
+
+\code{\link[performance]{r2}} from package \CRANpkg{performance} calculates
+\Rsqx{GLMM} also for variance at different levels, with optional confidence 
+intervals. \CRANpkg{r2glmm} has functions for \Rsq and partial \Rsq.
+
 }
 
 \examples{
