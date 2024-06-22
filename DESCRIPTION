@@ -1,27 +1,34 @@
 Package: MuMIn
 Type: Package
 Title: Multi-Model Inference
-Version: 1.47.5
-Date: 2023-03-15
+Version: 1.48.4
+Date: 2024-06-21
 Encoding: UTF-8
-Author: Kamil Bartoń
+Authors@R: c(
+  person("Kamil", "Bartoń", role=c("aut", "cre"), 
+         email="kamil.barton@go2.pl",
+         comment = c(ORCID = "0000-0001-5562-8274"))
+  )
+Author: Kamil Bartoń [aut, cre] (<https://orcid.org/0000-0001-5562-8274>)
 Maintainer: Kamil Bartoń <kamil.barton@go2.pl>
-Description: Tools for performing model selection and model averaging. Automated
-             model selection through subsetting the maximum model, with optional
-             constraints for model inclusion. Model parameter and prediction
-             averaging based on model weights derived from information criteria
-             (AICc and alike) or custom model weighting schemes.
+Description: Tools for model selection and model averaging with support for a 
+             wide range of statistical models. Automated model selection through
+             subsets of the maximum model, with optional constraints for model 
+             inclusion. Averaging of model parameters and predictions based on 
+             model weights derived from information criteria (AICc and alike) 
+             or custom model weighting schemes.
 License: GPL-2
 Depends: R (>= 4.2.0)
 Imports: graphics, methods, Matrix, stats, stats4, nlme, insight
 Suggests: lme4 (>= 1.1.0), mgcv (>= 1.7.5), gamm4, MASS, nnet, survival
-        (>= 3.1.0), geepack
-Enhances: aod, aods3, betareg, caper, coxme, cplm, gee, glmmML,
-        logistf, MCMCglmm, ordinal, pscl, spatialreg, splm, unmarked
-        (>= 0.12.2), geeM (>= 0.7.5), gamlss
+        (>= 3.1.0), geepack, performance
+Enhances: aod, aods3, betareg, caper, coxme (>= 2.2.4), cplm, gee,
+        glmmML, logistf, MCMCglmm, ordinal, pscl, spatialreg, splm,
+        unmarked (>= 1.4.0), geeM (>= 0.7.5), gamlss, RMark, glmmTMB,
+        brglm, quantreg, maxlike
 LazyData: yes
 ByteCompile: yes
 NeedsCompilation: no
-Packaged: 2023-03-22 14:27:12 UTC; kb2
+Packaged: 2024-06-21 23:58:23 UTC; kb2
 Repository: CRAN
-Date/Publication: 2023-03-22 16:00:07 UTC
+Date/Publication: 2024-06-22 14:10:02 UTC

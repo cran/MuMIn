@@ -13,8 +13,6 @@ function (x, ...) {
 
 `coef.averaging` <-
 function(object, full = FALSE, ...) {
-	## XXX: backward compatibility:
-	object <- upgrade_averaging_object(object)
 	full <- .checkFull(object, full) 
 	object$coefficients[if(full) 1L else 2L, ]
 }
@@ -39,9 +37,7 @@ function (object, ...) {
 
 `summary.averaging` <-
 function (object, ...) {
-	## XXX: backward compatibility:
-	object <- upgrade_averaging_object(object)
-
+	
 	.makecoefmat <-
 	function(cf) {
 		no.ase <- all(is.na(cf[, 3L]))
@@ -69,8 +65,6 @@ function (object, ...) {
 
 `confint.averaging` <-
 function (object, parm, level = 0.95, full = FALSE, ...) {
-	## XXX: backward compatibility:
-	object <- upgrade_averaging_object(object)
 	full <- .checkFull(object, full) 
 
     a2 <- 1 - level
@@ -90,7 +84,7 @@ function (object, parm, level = 0.95, full = FALSE, ...) {
     ci <- t(sapply(parm, function(i)
 		par.avg(cf[,i], se[,i], wts, dfs[, i], alpha = a2)))[, 4L:5L, drop = FALSE]
 	ci[is.na(object$coefficients[1L, parm]), ] <- NA_real_
-    colnames(ci) <- format.perc(c(a, 1L - a), 3L)
+    colnames(ci) <- format_perc(c(a, 1L - a), 3L)
     return(ci)
 }
 
@@ -166,9 +160,7 @@ function (x, digits = max(3L, getOption("digits") - 3L),
 
 `print.averaging` <-
 function(x, ...) {
-	## XXX: backward compatibility:
-	x <- upgrade_averaging_object(x)
-    cat("\nCall:\n", paste(asChar(x$call, nlines = -1L), sep = "\n", collapse = "\n"),
+	cat("\nCall:\n", paste(asChar(x$call, nlines = -1L), sep = "\n", collapse = "\n"),
         "\n\n", sep = "")
     cat("Component models:", "\n")
 	comp.names <- rownames(x$msTable)
@@ -182,8 +174,6 @@ function(x, ...) {
 
 `vcov.averaging` <- 
 function (object, full = FALSE, ...) {
-	## XXX: backward compatibility:
-	object <- upgrade_averaging_object(object)
 	full <- .checkFull(object, full) 
 
 	full <- as.logical(full)[1L]

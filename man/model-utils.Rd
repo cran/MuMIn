@@ -13,7 +13,7 @@
 \alias{get.response}
 
 \encoding{utf-8}
-\newcommand{\href}{#2}
+%% \newcommand{\href}{#2}
 
 \title{Model utility functions}
 \description{

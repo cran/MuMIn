@@ -22,7 +22,7 @@ A single numeric value of \acronym{RMSE} or
 mean log-likelihood.
 }
 \description{
-Computes the \acronym{RMSE}/log-likelihood based on leave-one-out cross-validation.
+Compute \acronym{RMSE}/log-likelihood based on leave-one-out cross-validation.
 }
 \details{
 Leave-one-out cross validation is a \var{K}-fold cross validation, with

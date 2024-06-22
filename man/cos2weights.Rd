@@ -25,8 +25,8 @@ passed to \code{predict}.}
 A numeric vector of model weights.
 }
 \description{
-Calculates cos-squared model weights, following the algorithm
-outlined in the appendix of Garthwaite & Mubwandarikwa (2010).
+Calculate the cos-squared model weights, following the algorithm
+outlined in the appendix to Garthwaite & Mubwandarikwa (2010).
 }
 \examples{
 \dontshow{

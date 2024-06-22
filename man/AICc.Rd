@@ -52,9 +52,13 @@ in small samples, \emph{Biometrika} \bold{76}, 297–307.
 Akaike's An Information Criterion: \code{\link{AIC}}
 
 Some other implementations:
-\code{\link[AICcmodavg]{AICc}} in package \pkg{AICcmodavg},
-\code{\link[bbmle:BIC-methods]{AICc}} in package \pkg{bbmle},
-\code{\link[glmulti:aic]{aicc}} in package \pkg{glmulti}
+%% \code{\link[AICcmodavg]{AICc}} in package \pkg{AICcmodavg},
+%% \code{\link[bbmle:BIC-methods]{AICc}} in package \pkg{bbmle},
+%% \code{\link[glmulti:aic]{aicc}} in package \pkg{glmulti}
+
+\code{AICc} in package \pkg{AICcmodavg},
+\code{AICc} in package \pkg{bbmle},
+\code{aicc} in package \pkg{glmulti}
 
 
 }

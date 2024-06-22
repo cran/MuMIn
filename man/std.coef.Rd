@@ -4,7 +4,8 @@
 \alias{partial.sd}
 
 \encoding{utf-8}
-\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#1}}{#3}}{#3}}}
+
+%% \newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#1}}{#3}}{#3}}}
 
 \title{Standardized model coefficients}
 \description{

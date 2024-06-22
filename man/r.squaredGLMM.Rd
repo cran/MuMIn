@@ -4,13 +4,13 @@
 
 \encoding{utf-8}
 
-\newcommand{\CRANpkg}{\href{https://cran.r-project.org/package=#1}{\pkg{#1}}} 
-\newcommand{\mydequation}{\ifelse{latex}{\deqn{#1}{#3}}{\ifelse{html}{\enc{\deqn{#1}}{#3}}{#3}}}
-\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#1}}{#3}}{#3}}}
-
-\newcommand{\logLik}{\myequation{\log\mathcal{L}(#1)}{XXXX}{logL(#1)}}
-\newcommand{\Rsq}{\myequation{R^{2}}{XXXX}{R^2}}
-\newcommand{\Rsqx}{\myequation{R_{#1}^{2}}{XXXX}{R_#1^2}}
+%% \newcommand{\CRANpkg}{\href{https://cran.r-project.org/package=#1}{\pkg{#1}}} 
+%% \newcommand{\mydequation}{\ifelse{latex}{\deqn{#1}{#3}}{\ifelse{html}{\enc{\deqn{#1}}{#3}}{#3}}}
+%% \newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#1}}{#3}}{#3}}}
+%% 
+%% \newcommand{\logLik}{\myequation{\log\mathcal{L}(#1)}{XXXX}{logL(#1)}}
+%% \newcommand{\Rsq}{\myequation{R^{2}}{XXXX}{R^2}}
+%% \newcommand{\Rsqx}{\myequation{R_{#1}^{2}}{XXXX}{R_#1^2}}
 
 \title{Pseudo-R-squared for Generalized Mixed-Effect models}
 \description{
@@ -44,7 +44,8 @@ r.squaredGLMM(object, null, ...)
 }
 
 \details{
-For mixed-effects models, \Rsqx{GLMM} comes in two types: marginal and conditional.
+
+There are two types of \Rsqx{GLMM}: marginal and conditional.
 
 \emph{Marginal \Rsqx{GLMM}} represents the variance explained by the fixed 
 effects, and is defined as:
@@ -54,9 +55,9 @@ effects, and is defined as:
 }{R_GLMM(m)^2 = (sigma_f^2) / (sigma_f^2 + sigma_alpha^2 + sigma_epsilon^2)
 }
 
-\emph{Conditional \Rsqx{GLMM}} is interpreted as a variance explained by the
-entire model, including both fixed and random effects, and is calculated
-according to the equation:
+\emph{Conditional \Rsqx{GLMM}} represents the variance explained by the
+entire model, including both fixed and random effects. It is calculated
+by the equation:
 
 \mydequation{R_{GLMM(c)}^{2}= \frac{\sigma_f^2 + \sigma_{\alpha}^2}{\sigma_f^2 + \sigma_{\alpha}^2 + \sigma_{\varepsilon }^2}
 }{R_GLMM(c)² = (\sigma_f² + \sigma_\alpha²) / (\sigma_f² + \sigma_\alpha² + \sigma_\epsilon²)
@@ -70,10 +71,10 @@ is the variance of the random effects, and
 \myequation{\sigma_\epsilon^2}{\sigma_\epsilon²}{sigma_epsilon^2}
 is the \dQuote{observation-level} variance.
 
-Three different methods are available for deriving the observation-level variance
+Three methods are available for deriving the observation-level variance
 \eqn{\sigma_\varepsilon}: the delta method, lognormal approximation and using the
 trigamma function.
-%% \eqn{\Psi}.
+
 The delta method can be used with for all distributions and link functions,
 while lognormal approximation and trigamma function are limited to distributions
 with logarithmic link. Trigamma-estimate is recommended whenever available.

@@ -181,8 +181,8 @@ calculation.
 \code{\link{dredge}}, \code{\link{get.models}} \cr
 \code{\link{AICc}} has examples of averaging models fitted by REML.
 
-\code{\link[AICcmodavg]{modavg}} in package \pkg{AICcmodavg}, and
-\code{\link[glmulti]{coef.glmulti}} in package \pkg{glmulti} also perform model
+\code{modavg} in package \pkg{AICcmodavg}, and
+\code{coef.glmulti} in package \pkg{glmulti} also perform model
 averaging.
 }
 

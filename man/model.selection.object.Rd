@@ -14,17 +14,17 @@
 
 Data frame columns:
   
-\item{model terms}{For numeric covariates these columns hold coefficent value,
+\item{<model terms>}{For numeric covariates these columns hold coefficent value,
     for factors their presence in the model. If the term is not present in a 
     model, value is \code{NA}. }
-\item{\sQuote{varying} arguments}{optional. If any arguments differ between the 
+\item{<varying arguments>}{Optional. If any arguments differ between the 
     modelling function calls (except for formulas and some other arguments), 
     these will be held in additional columns (of class \code{"factor"}).}
-\item{"df"}{Number of model parameters}
-\item{"logLik"}{Log-likelihood (or quasi-likelihood for \acronym{GEE})}
-\item{rank}{Information criterion value}
-\item{"delta"}{\ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC}}
-\item{"weight"}{\sQuote{Akaike weights}.}
+\item{df}{Number of model parameters}
+\item{logLik}{Log-likelihood (or quasi-likelihood for \acronym{GEE})}
+\item{<rank>}{Information criterion value}
+\item{delta}{\ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC}}
+\item{weight}{\sQuote{Akaike weights}.}
 
 Attributes:
     \item{model.calls}{A list containing model calls (arranged in 
@@ -46,9 +46,10 @@ Attributes:
         warnings issued by the modelling function during the fitting, with a model
         number appended to each. }
 
-Most attributes does not need (and should not) be accessed directly, use of extractor
-    functions is preferred. These functions include \code{getCall} for 
-    retrieving model calls, \code{coefTable} and \code{coef} for coefficients, 
+
+It is not recommended to directly access the attributes. Instead, use extractor
+    functions if possible. These include \code{getCall} for retrieving model
+    calls, \code{coefTable} and \code{coef} for coefficients, 
     and \code{nobs}. \code{logLik} extracts list of model log-likelihoods (as 
     \code{"logLik"} objects), and \code{Weights} extracts \sQuote{Akaike 
     weights}.

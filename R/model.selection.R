@@ -87,12 +87,12 @@ function (object, ...) {
 		model.calls <- attr(object, "model.calls")
 		if(!is.null(model.calls[[1L]][["family"]])) {
 			fam <- lapply(model.calls, "[[", "family")
-			#fam1 <- unique(fam)
 			rval <- lapply(unique(fam), eval)[
 				as.integer(as.factor(vapply(fam, asChar, "")))
 				]
 			names(rval) <- rownames(object)
 			## WTF?
+            #fam1 <- unique(fam)
 			#index <- split(seq_along(fam), vapply(fam, asChar, ""))
 			#for(i in seq_along(fam1)) fam1[[i]] <- list(family = eval(fam1[[i]]), index = index[[i]])
 			#fam <- family(dd1)
@@ -136,3 +136,10 @@ names(x)[type2col(x, type)]
 
 `itemByType<-` <- function(x, type, i, value)
 `[<-.data.frame`(x, i, type2col(x, type), value)
+
+
+duplicated.model.selection <-
+function (x, incomparables = FALSE, fromLast = FALSE, ...) {
+    duplicated.data.frame(x[, type2col(x, c("loglik", "terms"))],
+        incomparables = incomparables, fromLast = fromLast, ...)
+}

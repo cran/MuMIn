@@ -2,7 +2,7 @@
 export(
 	"dredge", "pdredge", "get.models", "pget.models", 
 	"model.avg", "par.avg", 
-	"model.sel",
+	"model.sel", "model.sel<-",
 	"getAllTerms", "coeffs", "coefTable", 
 	"sw", "importance", "Weights", "Weights<-",
 	"AICc", "QAIC", "QAICc", "Cp", "ICOMP", "CAICF", "DIC", 
@@ -92,8 +92,10 @@ S3method(rbind, model.selection)
 S3method(update, model.selection)
 S3method(coef, model.selection)
 S3method(logLik, model.selection)
+S3method(duplicated, model.selection)
 
 S3method(model.sel, model.selection)
+S3method(model.sel, averaging)
 S3method(model.sel, default)
 
 S3method(model.avg, model.selection)
@@ -148,6 +150,7 @@ S3method(nobs, Spautolm)
 S3method(logLik, glmmML)
 S3method(coefTable, glmmML)
 S3method(nobs, glmmML)
+S3method(getAllTerms, glmmML)
 S3method(summary, glmmML)
 
 S3method(getAllTerms, coxph)
@@ -195,7 +198,6 @@ S3method(makeArgs, default)
 S3method(makeArgs, gls)
 S3method(makeArgs, lme)
 S3method(makeArgs, unmarkedFit)
-S3method(makeArgs, unmarkedFitDS)
 S3method(makeArgs, coxph)
 S3method(makeArgs, clmm)
 S3method(makeArgs, merMod)
@@ -214,7 +216,6 @@ S3method(makeArgs, coxme)
 S3method(formula, coxme)
 S3method(getAllTerms, coxme)
 S3method(nobs, coxme)
-S3method(logLik, coxme)
 S3method(coeffs, coxme)
 
 S3method(coeffs, lmekin)

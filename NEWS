@@ -1,16 +1,48 @@
 MuMIn package news:
 
+Changes in version 1.48.4 (2024-06-21)
+- Fixed DESCRIPTION issues causing R check problems.
+- Registered previously omitted methods and supplemented package references in 
+  the documentation.
+  
+Changes in version 1.48.2 (2024-06-08)
+- support for "unmarkedFit" has been reworked, with more models included 
+  (all except the ones not using formulas as arguments, i.e. "occuMS" and 
+  "occuMulti"), and random effects and offset terms now being recognized 
+  (the latter reported by Jonathan Dinkins).
+
+Changes in version 1.47.12 (2024-06-02)
+- removed links to archived packages in the manual and included some new
+  suggested packages to satisfy R Check.
+
+Changes in version 1.47.10 (2024-03-21)
+- (fixed) `r.squaredGLMM` now returns correct values for non-Bernoulli binomial 
+  models with response as proportion and weights specifying the number of 
+  trials. The result is now identical as for a model with response as a 
+  2-column matrix (thanks to Emma Neigel for reporting this).
+- removed `logLik.coxme` as the package "coxme" now provides its own method.
+
+Changes in version 1.47.8 (2023-07-07)
+- (added) `duplicated` method for "model.selection" object.
+- (added) replacement version of `model.sel` that appends new models to an
+  existing "model.selection" object.
+  
+Changes in version 1.47.6 (2023-05-30)
+- (fixed) problem with matching interaction terms, affecting mostly `model.sel`
+  (spotted by Francis van Oordt).
+- removed backward compatibility with pre-0.15.0 "averaging" objects.
 
 Changes in version 1.47.5 (2023-03-15)
 - r.squaredGLMM: added support for additional families using 
-  insight::get_variance. This requires the addition of 'insight' to the package 
-  dependencies, something done very reluctantly as, as a principle with MuMIn, 
-  new dependencies are only added as a last resort.
-- null.fit and hence r.squaredLR now work also with "survreg" class (reported by
-  Caroline Zanchi).
+  `insight::get_variance`. This requires the addition of 'insight' to the package 
+  dependencies, albeit very reluctantly, as in principle new dependencies are
+  only added as a very last resort.
+  
+- `null.fit` and hence `r.squaredLR` now work also with "survreg" class 
+  (reported by Caroline Zanchi).
 
 Changes in version 1.47.4 (2023-03-13)
-- (fixed) removed remaining references to stats:::format.perc
+- (fixed) removed remaining references to `stats:::format.perc`.
 
 Changes in version 1.47.3 (2023-02-27)
 - (fixed) model.avg.default: duplicated interaction coefficients were returned
@@ -19,7 +51,7 @@ Changes in version 1.47.3 (2023-02-27)
 
 Changes in version 1.47.2 (2023-01-06)
 - Updated methods for models of class 'Sarlm' and 'Spautolm' from the 
-  package 'spatialreg' (reported by Iwona Dembicz)
+  package 'spatialreg' (reported by Iwona Dembicz).
 
 Changes in version 1.47.1 (2022-08-31)
 - Pleasing RCheck: updated NEWS file so that it can be parsed by the 
@@ -105,6 +137,9 @@ Changes in version 1.43.17 (2020-04-14)
 Changes in version 1.43.16 (2020-03-12)
 - (added) specs for 'unmarkedFitPCount' with mixture = "ZIP" (spotted by Hannah 
   Clyde)
+- (fixed) r.squaredGLMM for binomial family models with N > 1 trials. The 
+  fixed effects variance now accounts for trial number (thanks to Daniel 
+  Schlaepfer)
 
 Changes in version 1.43.15 (2019-12-19)
 - (fixed) fatal error with QIC.geem introduced in the previous version

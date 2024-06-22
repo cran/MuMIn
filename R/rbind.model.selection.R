@@ -20,7 +20,7 @@ function (..., deparse.level = 1, make.row.names = TRUE) {
 	if(!.allitemsidentical(lapply(lapply(items, attr, "rank"), attr, "call")))
 		stop("tables are not ranked by the same IC")
 	if(!.allitemsidentical(lapply(items, "attr", "nobs")))
-		stop("models are fitted to different number of observations")
+		stop("models are not all fitted to the same number of observations")
 
 	.combine <-
 	function(x, y, pos, len = length(y)) {

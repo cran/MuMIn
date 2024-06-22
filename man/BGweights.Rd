@@ -1,5 +1,4 @@
 \encoding{utf-8}
-\newcommand{\myequation}{\ifelse{latex}{\eqn{#1}{#3}}{\ifelse{html}{\enc{\eqn{#2}}{#3}}{#3}}}
 \name{BGWeights}
 \alias{BGWeights}
 \title{Bates-Granger minimal variance model weights}
@@ -21,7 +20,7 @@ case of other model types \code{update} is always used.}
 A numeric vector of model weights.
 }
 \description{
-Computes empirical weights based on out of sample forecast variances,
+Compute empirical weights based on out of sample forecast variances,
 following Bates and Granger (1969).
 }
 \details{

@@ -92,7 +92,7 @@ complexity and fit. \emph{Journal of the Royal Statistical Society Series B-Stat
 \seealso{
 \code{\link{AIC}} and \code{\link{BIC}} in \pkg{stats}, \code{\link{AICc}}.
 \code{\link{QIC}} for GEE model selection.
-\code{\link[arm]{extractDIC}} in package \pkg{arm}, on which the (non-visible) 
+\code{extractDIC} in package \pkg{arm}, on which the (non-visible) 
 method \code{extractDIC.merMod} used by \code{DIC} is based.
 }
 

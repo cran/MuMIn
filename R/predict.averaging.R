@@ -5,8 +5,7 @@ function(object, newdata = NULL, se.fit = FALSE, interval = NULL,
 	full = TRUE, ...) {
 	## XXX: backward compatibility:
 	    
-    object <- upgrade_averaging_object(object)
-	full <- .checkFull(object, full) 
+    full <- .checkFull(object, full) 
 
 	if (!missing(interval)) .NotYetUsed("interval", error = FALSE)
 	

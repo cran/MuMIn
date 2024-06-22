@@ -4,7 +4,8 @@ function (x, value)  {
 	x <- NextMethod()
 	newnames <- dimnames(x)[[1L]]
 	rowattrib <- c("model.calls", "coefTables", "random.terms", "order",
-		if(!is.null(attr(x, "modelList"))) "modelList")
+		# if(!is.null(attr(x, "modelList"))) 
+        "modelList")
 	for(i in rowattrib) if(!is.null(attr(x, i))) names(attr(x, i)) <- newnames
 	x
 }
@@ -163,11 +164,20 @@ function(x, subset, select, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 	#	list(tmpdat = x, .subset_vdc = .subset_vdc),
 	#	parent.frame()
 	#	)
-	
 	# eval.parent(subset_rework(substitute(subset), x, substitute(x)))
 	
 	return(`[.model.selection`(x,
 		subset_eval(substitute(subset), x, parent.frame()),
 		recalc.weights = recalc.weights,
 		recalc.delta = recalc.delta, ...))
+}
+
+`model.sel<-` <-
+function(x, value) {
+    if(!inherits(x, "model.selection"))
+        stop("'x' is not a \"model.selection\" object")
+    y <- model.sel(value, rank = attr(x, "rank"))
+    if(nrow(y) == 1L && rownames(y) == "value")
+        rownames(y) <- deparse1(substitute(value))
+    rbind(x, y)
 }

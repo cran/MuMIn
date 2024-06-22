@@ -54,7 +54,7 @@ optimisation (i.e. the jackknife procedure is skipped).}
 The function returns a numeric vector of model weights.
 }
 \description{
-Computes model weights optimized for jackknifed model fits.
+Compute model weights optimized for jackknifed model fits.
 }
 \details{
 Model weights are chosen (using \code{\link{optim}}) to minimise

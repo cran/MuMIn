@@ -6,7 +6,7 @@ function(object, R = 250, weight.by = c("aic", "loglik"), trace = FALSE) {
 	maxtrials <- 10L
 	weight.by <- switch(match.arg(weight.by), aic = 1L, loglik = 2L)
 	allterms <- getAllTerms(object)
-	ordtrm <- attr(allterms, "order")
+	ordtrm <- attr(allterms, "sortorder")
 	deps <- attr(allterms, "deps")[ordtrm, ordtrm]
 	nterms <- length(allterms)
 	mm <- model.matrix(object)

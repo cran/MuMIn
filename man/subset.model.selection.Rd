@@ -4,7 +4,7 @@
 \alias{[[.model.selection}
 \alias{has}
 
-\newcommand{\bq}{\verb{`}\code{#1}\verb{`}}
+%% \newcommand{\bq}{\verb{`}\code{#1}\verb{`}}
 
 \encoding{utf-8}
 \title{Subsetting model selection table}

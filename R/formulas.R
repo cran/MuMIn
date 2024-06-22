@@ -27,22 +27,22 @@ function(frm, except = NULL) {
 # slightly faster than stats::reformulate
 # response must be a character string
 #Reformulate <- function(termlabels, response = NULL, intercept = TRUE, envir = parent.frame()) {
-#	print(termlabels)
-#	print(response)
 #	res <- parse(text = paste(if(!is.null(response)) 'Y', "~", paste(termlabels, collapse = "+"), collapse = ""))[[1L]]
 #	class(res) <- "formula"
 #	environment(res) <- envir
 #	res
 #}
 
-`.formulaEnv` <- function(object, env = .GlobalEnv) {
+`.formulaEnv` <- 
+function(object, env = .GlobalEnv) {
 	res <- formula(object, env = baseenv())
 	environment(res) <- env
 	res
 }
 
 
-`simplify.formula` <- function(x) {
+`simplify.formula` <- 
+function(x) {
 	tt <- terms(as.formula(x))
 	fac <- attr(tt, "factors")
 	if(length(fac) == 0L) {
@@ -70,7 +70,8 @@ function(frm, except = NULL) {
 	return(x)
 }
 
-`expand.formula` <- function(x) {
+`expand.formula` <- 
+function(x) {
 	x <- formula(x)
 	env <- environment(x)
 	tt <- terms(x)
@@ -80,33 +81,4 @@ function(frm, except = NULL) {
 	x
 }
 
-`decomposeFormula` <- function(f, rhs.as.formula = FALSE) {
-	env <- environment(f)
-	rhs <- list()
-	lhs <- NULL
-	repeat {
-		l <- length(f)
-		if(l == 1L || f[[1L]] != "~") {
-			lhs <- f
-			break
-		}
-		rhs[[length(rhs) + 1L]] <- f[[l]]
-		if(l == 3L) f <- f[[2L]] else break
-	}
-	if(rhs.as.formula) {
-		rhs <- lapply(rhs, function(z) .formulaEnv(call("~", z), env))
-	}
-	structure(list(lhs = lhs, rhs = rev(rhs)), .Environment = env)
-}
 
-
-mergeFormulas <- function(flist, env = environment(flist[[1L]])) {
-	fs <- lapply(flist, decomposeFormula, TRUE)
-	j <- min(sapply(fs, function(z) length(z$rhs)))
-	tn <- character(0L)
-	for(fi in fs) tn <- c(tn, attr(terms(fi$rhs[[j]]), "term.labels"))
-	tn <- tn[!duplicated(tn)]
-	f <- reformulate(tn)
-	environment(f) <- env
-	f
-}

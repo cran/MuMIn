@@ -66,11 +66,12 @@ function (x, m) {
 	rval
 }
 
-
 # sorts alphabetically interaction components in model term names
 # if 'peel', tries to remove coefficients wrapped into function-like syntax
 # (this is meant mainly for 'unmarkedFit' models with names such as "psi(a:b:c)")
 # This unwrapping is done only if ALL names are suitable for it.
+# FIXME: this function would also "fix" strings like "log(b:a)" (but not 
+# "log(`b:a`)") - but this is unlikely to be a valid model term.
 `fixCoefNames` <-
 function(x, peel = TRUE) {
 	if(!length(x)) return(x)
@@ -88,10 +89,12 @@ function(x, peel = TRUE) {
 			ixi <- substring(ixi, pos + 1L)
 		} else {
 			# unmarkedFit with its phi(...), lambda(...) etc...
-			if(peel <- all(endsWith(ixi, ")"))) {
+			if(peel <- all(grepl("^[a-zA-Z]{2,5}\\(.+\\)$", x, perl = TRUE))) {
 				# only if 'XXX(...)', i.e. exclude 'XXX():YYY()' or such
-				m <- regexpr("^(([^()]*)\\(((?:[^()]*|(?1))*)\\))$", ixi, perl = TRUE, useBytes = TRUE)
-				cptgrps <- .matches(ixi, m)
+                # assumes coefficient types are ascii letters only 
+                # and of length >= 2
+				m <- regexpr("^(([a-zA-Z]{2,5})\\(((?:[^()]*|(?1))*)\\))$", ixi, perl = TRUE, useBytes = TRUE)
+                cptgrps <- .matches(ixi, m)
 				if(peel <- all(cptgrps[, 2L] != "")) {
 					peelpfx <- paste0(cptgrps[, 2L], "(")
 					peelsfx <- ")"
@@ -198,7 +201,6 @@ function(models, error = TRUE) {
 		res <- FALSE
 	}
 
-	#datas <- lapply(models, function(x) get_call(x)$data)
 	# XXX: need to compare deparse'd 'datas' due to ..1 bug(?) in which dotted
 	#  arguments (..1 etc) passed by lapply are not "identical"
 	datas <- vapply(lapply(models, function(x) get_call(x)$data), asChar, "")

@@ -5,8 +5,8 @@
 \alias{print.model.selection}
 \encoding{utf-8}
 
-\newcommand{\Rsq}{\ifelse{latex}{\eqn{R^{2}}{R^2}}{\ifelse{html}{\enc{R²}{R^2}}{R^2}}}
-\newcommand{\bq}{\verb{`}\code{#1}\verb{`}}
+%% \newcommand{\Rsq}{\ifelse{latex}{\eqn{R^{2}}{R^2}}{\ifelse{html}{\enc{R²}{R^2}}{R^2}}}
+%% \newcommand{\bq}{\verb{`}\code{#1}\verb{`}}
 
 \title{Automated model selection}
 \description{
@@ -47,7 +47,8 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 	See \sQuote{Details}. }
 
 	\item{fixed}{optional, either a single-sided formula or a character vector
-	giving names of terms to be included in all models. See \sQuote{Subsetting}. }
+	giving names of terms to be included in all models. Not to be confused with
+    fixed effects. See \sQuote{Subsetting}. }
 
 	\item{m.lim, m.max, m.min}{optionally, the limits \code{c(lower, upper)}
     for the number of terms in a single model (excluding the intercept). An
@@ -55,8 +56,9 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
     Specifying limits as \code{m.min} and \code{m.max} is allowed for backward
     compatibility. }
 
-	\item{subset}{ logical expression describing models to keep in the resulting
-		set. See \sQuote{Subsetting}. }
+	\item{subset}{logical expression or a \code{matrix} describing models to 
+        be kept in the resulting set. \code{NULL} or \code{TRUE} 
+        disables subsetting. For details, see \sQuote{Subsetting}. }
 
 	\item{trace}{if \code{TRUE} or \code{1}, all calls to the fitting function
 	are printed before actual fitting takes place. If \code{trace > 1}, a progress bar
@@ -84,8 +86,10 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
 
   \item{x}{ a \code{model.selection} object, returned by \code{dredge}. }
 
-  \item{abbrev.names}{ should printed term names be abbreviated?
-	(useful with complex models). }
+  \item{abbrev.names}{ Should term names in the table header be abbreviated when
+    printed? This is the default. If full names are required, use \code{print()} 
+    explicitly with this argument set to \code{FALSE}.
+       }
 
   \item{warnings}{ if \code{TRUE}, errors and warnings issued during the model
 	fitting are printed below the table (only with \code{pdredge}).
@@ -101,10 +105,10 @@ dredge(global.model, beta = c("none", "sd", "partial.sd"), evaluate = TRUE,
         attribute \code{"deps"}. Can be used to fine-tune marginality 
         exceptions. }
 
-  \item{cluster}{ if a valid \code{"cluster"} object is provided it is used for
-       parallel execution of the fitting function. If \code{NULL} or omitted 
-       single threaded execution is performed.
-       
+  \item{cluster}{ if a valid \code{"cluster"} object is given, it is used for
+       parallel execution. If \code{NULL} or omitted, execution is 
+       single-threaded.
+
        With parallel calculation, an extra argument \code{check} is accepted.
        
        See \code{\link{pdredge}} for details and examples.
@@ -286,8 +290,8 @@ There are \code{\link[=subset.model.selection]{subset}} and
 \code{\link[=plot.model.selection]{plot}} methods, the latter creates a
 graphical representation of model weights and per-model term sum of weights.
 Coefficients can be extracted with \code{coef} or \code{\link{coefTable}}.
-}
 
+}
 }
 
 
@@ -314,15 +318,13 @@ of interest and its scientific setting} (Burnham and Anderson, 2002).
 
 \seealso{
 
-\code{\link{pdredge}} is a parallelized version of this function (uses a
-cluster).
-
 \code{\link{get.models}}, \code{\link{model.avg}}. \code{\link{model.sel}} for
 manual model selection tables.
 
-Possible alternatives: \code{\link[glmulti]{glmulti}} in package \pkg{glmulti}
-and \code{\link[bestglm]{bestglm}} (\pkg{bestglm}).
-\code{\link[leaps]{regsubsets}} in package \pkg{leaps} also performs all-subsets
+Possible alternatives: \code{glmulti} in package \pkg{glmulti}
+and \code{bestglm} (\pkg{bestglm}).
+%% \code{\link[leaps]{regsubsets}} in package \pkg{leaps} also performs all-subsets
+\code{regsubsets} in package \pkg{leaps} also performs all-subsets
 regression.
 
 Variable selection through regularization provided by various packages, e.g. \pkg{glmnet},

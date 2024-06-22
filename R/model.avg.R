@@ -328,14 +328,3 @@ function(object, full, warn = TRUE) {
 		return(TRUE)
 	} else return(full)
 }
-
-## XXX: backward compatibility (< 0.15.0):
-upgrade_averaging_object <-
-function(x) {
-	if(is.matrix(x$coefficients)) return(x)
-	if(all(c("coefTable", "coef.shrinkage") %in% names(x))) {
-		x$coefficients <- rbind(full = x$coef.shrinkage, subset = x$coefTable[, 1L])
-		x$coefTable <- NULL
-	} else stop("'averaging' object is corrupt")
-	x
-}

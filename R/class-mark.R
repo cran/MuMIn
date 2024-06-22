@@ -14,7 +14,7 @@
     a <- (1 - level) / 2
     a <- c(a, 1 - a)
     fac <- qt(a, df.residual)
-    pct <- format.perc(a, 3L)
+    pct <- format_perc(a, 3L)
 	
     ci <- array(NA, dim = c(length(parm), 2L), dimnames = list(parm, 
         pct))

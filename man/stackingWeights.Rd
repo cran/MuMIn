@@ -22,7 +22,7 @@ A matrix with two rows, containing model weights
 calculated using \code{mean} and \code{median}.
 }
 \description{
-Computes model weights based on a cross-validation-like procedure.
+Compute model weights based on a cross-validation-like procedure.
 }
 \details{
 Each model in a set is fitted to the training data: a subset of \code{p * N}

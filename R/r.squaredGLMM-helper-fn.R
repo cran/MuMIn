@@ -29,7 +29,7 @@ function(object)
 
 .nullUpdateWarning <- 
 function(message = 
-"the null model is correct only if all variables used by the original model remain unchanged.",
+"the null model is only correct if all the variables it uses are identical \nto those used in fitting the original model.",
 Call = NULL) {
 	if(!isTRUE(getOption("MuMIn.noUpdateWarning")))
 		cry(Call, message, warn = TRUE)
@@ -42,7 +42,7 @@ Call = NULL) {
 function(object, envir = parent.frame()) {
     cl <- get_call(object)
 	if(! "formula" %in% names(cl)) 
-		stop("cannot create a null model for an object without named \"formula\" argument in its call. ")
+		stop("cannot create a null model for an object without a named \"formula\" argument in its call. ")
         
     if(any(grepl("^..\\d$", all.names(cl))))
         stop("object's call contains dotted names: ", sQuote(deparse(cl, control = NULL)),
@@ -108,6 +108,7 @@ function (form) {
 				cry(cl, "fitting model with the observation-level random effect term failed. Add the term manually")
 		})
 		.nullUpdateWarning("the result is correct only if all variables used by the model remain unchanged.")
+		warnonce(simpleMessage("turn off these warnings by setting 'options(\"MuMIn.noUpdateWarning\") to FALSE.", call = NULL), show.instance = 3L)
     }
     object
 }
@@ -118,5 +119,7 @@ function (form) {
 function(object) {
     tt <- terms(formula(object))
     y <- model.frame(object)[, rownames(attr(tt, "factors"))[attr(tt, "response")]]
-    if(is.null(dim(y))) 1 else mean(rowSums(y))        
+    if(is.null(dim(y))) 
+        mean(weights(object, type = "prior")) else 
+        mean(rowSums(y))        
 }

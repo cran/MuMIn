@@ -59,8 +59,6 @@ function(family, varFE, varRE, varResid, link, pmean, lambda, omega, n) {
 
 `r.squaredGLMM` <-
 function(object, null, ...) {
-    warnonce("rsquaredGLMM",
-	simpleWarning(paste0("'r.squaredGLMM' now calculates a revised statistic. See the help page.")))
     UseMethod("r.squaredGLMM")
 }
 
@@ -157,7 +155,6 @@ function(object, null, envir = parent.frame(), pj2014 = FALSE, ...) {
         }
         rval
     }, {
-	    #message("using 'insight::get_variance_residual'")
 		varResid <- insight::get_variance_residual(object, ...)[[1L]]
 		if(!is.finite(varResid))
 			warning("residual variance cannot be calculated.")
@@ -171,12 +168,14 @@ function(object, null, ...) r.squaredGLMM.merMod(object, null, ...)
 
 `r.squaredGLMM.glmmTMB` <-
 function(object, null, envir = parent.frame(), ...) {
-    w <- c(fixef(object)$zi != 0L,
-        !identical(object$modelInfo$allForm$dispformula, ~0,
-			ignore.environment = TRUE))
-    if(any(w)) warning("the effects of ",
-        prettyEnumStr(c("zero-inflation", "dispersion model"),
-			quote = FALSE), " are ignored")
+    has.components <- vapply(fixef(object), 
+        function(x) length(x) != 0L && (length(x) != 1L || 
+            names(x)[1L] != "(Intercept)"), logical(1L))
+    if(any(has.components[c("zi", "disp")])) 
+        warning("effects of ",
+        prettyEnumStr(c("zero-inflation", "dispersion model")[
+            has.components[c("zi", "disp")]
+            ], quote = FALSE), " are ignored")
     r.squaredGLMM.merMod(object, null, envir, ...)
 }
 
@@ -184,7 +183,6 @@ function(object, null, envir = parent.frame(), ...) {
 function(object, null, envir = parent.frame(), ...) {
 	if(object$zeroInflation)
         warning("effects of zero-inflation are ignored")
-		#stop("r.squaredGLMM cannot (yet) handle 'glmmADMB' object with zero-inflation")
 	r.squaredGLMM.merMod(object, null, envir, ...)
 }
 

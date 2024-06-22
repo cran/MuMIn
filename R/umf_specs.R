@@ -1,106 +1,62 @@
-umf_specs <-
-list(unmarkedFitColExt = list(structure(c("psiformula", "psi", 
-"psi", "psiformula", "gammaformula", "col", "col", "gamformula", 
-"epsilonformula", "ext", "ext", "epsformula", "pformula", "p", 
-"det", "detformula"), .Dim = c(4L, 4L), .Dimnames = list(c("formula.arg", 
-"estimate:short.name", "estimate:itemName", "formulaItemName"
-), c("psi", "col", "ext", "p")))), unmarkedFitDS = list(structure(c("formula", 
-"p", "det", "formula", "lam", "state"), .Dim = 3:2, .Dimnames = list(
-    c("formula.arg", "estimate:short.name", "estimate:itemName"
-    ), c("p", "lam"))), structure(c("formula", NA, NA, "formula", 
-"lam", "state"), .Dim = 3:2, .Dimnames = list(c("formula.arg", 
-"estimate:short.name", "estimate:itemName"), c("p", "lam"))), 
-    structure(c("formula", "lam", "state", "formula", "p", "det", 
-    NA, "p", "scale"), .Dim = c(3L, 3L), .Dimnames = list(c("formula.arg", 
-    "estimate:short.name", "estimate:itemName"), c("lam", "p", 
-    "scale"))), structure(c("formula", "lam", "state", "formula", 
-    "p", "det", NA, "p", "scale"), .Dim = c(3L, 3L), .Dimnames = list(
-        c("formula.arg", "estimate:short.name", "estimate:itemName"
-        ), c("lam", "p", "scale")))), unmarkedFitGDS = list(structure(c("lambdaformula", 
-"lambda", "lambda", "lambdaformula", "phiformula", "phi", "phi", 
-"phiformula", "pformula", "p", "det", "pformula"), .Dim = 4:3, .Dimnames = list(
-    c("formula.arg", "estimate:short.name", "estimate:itemName", 
-    "formulaItemName"), c("lambda", "phi", "p"))), structure(c("lambdaformula", 
-"lambda", "lambda", "lambdaformula", "phiformula", "phi", "phi", 
-"phiformula", "pformula", "p", "det", "pformula", NA, "scale", 
-"scale", NA), .Dim = c(4L, 4L), .Dimnames = list(c("formula.arg", 
-"estimate:short.name", "estimate:itemName", "formulaItemName"
-), c("lambda", "phi", "p", "scale"))), structure(c("lambdaformula", 
-"lambda", "lambda", "lambdaformula", "phiformula", "phi", "phi", 
-"phiformula", "pformula", NA, NA, "pformula"), .Dim = 4:3, .Dimnames = list(
-    c("formula.arg", "estimate:short.name", "estimate:itemName", 
-    "formulaItemName"), c("lambda", "phi", "p"))), structure(c("lambdaformula", 
-"lambda", "lambda", "lambdaformula", "phiformula", "phi", "phi", 
-"phiformula", "pformula", "p", "det", "pformula", NA, "scale", 
-"scale", NA, NA, "alpha", "alpha", NA), .Dim = 4:5, .Dimnames = list(
-    c("formula.arg", "estimate:short.name", "estimate:itemName", 
-    "formulaItemName"), c("lambda", "phi", "p", "scale", "alpha"
-    )))), unmarkedFitGMM = list(structure(c("lambdaformula", 
-"lambda", "lambda", "lambdaformula", "phiformula", "phi", "phi", 
-"phiformula", "pformula", "p", "det", "pformula"), .Dim = 4:3, .Dimnames = list(
-    c("formula.arg", "estimate:short.name", "estimate:itemName", 
-    "formulaItemName"), c("lambda", "phi", "p")))), unmarkedFitGPC = list(
-    structure(c("lambdaformula", "lambda", "lambda", "lambdaformula", 
-    "phiformula", "phi", "phi", "phiformula", "pformula", "p", 
-    "det", "pformula"), .Dim = 4:3, .Dimnames = list(c("formula.arg", 
-    "estimate:short.name", "estimate:itemName", "formulaItemName"
-    ), c("lambda", "phi", "p")))), unmarkedFitMPois = list(structure(c("formula", 
-"p", "det", "formula", "lambda", "state"), .Dim = 3:2, .Dimnames = list(
-    c("formula.arg", "estimate:short.name", "estimate:itemName"
-    ), c("p", "lambda")))), unmarkedFitOccu = list(structure(c("formula", 
-"p", "det", "formula", "psi", "state"), .Dim = 3:2, .Dimnames = list(
-    c("formula.arg", "estimate:short.name", "estimate:itemName"
-    ), c("p", "psi")))), unmarkedFitOccuFP = list(structure(c("Bformula", 
-NA, NA, "Bformula", "FPformula", "fp", "fp", "FPformula", "detformula", 
-"p", "det", "detformula", "stateformula", "psi", "state", "stateformula"
-), .Dim = c(4L, 4L), .Dimnames = list(c("formula.arg", "estimate:short.name", 
-"estimate:itemName", "formulaItemName"), c("b", "fp", "p", "psi"
-)))), unmarkedFitOccuPEN = list(structure(c("formula", "p", "det", 
-"formula", "psi", "state"), .Dim = 3:2, .Dimnames = list(c("formula.arg", 
-"estimate:short.name", "estimate:itemName"), c("p", "psi")))), 
-    unmarkedFitOccuPEN_CV = list(structure(c("formula", "p", 
-    "det", "formula", "psi", "state"), .Dim = 3:2, .Dimnames = list(
-        c("formula.arg", "estimate:short.name", "estimate:itemName"
-        ), c("p", "psi")))), unmarkedFitOccuRN = list(structure(c("formula", 
-    "p", "det", "formula", "lam", "state"), .Dim = 3:2, .Dimnames = list(
-        c("formula.arg", "estimate:short.name", "estimate:itemName"
-        ), c("p", "lam")))), unmarkedFitPCO = list(structure(c("lambdaformula", 
-    "lam", "lambda", "lambdaformula", "gammaformula", "gam", 
-    "gamma", "gammaformula", "omegaformula", "omega", "omega", 
-    "omegaformula", "pformula", "p", "det", "pformula", "iotaformula", 
-    NA, NA, "iotaformula"), .Dim = 4:5, .Dimnames = list(c("formula.arg", 
-    "estimate:short.name", "estimate:itemName", "formulaItemName"
-    ), c("lam", "gam", "omega", "p", "iota"))), structure(c("lambdaformula", 
-    "lam", "lambda", "lambdaformula", "omegaformula", "omega", 
-    "omega", "omegaformula", "pformula", "p", "det", "pformula", 
-    "gammaformula", NA, NA, "gammaformula", "iotaformula", NA, 
-    NA, "iotaformula"), .Dim = 4:5, .Dimnames = list(c("formula.arg", 
-    "estimate:short.name", "estimate:itemName", "formulaItemName"
-    ), c("lam", "omega", "p", "gamma", "iota"))), structure(c("lambdaformula", 
-    "lam", "lambda", "lambdaformula", "gammaformula", "gam", 
-    "gamma", "gammaformula", "pformula", "p", "det", "pformula", 
-    "omegaformula", NA, NA, "omegaformula", "iotaformula", NA, 
-    NA, "iotaformula"), .Dim = 4:5, .Dimnames = list(c("formula.arg", 
-    "estimate:short.name", "estimate:itemName", "formulaItemName"
-    ), c("lam", "gam", "p", "omega", "iota"))), structure(c("lambdaformula", 
-    "lam", "lambda", "lambdaformula", "gammaformula", "gam", 
-    "gamma", "gammaformula", "omegaformula", "om", "omega", "omegaformula", 
-    "pformula", "p", "det", "pformula", "iotaformula", NA, NA, 
-    "iotaformula"), .Dim = 4:5, .Dimnames = list(c("formula.arg", 
-    "estimate:short.name", "estimate:itemName", "formulaItemName"
-    ), c("lam", "gam", "om", "p", "iota"))), structure(c("lambdaformula", 
-    "lam", "lambda", "lambdaformula", "gammaformula", "gam", 
-    "gamma", "gammaformula", "pformula", "p", "det", "pformula", 
-    "omegaformula", NA, NA, "omegaformula", "iotaformula", NA, 
-    NA, "iotaformula"), .Dim = 4:5, .Dimnames = list(c("formula.arg", 
-    "estimate:short.name", "estimate:itemName", "formulaItemName"
-    ), c("lam", "gam", "p", "omega", "iota")))), unmarkedFitPCount = 
-    list(structure(c("formula", "p", "det", "formula", "lam", "state", 
-NA, "alpha", "alpha"), .Dim = c(3L, 3L), .Dimnames = list(c("formula.arg", 
-"estimate:short.name", "estimate:itemName"), c("p", "lam", "alpha"
-))), structure(c("formula", "p", "det", "formula", "lam", "state"
-), .Dim = 3:2, .Dimnames = list(c("formula.arg", "estimate:short.name", 
-"estimate:itemName"), c("p", "lam"))), structure(c("formula", 
-"p", "det", "formula", "lam", "state", NA, "psi", "psi"), .Dim = c(3L, 
-3L), .Dimnames = list(c("formula.arg", "estimate:short.name", 
-"estimate:itemName"), c("p", "lam", "psi")))))
+.umf_specs <-
+structure(list(func = structure(c(1L, 1L, 1L, 1L, 2L, 2L, 3L, 
+3L, 3L, 3L, 3L, 4L, 4L, 4L, 4L, 5L, 5L, 5L, 6L, 6L, 6L, 7L, 7L, 
+7L, 8L, 8L, 8L, 9L, 9L, 10L, 10L, 10L, 10L, 10L, 11L, 11L, 12L, 
+12L, 13L, 13L, 14L, 14L, 14L, 14L, 15L, 15L, 15L, 16L, 16L, 17L, 
+17L, 18L, 18L, 19L, 19L, 20L, 20L, 20L, 20L, 21L, 21L, 22L, 22L, 
+23L, 23L, 23L, 23L, 23L), levels = c("colext", "distsamp", "distsampOpen", 
+"gdistremoval", "gdistsamp", "gmultmix", "goccu", "gpcount", 
+"multinomPois", "multmixOpen", "nmixTTD", "occu", "occuCOP", 
+"occuFP", "occuMS", "occuMulti", "occuPEN", "occuPEN_CV", "occuRN", 
+"occuTTD", "pcount", "pcount.spHDS", "pcountOpen"), class = "factor"), 
+    className = structure(c(1L, 1L, 1L, 1L, 2L, 2L, 3L, 3L, 3L, 
+    3L, 3L, 4L, 4L, 4L, 4L, 5L, 5L, 5L, 6L, 6L, 6L, 7L, 7L, 7L, 
+    8L, 8L, 8L, 10L, 10L, 9L, 9L, 9L, 9L, 9L, 11L, 11L, 12L, 
+    12L, 13L, 13L, 14L, 14L, 14L, 14L, 15L, 15L, 15L, 16L, 16L, 
+    17L, 17L, 18L, 18L, 19L, 19L, 20L, 20L, 20L, 20L, 22L, 22L, 
+    22L, 22L, 21L, 21L, 21L, 21L, 21L), levels = c("unmarkedFitColExt", 
+    "unmarkedFitDS", "unmarkedFitDSO", "unmarkedFitGDR", "unmarkedFitGDS", 
+    "unmarkedFitGMM", "unmarkedFitGOccu", "unmarkedFitGPC", "unmarkedFitMMO", 
+    "unmarkedFitMPois", "unmarkedFitNmixTTD", "unmarkedFitOccu", 
+    "unmarkedFitOccuCOP", "unmarkedFitOccuFP", "unmarkedFitOccuMS", 
+    "unmarkedFitOccuMulti", "unmarkedFitOccuPEN", "unmarkedFitOccuPEN_CV", 
+    "unmarkedFitOccuRN", "unmarkedFitOccuTTD", "unmarkedFitPCO", 
+    "unmarkedFitPCount"), class = "factor"), fitType = structure(c(1L, 
+    1L, 1L, 1L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 4L, 4L, 4L, 4L, 5L, 
+    5L, 5L, 6L, 6L, 6L, 7L, 7L, 7L, 8L, 8L, 8L, 9L, 9L, 10L, 
+    10L, 10L, 10L, 10L, 11L, 11L, 12L, 12L, 13L, 13L, 14L, 14L, 
+    14L, 14L, 15L, 15L, 15L, 16L, 16L, 12L, 12L, 12L, 12L, 17L, 
+    17L, 18L, 18L, 18L, 18L, 19L, 19L, 19L, 19L, 20L, 20L, 20L, 
+    20L, 20L), levels = c("colext", "distsamp", "distsampOpen", 
+    "gdistremoval", "gdistsamp", "gmn", "goccu", "gpcount", "multinomPois", 
+    "multmixOpen", "nmixTTD", "occu", "occuCOP", "occuFP", "occuMS", 
+    "occuMulti", "occuRN", "occuTTD", "pcount", "pcountOpen"), class = "factor"), 
+    short.name = c("psi", "col", "ext", "p", "lam", "p", "lam", 
+    "gamName", "omega", "sigma", "iota", "lambda", "phi", "dist", 
+    "rem", "lambda", "phi", "p", "lambda", "phi", "p", "psi", 
+    "phi", "p", "lambda", "phi", "p", "lambda", "p", "lam", "gamName", 
+    "omega", "p", "iota", "lamN", "lamP", "psi", "p", "psi", 
+    "lambda", "psi", "p", "fp", "b", "psi", "p", "phi", "psi", 
+    "p", "psi", "p", "psi", "p", "lam", "p", "psi", "lam", "col", 
+    "ext", "lam", "p", "lam", "p", "lam", "p", "gamName", "omega", 
+    "iota"), formula.arg = c("psiformula", "gammaformula", "epsilonformula", 
+    "pformula", "formula2", "formula1", "lambdaformula", "gammaformula", 
+    "omegaformula", "pformula", "iotaformula", "lambdaformula", 
+    "phiformula", "distanceformula", "removalformula", "lambdaformula", 
+    "phiformula", "pformula", "lambdaformula", "phiformula", 
+    "pformula", "psiformula", "phiformula", "pformula", "lambdaformula", 
+    "phiformula", "pformula", "formula2", "formula1", "lambdaformula", 
+    "gammaformula", "omegaformula", "pformula", "iotaformula", 
+    "stateformula", "detformula", "formula2", "formula1", "psiformula", 
+    "lambdaformula", "stateformula", "detformula", "Fpformula", 
+    "Bformula", "psiformulas", "phiformulas", "detformulas", 
+    "stateformulas", "detformulas", "formula2", "formula1", "formula2", 
+    "formula1", "formula2", "formula1", "psiformula", "detformula", 
+    "gammaformula", "epsilonformula", "formula2", "formula1", 
+    "formula2", "formula1", "lambdaformula", "pformula", "gammaformula", 
+    "omegaformula", "iotaformula")), row.names = c(1L, 2L, 3L, 
+4L, 5L, 6L, 8L, 9L, 10L, 12L, 13L, 17L, 19L, 20L, 22L, 23L, 24L, 
+25L, 29L, 30L, 31L, 34L, 35L, 36L, 37L, 38L, 39L, 42L, 43L, 44L, 
+45L, 46L, 48L, 49L, 52L, 53L, 56L, 57L, 58L, 59L, 60L, 61L, 62L, 
+63L, 64L, 65L, 66L, 67L, 68L, 69L, 70L, 71L, 72L, 73L, 74L, 75L, 
+76L, 77L, 78L, 80L, 81L, 84L, 85L, 88L, 89L, 90L, 91L, 93L), class = "data.frame")

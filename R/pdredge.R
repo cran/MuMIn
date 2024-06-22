@@ -15,7 +15,6 @@ function(global.model, cluster = NULL,
     
     cl <- match.call()
     cl[[1L]] <- as.symbol(".dredge.par")
-    # cl[[1L]] <- quote(MuMIn:::.dredge.par)
     return(eval(cl))
 }
 
@@ -480,7 +479,6 @@ function(global.model, cluster = NULL,
 	while((iComb <- iComb + 1L) < ncomb) {
 		varComb <- iComb %% nVariants
 		jComb <- (iComb - varComb) / nVariants
-		#print(c(iComb, jComb, ncomb, varComb + 1L))
 		if(varComb == 0L) {
 			isok <- TRUE
 
@@ -722,8 +720,6 @@ function(global.model, cluster = NULL,
 	} else extraResult1 <- NULL
 	ll <- .getLik(fit1)$logLik(fit1)
 
-	#mcoef <- matchCoef(fit1, all.terms = get("allTerms", envir),
-	# beta = get("beta", envir), allCoef = TRUE)
 	mcoef <- eval(get("matchCoefCall", envir))
 
 	list(value = c(mcoef, extraResult1, df = attr(ll, "df"), ll = ll,

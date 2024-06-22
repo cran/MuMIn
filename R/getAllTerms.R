@@ -12,7 +12,6 @@ function(x, intercept = FALSE, offset = TRUE, ...)
 
 `getAllTerms.terms` <-
 function(x, intercept = FALSE, offset = TRUE, ...) {
-#function(x, offset = TRUE, intercept = FALSE, ...) { # XXX!
 
 	interceptLabel <- "(Intercept)"
 	variables <- attr(x, "variables")[-1L]
@@ -32,8 +31,7 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 	}
 
 	# Leave out random terms (lmer type)
-	#ran <- attr(x, "variables")[-1][-c(attr(x, "offset"), attr(x, "response"))]
-	
+
 	.is.re <- function(x) {
 		n <- length(x)
 		if(n == 3L && x[[1L]] == "|") return(1L)
@@ -48,10 +46,8 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 	ifx <- !(ans %in% ran)
 	
 	ans <- ans[ifx] # ifx - indexes of fixed terms
-	#retUnsorted <- ans
 
 	# finally, sort by term order and then alphabetically
-	#ans <- unname(ans[order(attr(x, "order")[ifx], ans)])
 	ord <- order(attr(x, "order")[ifx], gsub("I\\((.*)\\)", "\\1", ans))
 	ans <- unname(ans[ord])
 
@@ -89,7 +85,7 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 	response <- attr(x, "response")
 	response <- if(response == 0L) NULL else variables[[response]]
 	attr(ans, "response") <- response
-	attr(ans, "order") <- order(ord)
+	attr(ans, "sortorder") <- order(ord)
 	attr(ans, "deps") <- deps
 	ans
 }
@@ -138,16 +134,6 @@ function(x, ...) {
 	return(ret)
 }
 
-#`getAllTerms.hurdle` <- function(x, intercept = FALSE, ...) {
-#	f <- as.formula(formula(x))
-#	# to deal with a dot in formula (other classes seem to expand it)
-#	if("." %in% all.vars(f))
-#		getAllTerms.terms(terms.formula(f, data = eval(x$call$data, envir = environment(f)))
-#			
-#			, intercept = intercept)
-#	else getAllTerms.formula(f, intercept = intercept)
-#}
-
 split_formula_by_bar <-
 function(f) {
 	n <- length(f)
@@ -155,7 +141,7 @@ function(f) {
 		f1 <- vector("list", 2L)
 		for(i in 1L:2L) {
 			f1[[i]] <- f
-			f1[[i]][[n]] <- f[[n]][[i+ 1]]
+			f1[[i]][[n]] <- f[[n]][[i + 1L]]
 		}
 		f1
 	} else list(f)
@@ -176,7 +162,7 @@ function(x, intercept = FALSE, ...) {
 
 	deps <- termdepmat_combine(lapply(z, attr, "deps"))
 
-	ord <- unlist(lapply(z, attr, "order"))
+	ord <- unlist(lapply(z, attr, "sortorder"))
 	n <- sapply(z, length)
 	if(length(z) > 1L) ord[-j] <- ord[-(j <- seq_len(n[1L]))] + n[1L]
 		
@@ -201,7 +187,7 @@ function(x, intercept = FALSE, ...) {
 	attr(ret, "intercept") <- pmin(which(interceptIdx), 1)
 	attr(ret, "interceptLabel") <- zz[interceptIdx]
 	attr(ret, "response") <- attr(z[[1L]], "response")
-	attr(ret, "order") <- if(!intercept) order(ord[!interceptIdx]) else ord
+	attr(ret, "sortorder") <- if(!intercept) order(ord[!interceptIdx]) else ord
 	attr(ret, "deps") <- deps
 	ret
 }
@@ -217,7 +203,7 @@ function(x, intercept = FALSE, ...) {
 	
 	deps <- termdepmat_combine(lapply(z, attr, "deps"))
 	
-	ord <- unlist(lapply(z, attr, "order"))
+	ord <- unlist(lapply(z, attr, "sortorder"))
 	n <- sapply(z, length)
 	if(length(z) > 1L) ord[-j] <- ord[-(j <- seq_len(n[1L]))] + n[1L]
 	zz <- unlist(z)
@@ -236,13 +222,10 @@ function(x, intercept = FALSE, ...) {
 	attr(ret, "intercept") <- pmin(which(interceptIdx), 1)
 	attr(ret, "interceptLabel") <- zz[interceptIdx]
 	attr(ret, "response") <- attr(z[[1L]], "response")
-	attr(ret, "order") <- if(!intercept) order(ord[!interceptIdx]) else ord
+	attr(ret, "sortorder") <- if(!intercept) order(ord[!interceptIdx]) else ord
 	attr(ret, "deps") <- deps
 	ret
 }
-
-
-
 
 `getAllTerms.glimML` <- function(x, intercept = FALSE, ...) {
 	ret <- getAllTerms.default(x, intercept = intercept, ...)
@@ -304,8 +287,9 @@ function (x, intercept = FALSE, ...) {
 	for(a in c("intercept", "interceptLabel")) {
 		attr(retval, a) <-	unlist(sapply(alltermlist, attr, a))
 	}
-	attr(retval, "order") <- order(rep(seq_along(alltermlist), vapply(alltermlist, length, 1L)),
-		unlist(lapply(alltermlist, attr, "order")))
+	attr(retval, "sortorder") <- 
+        order(rep(seq_along(alltermlist), vapply(alltermlist, length, 1L)),
+		unlist(lapply(alltermlist, attr, "sortorder")))
 	attr(retval, "deps") <- termdepmat_combine(lapply(alltermlist, attr, "deps"))
 	retval
 }
@@ -322,18 +306,3 @@ getAllTerms(x@formula, intercept = intercept, ...)
 function(x, ...)
 UseMethod("getAllTerms")
 
-# TODO: return object of class 'allTerms'
-print.allTerms <-
-function(x, ...) {
-	cat("Model terms: \n")
-	if(!length(x)) {
-		cat("<None> \n")
-	} else {
-		print.default(as.vector(x), quote = TRUE)
-	}
-	ints <- attr(x, "interceptLabel")
-	if(!is.null(ints)) {
-		cat(ngettext(n = length(ints), "Intercept:", "Intercepts:"), "\n")
-		print.default(ints,quote = TRUE)
-	}
-}

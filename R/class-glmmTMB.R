@@ -1,9 +1,3 @@
-#wrapCoefficients <-
-#function(x, pfx = names(x), empty = "") {
-#	i <- pfx != empty
-#	if(any(i)) x[i] <- paste0(pfx[i], "(", x[i], ")")
-#	x
-#}
 
 `getAllTerms.glmmTMB` <-
 function(x, intercept = FALSE, offset = TRUE, ...) {
@@ -14,9 +8,6 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
     deps <- termdepmat_combine(lapply(at, attr, "deps"))
     attrInt <- sapply(at, attr, "intercept")
 	
-	#rval <- unlist(at)
-	#rval <- wrapCoefficients(rval, rep(names(at), vapply(at, length, 0)))
-		
 	rval <- unlist(lapply(names(at), function(i)
 		if (length(at[[i]])) paste0(i, "(", at[[i]], ")")
 		else character(0L)))
@@ -37,13 +28,14 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 	dimnames(deps) <- list(depnames, depnames)
     intLabel <- paste0(names(attrInt[attrInt != 0L]), "((Int))")
 
-	ord <- lapply(at, attr, "order")
-	ordl <- vapply(ord, length, 0, USE.NAMES = FALSE)
-	ord <- unlist(ord, use.names = FALSE) + rep(c(0, ordl[-length(ordl)]), ordl)
+	sortorder <- lapply(at, attr, "sortorder")
+	sortorderl <- vapply(sortorder, length, 0, USE.NAMES = FALSE)
+	sortorder <- unlist(sortorder, use.names = FALSE) + 
+        rep(c(0, sortorderl[-length(sortorderl)]), sortorderl)
 	
 	if(intercept) {
 		rval <- c(intLabel, rval)
-		ord <- c(seq.int(along.with = intLabel), ord + length(intLabel))
+		sortorder <- c(seq.int(along.with = intLabel), sortorder + length(intLabel))
 	}
 	
 	if(hasOffset) attr(rval, "offset") <- offsetTerm
@@ -59,7 +51,7 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 	attr(rval, "random.terms") <- rt
 	attr(rval, "random") <- random
 	attr(rval, "response") <- attr(at$cond, "response") 
-	attr(rval, "order") <- ord
+	attr(rval, "sortorder") <- sortorder
     attr(rval, "intercept") <- attrInt
     attr(rval, "interceptLabel") <- intLabel
     attr(rval, "deps") <- deps
@@ -77,23 +69,6 @@ function (model, ...) {
     .makeCoefTable(cf1[, 1L], cf1[, 2L], dfs, coefNames = nm)
 }
 
-# coefTable.glmmTMB <-
-# function (model, ...) {
-    # dfs <- df.residual(model)
-    # cf1 <- fixef(model)
-    # se <- lapply(vcov(model), function(x) sqrt(diag(x)))
-    # a <- intersect(names(cf1), names(se))
-    # cf1[a] <- mapply(cbind, cf1[a], se[a], SIMPLIFY = FALSE, USE.NAMES = FALSE)
-    # a <- setdiff(names(cf1), names(se))
-    # a <- a[sapply(cf1[a], length) != 0L]
-    # cf1[a] <- lapply(cf1[a], cbind, NA_real_)
-    # types <- rep(names(cf1), sapply(cf1, NROW))
-    # cf1 <- do.call(rbind, cf1[])
-    # nm <- rownames(cf1)
-    # nm[nm == "(Intercept)"] <- "(Int)"
-    # nm <- paste0(types, "(", nm, ")")
-    # .makeCoefTable(cf1[, 1L], cf1[, 2L], dfs, coefNames = nm)
-# }
 
 coeffs.glmmTMB <-
 function(model) {

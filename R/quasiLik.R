@@ -131,7 +131,8 @@ function(x, typeR = FALSE) UseMethod("getQIC")
 function(x, typeR = FALSE) .NotYetImplemented()
 
 `getQIC.coxph` <- function(x, ...) {
-	warnonce("getQIC.coxph", "QIC for 'coxph' is experimental")
+	#warnonce("getQIC.coxph", "QIC for 'coxph' is experimental")
+	warnonce("QIC for 'coxph' is experimental")
 	naive.var <- x[[ if (is.null(x$naive.var)) "var" else "naive.var" ]]
 	# tr <- sum(diag(solve(naive.var) %*% x$var))
 	tr <- sum(matmultdiag(solve(naive.var), x$var))

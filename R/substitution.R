@@ -35,7 +35,8 @@ asChar <- function(x, control = NULL, nlines = 1L, ...)
 	as.name(asChar(x[[2L]]))
 }
 
-.subst.with <- function (x, fac, allTerms, vName, envir = parent.frame()) {
+.subst.with <- 
+function (x, fac, allTerms, vName, envir = parent.frame()) {
     if (length(x) > 4L) cry(x, "too many arguments [%d]", length(x) - 1L)
     if (length(x[[2L]]) == 2L && x[[2L]][[1L]] == "+") {
         fun <- "all"
@@ -61,7 +62,8 @@ asChar <- function(x, control = NULL, nlines = 1L, ...)
 	e
 }
 
-.subst.has <- function(e) {
+.subst.has <- 
+function(e) {
 	n <- length(e)
 	for(i in seq.int(2L, n)) {
 		ex <- if(length(e[[i]]) == 2L && e[[i]][[1L]] == "!")
@@ -73,12 +75,14 @@ asChar <- function(x, control = NULL, nlines = 1L, ...)
 	call("(", res)
 }
 
-.subst.has.dc <- function(e) {
+.subst.has.dc <- 
+function(e) {
 		for(i in 2L:length(e)) e[[i]] <- call("has", e[[i]])
 		e
 }
 
-.subst.v <- function(x, cVar, fn) {
+.subst.v <- 
+function(x, cVar, fn) {
 	if(length(x) > 2L) cry(x, "discarding extra arguments", warn = TRUE)
 	i <- which(fn == x[[2L]])[1L]
 	if(is.na(i)) cry(x, "'%s' is not a valid name of 'varying' element",
@@ -87,13 +91,13 @@ asChar <- function(x, control = NULL, nlines = 1L, ...)
 }
 
 # substitute function calls in 'e'. 'func' must take care of the substitution job.
-`exprapply0` <- function(e, name, func, ...)
+`exprapply0` <- 
+function(e, name, func, ...)
 exprApply(e, name, func, ..., symbols = FALSE)
 
 `exprApply` <-
 function (expr, what, FUN, ..., symbols = FALSE) {
     FUN <- match.fun(FUN)
-	funcl <- as.call(c(as.name("FUN"), as.name("expr"), list(...)))
 	if(all(names(formals(FUN)) != "parent"))
 		formals(FUN)[["parent"]] <- NA
 	.exprapply(expr, what, FUN, ..., symbols = symbols)

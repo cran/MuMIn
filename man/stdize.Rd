@@ -113,9 +113,9 @@ variables.
 
 \details{
 \code{stdize} resembles \code{\link{scale}}, but uses special rules
-for factors, similarly to \code{\link[arm]{standardize}} in package \pkg{arm}.
+for factors, similarly to \code{standardize} in package \pkg{arm}.
 
-\code{stdize} differs from \code{\link[arm]{standardize}} in that it is used on
+\code{stdize} differs from \code{standardize} in that it is used on
 data rather than on the fitted model object. The scaled data should afterwards
 be passed to the modelling function, instead of the original data.
 
@@ -157,8 +157,8 @@ deviations. \emph{Statistics in medicine} \bold{27}, 2865--2873.
 
 
 \seealso{
-Compare with \code{\link{scale}} and \code{\link[arm]{standardize}} or
-\code{\link[arm]{rescale}} (the latter two in package \pkg{arm}).
+Compare with \code{\link{scale}} and \code{standardize} or
+\code{rescale} (the latter two in package \pkg{arm}).
 
 For typical standardizing, model coefficients transformation may be
 easier, see \code{\link{std.coef}}.

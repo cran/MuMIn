@@ -3,7 +3,7 @@
 \alias{model.sel}
 \alias{model.sel.default}
 \alias{model.sel.model.selection}
-\alias{model.sel}
+\alias{model.sel<-}
 \encoding{utf-8}
 
 \title{model selection table}
@@ -19,10 +19,13 @@ model.sel(object, ...)
   beta = c("none", "sd", "partial.sd"), extra)
 \method{model.sel}{model.selection}(object, rank = NULL, rank.args = NULL, fit = NA,
   ..., beta = c("none", "sd", "partial.sd"), extra)
+
+model.sel(x) <- value
+
 }
 
 \arguments{
-	\item{object}{a fitted model object, a list of such objects, or a
+	\item{object,value}{a fitted model object, a list of such objects, or a
 	\code{"model.selection"} object.}
 
     \item{\dots}{more fitted model objects. }
@@ -47,6 +50,8 @@ model.sel(object, ...)
 	\item{extra}{optional additional statistics to include in the result,
 		provided as functions, function names or a list of such (best if named
 		or quoted). See \code{\link{dredge}} for details. }
+        
+    \item{x}{a \code{"model.selection"} object.}
 
 }
 
@@ -71,6 +76,10 @@ objects, unless they are stored in \code{object} (in attribute \code{"modelList"
  than object's \code{"beta"} attribute, or the new \code{rank} function
  cannot be applied directly to \code{logLik} objects, or new \code{rank.args}
  are given (unless argument \code{fit = FALSE}).
+
+The replacement function appends new models to the existing \code{"model.selection"}
+object.
+
 }
 
 
@@ -80,8 +89,8 @@ objects, unless they are stored in \code{object} (in attribute \code{"modelList"
 \code{\link{dredge}}, \code{\link{AICc}}, \link[=MuMIn-models]{list of supported
 models}.
 
-Possible alternatives: \code{\link[bbmle]{ICtab}} (in package \pkg{bbmle}), or
- \code{\link[AICcmodavg]{aictab}} (\pkg{AICcmodavg}).
+Possible alternatives: \code{ICtab} (in package \pkg{bbmle}), or
+ \code{aictab} (\pkg{AICcmodavg}).
  
 }
 
@@ -104,6 +113,8 @@ model.sel(fm1, fm2, fm3, rank = AIC, rank.args = alist(k = log(nobs(x))))
 # or
 # update(msAICc, rank = AIC, rank.args = alist(k = log(nobs(x))))
 
+# appending new models:
+model.sel(msAICc) <- update(fm1, . ~ 1)
 
 }
 

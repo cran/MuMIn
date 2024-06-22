@@ -1,6 +1,4 @@
-\newcommand{\CRANpkg}{\href{https://cran.r-project.org/package=#1}{\pkg{#1}}} 
-\newcommand{\lxcode}{\code{\link[#2]{#1}}}
-\newcommand{\lcode}{\code{\link{#1}}}
+%% \newcommand{\lcode}{\code{\link{#1}}}
 
 
 \name{MuMIn-models}
@@ -18,8 +16,8 @@ functions include those produced by:
 
 \itemize{
 \item \lcode{lm}, \lcode{glm} (package \pkg{stats});
-\item \lcode{rlm}, \lcode{glm.nb} and \lcode{polr} (\CRANpkg{MASS});
-\item \lcode{multinom} (\CRANpkg{nnet});
+\item \lxcode{rlm}{MASS}, \lxcode{glm.nb}{MASS} and \lxcode{polr}{MASS} (\CRANpkg{MASS});
+\item \lxcode{multinom}{nnet} (\CRANpkg{nnet});
 \item \lxcode{lme}{nlme}, \lxcode{gls}{nlme} (\CRANpkg{nlme});
 \item \lxcode{lmer}{lme4}, \lxcode{glmer}{lme4} (\CRANpkg{lme4});
 \item \lxcode{cpglm}{cplm}, \lxcode{cpglmm}{cplm} (\CRANpkg{cplm});
@@ -48,8 +46,7 @@ functions include those produced by:
 \item \lxcode{logistf}{logistf} (\CRANpkg{logistf}); %% Bias-reduced logistic regression
 \item \lxcode{crunch}{caper}*, \lxcode{pgls}{caper} (\CRANpkg{caper});
 \item \lxcode{maxlike}{maxlike} (\CRANpkg{maxlike});
-\item functions from package \CRANpkg{unmarked} (within the class 
-	\code{"unmarkedFit"});
+\item most \code{"unmarkedFit"} objects from package \CRANpkg{unmarked});
 \item \lxcode{mark}{RMark} and related functions (class \code{mark} from package
 	\CRANpkg{RMark}). Currently \code{dredge} can only manipulate \code{formula}
 	element of the argument \code{model.parameters}, keeping its other elements
@@ -60,7 +57,7 @@ Generalized Estimation Equation model implementations:
 \lxcode{geeglm}{geepack} from package \CRANpkg{geepack}, 
 \lxcode{gee}{gee} from \CRANpkg{gee}, 
 \lxcode{geem}{geeM} from \CRANpkg{geeM}, 
-\lxcode{wgee}{wgeesel} from \CRANpkg{wgeesel}, 
+\code{wgeesel} from \fckCRANpkg{wgeesel}, 
 and \code{yags} from  \href{http://yags.r-forge.r-project.org/}{\pkg{yags}} (on 
 R-Forge) can be used with \code{\link{QIC}} as the selection criterion.
 

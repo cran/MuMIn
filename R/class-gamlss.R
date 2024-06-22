@@ -18,11 +18,6 @@ function(model, ...)  {
     .makeCoefTable(cf, vcov(model, type = "se"), coefNames = names(cf))
 }
 
-# rm(model)
-# environment(coeffs.gamlss) <- asNamespace("MuMIn")
-# environment(coefTable.gamlss) <- asNamespace("MuMIn")
-# coefTable.gamlss(fit1)
-
 `makeArgs.gamlss` <- 
 function(obj, termNames, opt, ...) {
 	zarg <- umf_terms2formulalist(termNames, opt)

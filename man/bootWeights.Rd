@@ -18,7 +18,7 @@ for model ranking. Defaults to \code{\link{AICc}}.}
 A numeric vector of model weights.
 }
 \description{
-Computes model weights using bootstrap.
+Compute model weights using bootstrap.
 }
 \details{
 The models are fitted repeatedly to a resampled data set and ranked

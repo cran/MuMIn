@@ -1,5 +1,5 @@
-# term names (a character vector), additional list of arbitrary options is accepted.
-# This is much a reverse action to getAllTerms
+# combination of term names (a character vector), additional list of arbitrary 
+# options is accepted. This is much a reverse action to getAllTerms
 makeArgs <- function(obj, termNames, opt, ...) UseMethod("makeArgs", obj)
 
 # opt == argsOptions
@@ -189,9 +189,7 @@ function(obj, termNames, opt, ...) {
 	} else {
 		ret <- list(model.parameters = mpar)
 	}
-	
 	#attr(ret, "formulaList") <- formulaList
-
 	ret
 }
 

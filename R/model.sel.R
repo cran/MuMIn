@@ -10,7 +10,6 @@ function (object, rank = attr(object, "rank"),
        beta = beta, extra)
 }
 
-
 `model.sel.model.selection` <-
 function (object, rank = NULL, rank.args = NULL, fit = NA, ...,
 		  beta = c("none", "sd", "partial.sd"),
@@ -31,6 +30,7 @@ function (object, rank = NULL, rank.args = NULL, fit = NA, ...,
 		}
 	} #else rank <- .getRank(attr(object, "rank"))
 
+    # XXX: sometimes the message is shown but no refitting is needed or done.
 	if(reFit && !isTRUE(fit)) {
 		if(anyNA(fit)) message("Re-fitting models...")
 			else stop("cannot proceed without re-fitting models ('fit' is FALSE)")
@@ -198,8 +198,8 @@ function(object, ..., rank = NULL, rank.args = NULL,
 		vCols = colnames(descrf),
 		column.types = {
 			colTypes <- c(terms = length(all.terms), varying = ncol(descrf), 
-				extra = nextra, df = 1, loglik = 1, ic = 1, delta = 1,
-				weight = 1)
+				extra = nextra, df = 1L, loglik = 1L, ic = 1L, delta = 1L,
+				weight = 1L)
 			column.types <- rep(1L:length(colTypes), colTypes)
 			names(column.types) <- colnames(rval)
 			lv <- 1L:length(colTypes)
