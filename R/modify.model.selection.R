@@ -176,7 +176,8 @@ function(x, subset, select, recalc.weights = TRUE, recalc.delta = FALSE, ...) {
 function(x, value) {
     if(!inherits(x, "model.selection"))
         stop("'x' is not a \"model.selection\" object")
-    y <- model.sel(value, rank = attr(x, "rank"))
+    y <- model.sel(value, rank = attr(x, "rank"), beta = attr(x, "beta"),
+        extra = attr(x, "extra"))
     if(nrow(y) == 1L && rownames(y) == "value")
         rownames(y) <- deparse1(substitute(value))
     rbind(x, y)

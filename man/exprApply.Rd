@@ -33,7 +33,7 @@ exprApply(expr, what, FUN, ..., symbols = FALSE)
 }
 
 \details{
-\code{FUN} is found by a call to \code{\link{match.fun}} and can be either
+\code{FUN} is found by a call to \lcode{match.fun} and can be either
 a function or a symbol (e.g., a backquoted name) or a character string
 specifying a function to be searched for from the environment of the call to
 \code{exprApply}. 
@@ -51,13 +51,13 @@ does remove source reference from any \code{function} expression inside
 
 \seealso{
 
-Expression-related functions: \code{\link{substitute}}, 
-\code{\link{expression}}, \code{\link{quote}} and \code{\link{bquote}}.
+Expression-related functions: \lcode{substitute}, 
+\lcode{expression}, \lcode{quote} and \lcode{bquote}.
 
 Similar function \code{walkCode} exists in package \pkg{codetools}. 
 
-Functions useful inside \code{FUN}: \code{\link{as.name}}, \code{\link{as.call}},
-\code{\link{call}}, \code{\link{match.call}} etc.
+Functions useful inside \code{FUN}: \lcode{as.name}, \lcode{as.call},
+\lcode{call}, \lcode{match.call} etc.
 
 }
 

@@ -133,9 +133,10 @@ function(global.model, beta = c("none", "sd", "partial.sd"),
 	if(!(gmNaAction <- .checkNaAction(cl = gmCall, what = "'global.model'", envir = gmEnv)))
 		cry(, attr(gmNaAction, "message"))
 
-	if(names(gmCall)[2L] == "") gmCall <-
-		match.call(gmCall, definition = eval(gmCall[[1L]], envir = gmEnv),
-				   expand.dots = TRUE)
+	if(!nzchar(names(gmCall)[2L]))
+		gmCall <-
+			match.call(gmCall, definition = eval(gmCall[[1L]], envir = gmEnv),
+				expand.dots = TRUE)
 
 
 	# TODO: other classes: model, fixed, etc...
@@ -235,29 +236,26 @@ function(global.model, beta = c("none", "sd", "partial.sd"),
 	## @param:	extra, global.model, gmFormulaEnv,
 	## @value:	extra, nExtra, extraNames, nullfit_
 	if(!missing(extra) && length(extra) != 0L) {
+    
+        r2inExtra <- is.vector(extra) && any(c("adjR^2", "R^2") %in% extra)
 		
-		if (any(c("adjR^2", "R^2") %in% extra) && nVariants > 1L)
-			stop("\"R^2\" in 'extra' cannot be used when 'varying' is given")
-		
-		# a cumbersome way of evaluating a non-exported function in a parent frame:
-		extra <- eval(as.call(list(call("get", ".get.extras",
-			envir = call("asNamespace", .packageName), inherits = FALSE),
-				substitute(extra), r2nullfit = TRUE)), gmEnv)
+		if (r2inExtra) {
+            if(nVariants > 1L)
+                stop("\"R^2\" in 'extra' cannot be used when 'varying' is given")
+            nullfit <- null.fit(global.model, evaluate = TRUE, envir = gmFormulaEnv)
+        } else {
+            nullfit <- NULL
+        }
+          
+        extra <- eval.parent(call(".get.extras", substitute(extra), r2nullfit = nullfit))
 
-		#extra <- eval(call(".get.extras", substitute(extra), r2nullfit = TRUE), parent.frame())
-		if(any(c("adjR^2", "R^2") %in% names(extra))) {
-			nullfit_ <- null.fit(global.model, evaluate = TRUE, envir = gmFormulaEnv)
-		}
-		applyExtras <- function(x) unlist(lapply(extra, function(f) f(x)))
-		extraResult <- applyExtras(global.model)
-		if(!is.numeric(extraResult))
-			cry(, "function in 'extra' returned non-numeric result")
-
+		extraResult <- .applyExtras(global.model, extra)
 		nExtra <- length(extraResult)
 		extraNames <- names(extraResult)
 	} else {
+        extra <- NULL
 		nExtra <- 0L
-		extraNames <- character(0L)
+		extraNames <- character()
 	}
 	## END: 'extra'
 
@@ -501,7 +499,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"),
 			if (is.null(fit1)) next;
 
 			if(nExtra != 0L) {
-				extraResult1 <- applyExtras(fit1)
+				extraResult1 <- .applyExtras(fit1, extra)
 				if(length(extraResult1) < nExtra) {
 					tmp <- rep(NA_real_, nExtra)
 					tmp[match(names(extraResult1), names(extraResult))] <- extraResult1
@@ -615,6 +613,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"),
 			lv <- 1L:length(colTypes)
 			factor(column.types, levels = lv, labels = names(colTypes)[lv])
 		},
+        extra = extra,
         class = c("model.selection", "data.frame")
 	)
 } #

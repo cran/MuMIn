@@ -6,8 +6,8 @@
 stackingWeights(object, ..., data, R, p = 0.5)
 }
 \arguments{
-\item{object, \dots}{two or more fitted \code{\link{glm}} objects, or a
-\code{list} of such, or an \code{\link[=model.avg]{"averaging"}} object.}
+\item{object, \dots}{two or more fitted \lcode{glm} objects, or a
+\code{list} of such, or an \lxcode{"averaging"}{=model.avg} object.}
 
 \item{data}{a data frame containing the variables in the model, used for
 fitting and prediction.}
@@ -71,7 +71,7 @@ information-theoretic, and tactical approaches for predictive inference.
 \emph{Ecological Monographs} \strong{88}, 485--504.
 }
 \seealso{
-\code{\link{Weights}}, \code{\link{model.avg}}
+\lcode{Weights}, \lcode{model.avg}
 
 Other model weights: 
 \code{\link{BGWeights}()},

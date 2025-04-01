@@ -6,7 +6,7 @@
 \description{
 Calculate a modification of Akaike's Information Criterion for overdispersed
 count data (or its version corrected for small sample,
-\dQuote{quasi-AIC\eqn{_{c}}{c}}), for one or several fitted model objects.
+\emph{quasi-}\AICc), for one or several fitted model objects.
 }
 
 \usage{
@@ -27,7 +27,7 @@ QAICc(object, ..., chat, k = 2, REML = NULL)
 
 \value{
     If only one object is provided, returns a numeric value with the
-    corresponding QAIC or QAIC\eqn{_{c}}{c}; otherwise returns a
+    corresponding \QAIC or \QAICc; otherwise returns a
     \code{data.frame} with rows corresponding to the objects.
 }
 
@@ -36,9 +36,9 @@ QAICc(object, ..., chat, k = 2, REML = NULL)
 model, and can be calculated by dividing model's deviance by the number of
 residual degrees of freedom.
 
-In calculation of QAIC, the number of model parameters is increased by 1 to
+In calculation of \QAIC, the number of model parameters is increased by 1 to
 account for estimating the overdispersion parameter. Without overdispersion,
-\eqn{\hat{c} = 1}{c-hat = 1} and QAIC is equal to AIC.
+\eqn{\hat{c} = 1}{c-hat = 1} and \QAIC is equal to \AIC.
 
 Note that \code{glm} does not compute maximum-likelihood estimates in models
 within the \emph{quasi-} family. In case it is justified, it can be worked 
@@ -49,10 +49,10 @@ Consider using negative binomial family with overdispersed count data.
 }
 
 \seealso{
-\code{\link{AICc}}, \code{\link[stats:family]{quasi}} family used for models with
+\lcode{AICc}, \lxcode{quasi}{stats:family} family used for models with
 over-dispersion.
 
-Tests for overdispersion in GLM[M]: \code{\link[performance]{check_overdispersion}}. 
+Tests for overdispersion in GLM[M]: \lxcode{check_overdispersion}{performance}. 
 }
 
 \author{Kamil Barto\enc{ń}{n}}

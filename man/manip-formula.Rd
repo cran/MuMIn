@@ -24,10 +24,10 @@ expand.formula(x)
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link[stats]{formula}}
+\lxcode{formula}{stats}
 
-\code{\link{delete.response}}, \code{\link{drop.terms}}, and 
-\code{\link{reformulate}}
+\lcode{delete.response}, \lcode{drop.terms}, and 
+\lcode{reformulate}
 
 }
 

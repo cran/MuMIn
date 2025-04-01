@@ -88,8 +88,7 @@ function(obj, termNames, opt, ...) {
 	
 	fnm <- c("cond", "zi", "disp")
 
-	randomterms <- attr(opt$allTerms, "random.terms")
-	randomterms <- lapply(randomterms, function(x) parse(text = x)[[1L]])
+	randomterms <- lapply(attr(opt$allTerms, "random.terms"), str2lang)
 	names(randomterms) <- vapply(lapply(randomterms, "[[", 1L), as.character, "")
 	randomterms <- lapply(randomterms, "[[", 2L)
 	rval <- umf_terms2formulalist(termNames, opt, replaceInt = "1")[fnm]

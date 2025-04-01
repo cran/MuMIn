@@ -1,12 +1,12 @@
 `null.fit` <-
 function(object, evaluate = FALSE, RE.keep = FALSE, envir = NULL, ...) {
 	# backward compatibility:
-	if("x" %in% names(list(...))) {
-		object <- list(...)$x
-		warning("the argument ", sQuote("x"), " has been removed. Use ",	
-		dQuote("object"), " instead")
+	if("x" %in% ...names()) {
+		object <- ...elt(match("x", ...names()))
+		warning("the argument ", sQuote("x"), " has been removed. Use ",
+            sQuote("object"), " instead")
 	}
-	
+    
 	# TODO: detect if RE.keep is TRUE and object is not a mixed model
 
 	cl <- get_call(object)
@@ -134,20 +134,37 @@ function(formula) {
 	formula
 }
 
+.getLLML <- 
+function(x) {
+    cls <- class(x)
+    llfun <- if(isS4(logLik)) selectMethod("logLik", cls) else logLik
+    if(isS3stdGeneric(llfun))
+        for(cl in cls)
+            if(is.function(llfun <- getS3method("logLik", cl, optional = TRUE)))
+                break
+    if(is.null(llfun))
+        stop("no 'logLik' method found for object of class ",
+            prettyEnumStr(cls, sep.last = ", "))
+    arg <- list(object = x, REML = FALSE)
+    do.call(llfun, arg[names(arg) %in%  names(formals(llfun))])
+}
+
+
 `r.squaredLR` <-
 function(object, null = NULL, null.RE = FALSE, ...) {
-	if("x" %in% names(list(...))) {
-		object <- list(...)$x
-		warning("the argument ", sQuote("x"), " has been removed. Use ", sQuote("object"), " instead")
+	if("x" %in% ...names()) {
+		object <- ...elt(match("x", ...names()))
+		warning("the argument ", sQuote("x"), " has been removed. Use ",
+            sQuote("object"), " instead")
 	}
 
 	if(!missing(null) && !missing(null.RE))
-		warning("argument 'null.RE' disregarded if 'null' is provided")
+		warning("argument 'null.RE' ignored if 'null' is provided")
 	if(is.null(null))
 		null <- null.fit(object, TRUE, null.RE, parent.frame())
 
-	L0 <- as.vector(if(inherits(null, "glm")) logLik(null) else logLik(null, REML = FALSE))
-	L1 <- if(inherits(object, "glm")) logLik(object) else logLik(object, REML = FALSE)
+	L0 <- as.vector(.getLLML(null))
+	L1 <- .getLLML(object)
 	n <- if(is.null(attr(L1, "nobs"))) nobs(object) else attr(L1, "nobs")
 	#n <- sum(weights(object))
 	ret <- 1 - exp(-2 / n * (as.vector(L1) - L0))

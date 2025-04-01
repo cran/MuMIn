@@ -29,9 +29,9 @@ importance(x)
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{Weights}}
+\lcode{Weights}
 
-\code{\link{dredge}}, \code{\link{model.avg}}, \code{\link{model.sel}}
+\lcode{dredge}, \lcode{model.avg}, \lcode{model.sel}
 }
 
 \examples{

@@ -2,15 +2,14 @@
 # Example of model selection with models from 'unmarked' package
 # with parallel execution
 ###
-require(parallel) || require(snow)
+require(parallel)
 library(MuMIn)
 library(unmarked)
 
 # Set up the cluster
 ncores <- if(exists("detectCores", mode = "function"))
 	detectCores() else getOption("cl.cores", 2)
-clusterType <- if(length(find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
-clust <- try(makeCluster(getOption("cl.cores", 2), type = clusterType))
+clust <- try(makeCluster(getOption("cl.cores", 2), type = "PSOCK"))
 if(!inherits(clust, "cluster")) stop("Could not set up the cluster")
 
 data(mallard)

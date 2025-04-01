@@ -57,7 +57,7 @@ function(models, check = TRUE) {
 }
 
 offsetTermNames <- function(x)
-vapply(as.list(attr(x, "variables")[attr(x,"offset") + 1L]), deparse, "", control = NULL)
+vapply(as.list(attr(x, "variables")[attr(x,"offset") + 1L]), deparse1, "", control = NULL)
 
 offsetWeights <-
 function(wts, Terms, models) {

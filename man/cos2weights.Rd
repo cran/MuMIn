@@ -6,8 +6,8 @@
 cos2Weights(object, ..., data, eps = 1e-06, maxit = 100, predict.args = list())
 }
 \arguments{
-\item{object, \dots}{two or more fitted \code{\link{glm}} objects, or a
-\code{list} of such, or an \code{\link[=model.avg]{"averaging"}} object.
+\item{object, \dots}{two or more fitted \lcode{glm} objects, or a
+\code{list} of such, or an \lxcode{"averaging"}{=model.avg} object.
 Currently only \code{lm} and \code{glm} objects are accepted.}
 
 \item{data}{a test data frame in which to look for variables
@@ -54,7 +54,7 @@ information-theoretic, and tactical approaches for predictive inference.
 \emph{Ecological Monographs} \strong{88}, 485–504.
 }
 \seealso{
-\code{\link{Weights}}, \code{\link{model.avg}}
+\lcode{Weights}, \lcode{model.avg}
 
 Other model weights: 
 \code{\link{BGWeights}()},

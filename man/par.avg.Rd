@@ -58,7 +58,7 @@ understanding AIC and BIC in model selection. \emph{Sociological Methods & Resea
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{model.avg}} for model averaging.
+\lcode{model.avg} for model averaging.
 }
 
 %% \examples{}

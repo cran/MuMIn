@@ -35,7 +35,7 @@ function(models = NULL, allTerms, uqTerms, use.letters = FALSE, ...) {
 		ret[idup] <- sapply(idup, function(i) paste0(ret[i],
 			letters[sum(ret[seq.int(i)] == ret[i])]))
 	}
-	ret[ret == ""] <- "(Null)"
+	ret[!nzchar(ret)] <- "(Null)"
 	attr(ret, "variables") <- structure(seq_along(uqTerms), names = uqTerms)
 	ret
 }

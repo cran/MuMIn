@@ -4,7 +4,7 @@
 \title{Second-order Akaike Information Criterion}
 \description{
 Calculate Second-order Akaike Information Criterion for one or several fitted
-model objects (AIC\eqn{_{c}}{c}, AIC for small samples). }
+model objects (\AICc, \AIC for small samples). }
 
 \usage{
 AICc(object, ..., k = 2, REML = NULL)
@@ -15,7 +15,7 @@ AICc(object, ..., k = 2, REML = NULL)
     method, or a \code{"logLik"} object. }
   \item{\dots}{optionally more fitted model objects. }
   \item{k}{the \sQuote{penalty} per parameter to be used; the default
-  \code{k = 2} is the classical AIC. }
+  \code{k = 2} is the classical \AIC. }
    \item{REML}{ optional logical value, passed to the \code{logLik} method
     indicating whether the restricted log-likelihood or log-likelihood should be
     used. The default is to use the method used for model estimation.
@@ -24,13 +24,13 @@ AICc(object, ..., k = 2, REML = NULL)
 
 \value{
 If just one object is provided, returns a numeric value with the
-corresponding AIC\eqn{_{c}}{c}; if more than one object are provided, returns a
+corresponding \AICc; if more than one object are provided, returns a
 \code{data.frame} with rows corresponding to the objects and columns
-representing the number of parameters in the model (\emph{df}) and AIC\eqn{_{c}}{c}.
+representing the number of parameters in the model (\emph{df}) and \AICc.
 }
 
 \note{
-AIC\eqn{_{c}}{c} should be used instead AIC when sample size is small in
+\AICc should be used instead \AIC when sample size is small in
 comparison to the number of estimated parameters (Burnham & Anderson 2002
 recommend its use when \eqn{n / K < 40}).
 
@@ -49,12 +49,12 @@ in small samples, \emph{Biometrika} \bold{76}, 297–307.
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-Akaike's An Information Criterion: \code{\link{AIC}}
+Akaike's An Information Criterion: \lcode{AIC}
 
 Some other implementations:
-%% \code{\link[AICcmodavg]{AICc}} in package \pkg{AICcmodavg},
-%% \code{\link[bbmle:BIC-methods]{AICc}} in package \pkg{bbmle},
-%% \code{\link[glmulti:aic]{aicc}} in package \pkg{glmulti}
+%% \lxcode{AICc}{AICcmodavg} in package \pkg{AICcmodavg},
+%% \lxcode{AICc}{bbmle:BIC-methods} in package \pkg{bbmle},
+%% \lxcode{aicc}{glmulti:aic} in package \pkg{glmulti}
 
 \code{AICc} in package \pkg{AICcmodavg},
 \code{AICc} in package \pkg{bbmle},

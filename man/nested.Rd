@@ -55,8 +55,8 @@ nested(x, indices = c("none", "numeric", "rownames"), rank = NULL)
 
 \note{
 This function determines nesting based only on fixed model terms, within groups of 
-models sharing the same \sQuote{varying} parameters (see \code{dredge} and 
-example in \code{Beetle}).
+models sharing the same \sQuote{varying} parameters (see \lcode{dredge} and 
+example in \lcode{Beetle}).
 }
 
 
@@ -74,7 +74,7 @@ ecology. \emph{Journal of Applied Ecology} \bold{45}, 218--227.
 }
 
 \seealso{
-\code{\link{dredge}}, \code{\link{model.sel}}
+\lcode{dredge}, \lcode{model.sel}
 
 }
 

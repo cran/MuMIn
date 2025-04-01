@@ -22,8 +22,11 @@ export(
 	"BGWeights", "cos2Weights", "jackknifeWeights", "stackingWeights", 
 	"bootWeights",
 	"loo",
+    
+    fitdistr2,
 	
-    "coefplot"
+    "coefplot",
+    ".get.extras"
 )
 
 # Imports:
@@ -33,7 +36,8 @@ importFrom("graphics", "axis", "box", "mtext", "par", "plot.new", "plot.window",
 
 importFrom("grDevices", "n2mfrow", "col2rgb", "hcl.colors", "hcl.pals", "rgb")
 
-importFrom("methods", ".hasSlot", "isGeneric", "slot", "slotNames", "is")
+importFrom("methods", ".hasSlot", "isGeneric", "slot", "slotNames", "is",
+    "selectMethod")
 
 importFrom("stats", ".checkMFClasses", ".getXlevels", ".MFclass", "AIC",
 	"as.formula",
@@ -56,7 +60,7 @@ importFrom("stats", ".checkMFClasses", ".getXlevels", ".MFclass", "AIC",
 
 importFrom("stats4", "logLik", "coef", "vcov")
 
-importFrom("utils", "capture.output")
+importFrom("utils", "capture.output", "getS3method", "isS3stdGeneric")
 
 importFrom("Matrix", "t", "rowSums", "det", "diag", "solve")
 
@@ -349,6 +353,11 @@ S3method(logLik, maxlikeFit)
 S3method(nobs, maxlikeFit)
 S3method(formula, maxlikeFit)
 S3method(coefTable, maxlikeFit)
+
+S3method(coefTable, fitdistr)
+S3method(family, fitdistr)
+S3method(formula, fitdistr)
+S3method(nobs, fitdistr)
 
 S3method(stdize, default)
 S3method(stdize, numeric)

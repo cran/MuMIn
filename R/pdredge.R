@@ -155,7 +155,7 @@ function(global.model, cluster = NULL,
 		cry(, attr(gmNaAction, "message"))
 
 
-	if(names(gmCall)[2L] == "") gmCall <-
+	if(!nzchar(names(gmCall)[2L])) gmCall <-
 		match.call(gmCall, definition = eval.parent(gmCall[[1L]]),
 				   expand.dots = TRUE)
 

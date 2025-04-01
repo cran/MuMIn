@@ -17,7 +17,7 @@ function(x, intercept = FALSE, offset = TRUE, ...) {
 	variables <- attr(x, "variables")[-1L]
 
 	if (!is.null(attr(x, "offset"))){
-		offs <- sapply(variables[attr(x, "offset")], deparse)
+		offs <- sapply(variables[attr(x, "offset")], deparse1)
 	} else offs <- NULL
 
 	ans <- attr(x, "term.labels")
@@ -114,7 +114,7 @@ function(x, ...) {
 	aux[lower.tri(aux)] <- ""
 	attr(ret, "random.terms") <- paste(lapply(lapply(reStruct, attr, "formula"),
 		"[[", 2L), "|",
-		rev(apply(aux, 1L, function(z) paste(z[z != ""], collapse = " %in% "))))
+		rev(apply(aux, 1L, function(z) paste(z[nzchar(z)], collapse = " %in% "))))
 
 	return(ret)
 }

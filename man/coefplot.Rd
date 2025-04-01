@@ -36,7 +36,7 @@ coefplot(
 }
 \arguments{
 \item{x}{either a (possibly named) vector of coefficients (for \code{coefplot}),
-or an \code{\link[=model.avg]{"averaging"}} object.}
+or an \lxcode{"averaging"}{=model.avg} object.}
 
 \item{lci, uci}{vectors of lower and upper confidence intervals. Alternatively
 a two-column matrix with columns containing confidence intervals, in
@@ -61,7 +61,7 @@ defaults to \code{TRUE}.}
 
 \item{labAsExpr}{logical indicating whether the coefficient names should
 be transformed to expressions to create prettier labels (see
-\code{\link{plotmath}})}
+\lcode{plotmath})}
 
 \item{mar.adj}{logical indicating whether the (left or lower) margin should be
 expanded to fit the labels}
@@ -78,7 +78,7 @@ foreground colour for all elements, and background colour for open symbols.}
 \item{zerolty, zerolwd, zerocol}{zero-line type, line width, colour.
 Setting \code{zerolty}    to \code{NA} suppresses the line.}
 
-\item{las}{the style of labels for coefficient names. See \code{\link{par}}.}
+\item{las}{the style of labels for coefficient names. See \lcode{par}.}
 
 \item{ann}{\code{logical} indicating if axes should be annotated (by \code{xlab} and \code{ylab}).}
 
@@ -96,7 +96,7 @@ the plot being drawn.}
 \item{full}{a logical value specifying whether the \dQuote{full}
 model-averaged coefficients are plotted. If \code{FALSE}, the
 \dQuote{subset}-averaged coefficients are plotted, and both types if
-\code{NA}. See \code{\link{model.avg}}.}
+\code{NA}. See \lcode{model.avg}.}
 
 \item{level}{the confidence level required.}
 

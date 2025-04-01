@@ -1,8 +1,33 @@
 MuMIn package news:
 
+Changes in version 1.48.11 (2025-03-31)
+- removed more references to archived and undeclared packages
+
+Changes in version 1.48.10 (2025-03-25)
+- (fixed) obscure problem in exprApply
+
+Changes in version 1.48.9 (2024-12-12)
+- (fixed) restored support for some 'unmarkedFit' models, broken since the 
+  previous version (spotted by Tash Harrison).
+
+Changes in version 1.48.8 (2024-12-03)
+- small code improvements and documentation changes
+- (fixed) extra functions for `dredge` now can return a result coercible to a 
+  numeric value (as documented), as not strictly numeric as it was before.
+
+Changes in version 1.48.7 (2024-08-25)
+- (added) methods for class 'fitdistr' (MASS package), which can now be used
+  with `model.sel`.
+
+Changes in version 1.48.6 (2024-07-02)
+- (fixed) problem with model specification of 'unmarkedFitPCount'
+
+Changes in version 1.48.5 (2024-06-23)
+- minor manual improvements
+
 Changes in version 1.48.4 (2024-06-21)
-- Fixed DESCRIPTION issues causing R check problems.
-- Registered previously omitted methods and supplemented package references in 
+- (fixed) DESCRIPTION issues causing R check problems.
+- registered previously omitted methods and supplemented package references in 
   the documentation.
   
 Changes in version 1.48.2 (2024-06-08)
@@ -12,7 +37,7 @@ Changes in version 1.48.2 (2024-06-08)
   (the latter reported by Jonathan Dinkins).
 
 Changes in version 1.47.12 (2024-06-02)
-- removed links to archived packages in the manual and included some new
+- (removed) links to archived packages in the manual and included some new
   suggested packages to satisfy R Check.
 
 Changes in version 1.47.10 (2024-03-21)
@@ -20,7 +45,7 @@ Changes in version 1.47.10 (2024-03-21)
   models with response as proportion and weights specifying the number of 
   trials. The result is now identical as for a model with response as a 
   2-column matrix (thanks to Emma Neigel for reporting this).
-- removed `logLik.coxme` as the package "coxme" now provides its own method.
+- (removed) `logLik.coxme` as the package "coxme" now provides its own method.
 
 Changes in version 1.47.8 (2023-07-07)
 - (added) `duplicated` method for "model.selection" object.
@@ -50,11 +75,11 @@ Changes in version 1.47.3 (2023-02-27)
   component models (spotted by Derek Corcoran).
 
 Changes in version 1.47.2 (2023-01-06)
-- Updated methods for models of class 'Sarlm' and 'Spautolm' from the 
+- updated methods for models of class 'Sarlm' and 'Spautolm' from the 
   package 'spatialreg' (reported by Iwona Dembicz).
 
 Changes in version 1.47.1 (2022-08-31)
-- Pleasing RCheck: updated NEWS file so that it can be parsed by the 
+- pleasing RCheck: updated NEWS file so that it can be parsed by the 
   `news` function.
 
 Changes in version 1.47.0 (2022-08-30)
@@ -780,7 +805,7 @@ Changes in version 1.7.6 (2012-04-01)
 Changes in version 1.7.5 (2012-03-27)
 - (added) methods for 'MCMCglmm' class, and function 'DIC': works with
   'model.sel' and 'dredge' (but not 'model.avg').
-'unmarked' is removed from 'Suggested' packages (recently it is often
+- 'unmarked' is removed from 'Suggested' packages (recently it is often
   unavailable on CRAN and causes errors during R CHECK). Added workarounds to
   pass (or trick) the R CHECK.
 

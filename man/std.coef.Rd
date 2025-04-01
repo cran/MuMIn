@@ -27,7 +27,7 @@ beta.weights(model)
 	multiplied by partial \acronym{SD}, otherwise they are multiplied by the
 	ratio of the standard deviations of the independent variable and dependent
 	variable. }
- \item{\dots}{additional arguments passed to \code{\link{coefTable}}, e.g.
+ \item{\dots}{additional arguments passed to \lcode{coefTable}, e.g.
     \code{dispersion}. }
 }
 
@@ -93,9 +93,9 @@ Statistician} \bold{48}, 209--213.
 }
 
 \seealso{
-\code{partial.sd} can be used with \code{\link{stdize}}.
+\code{partial.sd} can be used with \lcode{stdize}.
 
-\code{\link{coef}} or \code{\link{coeffs}} and \code{\link{coefTable}} for
+\lcode{coef} or \lcode{coeffs} and \lcode{coefTable} for
 unstandardized coefficients.
 }
 \examples{

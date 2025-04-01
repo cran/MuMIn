@@ -1,25 +1,11 @@
 
-umf_get_specs <-
-function(fit) {
-	className <- class(fit)[1L]
-	i <- .umf_specs$className == className &
-		.umf_specs$fitType == fit@fitType &
-		!is.na(.umf_specs$formula.arg)
-	if(!any(i))
-		stop(gettextf("'%s' object is not supported yet", className, domain = "MuMIn"))
-	specs <- droplevels(.umf_specs[i, ])
-	# XXX:
-
-	specs
-}
-
 `formula.unmarkedFit` <- function (x, ...) x@formula
 
 umf_terms2formulalist <- 
 function(termNames, opt, replaceInt = "(1)") {
 	i <- termNames %in% opt$interceptLabel
 	termNames[i] <- gsub("(Int)", replaceInt, termNames[i], fixed = TRUE)
-	fexpr <- lapply(termNames, function(x) parse(text = x)[[1L]])
+	fexpr <- lapply(termNames, str2lang)
 	
 	nm  <- as.character(lapply(fexpr, "[[", 1L))
 
@@ -35,21 +21,30 @@ function(termNames, opt, replaceInt = "(1)") {
 	farg
 }
 
+umf.formlist <-
+function(x, specs = getspecs(x, TRUE), names.item = "model") {
+
+    specs <- specs[!is.na(specs$formula.slot), ]
+    
+    fl <- if(.hasSlot(x, "formlist")) {
+        fl <- x@formlist
+        fl[match(specs$formlist.name, names(fl))]
+    } else if(.hasSlot(x, "formula") &&
+              all(startsWith(specs$formula.slot, "formula"))) {
+        fl <- frmsplit(x@formula)
+        fl[match(specs$formula.slot, paste0("formula", seq_along(fl)))]
+    } else
+        lapply(specs$formula.slot, function(name) slot(x, name))
+    names(fl) <- specs[[names.item]]
+    fl
+}
+
 getAllTerms.unmarkedFit <-
 function(x, intercept = FALSE, ...) {
-
-	specs <- umf_get_specs(x)
-	
-	formlist <- if("formlist" %in% slotNames(x))
-		x@formlist else
-		.multipleformula2list(x@formula)
-	if(is.null(names(formlist)))
-		names(formlist) <- paste0("formula", seq_along(formlist))
-	if(!all(names(formlist) %in% specs$formula.arg))
-		stop(gettextf("unknown 'unmarkedFit' fit type: %s", x@fitType))
-		
-	formlist <- formlist[specs$formula.arg]
-	names(formlist) <- term.prefix <- as.character(specs$short.name)
+    
+    formlist <- umf.formlist(x, names.item = "short.name")
+    term.prefix <- names(formlist) 
+    
 
 	allterms <- lapply(formlist, getAllTerms.formula, intercept = FALSE)
 	
@@ -111,7 +106,7 @@ function(x, intercept = FALSE, ...) {
 `makeArgs.unmarkedFit` <- 
 function(obj, termNames, opt, ...) {
 	
-	specs <- umf_get_specs(obj)
+	specs <- getspecs(obj)
 	formulanames <- as.character(specs$formula.arg)
 	single_formula <- all(startsWith(formulanames, "formula"))
 	

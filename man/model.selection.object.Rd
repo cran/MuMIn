@@ -3,8 +3,8 @@
 \title{Description of Model Selection Objects}
 \description{
   An object of class \code{"model.selection"} holds a table of model 
-  coefficients and ranking statistics. It is produced by \code{\link{dredge}} 
-  or \code{\link{model.sel}}.
+  coefficients and ranking statistics. It is produced by \lcode{dredge} 
+  or \lcode{model.sel}.
 }
 
 \value{
@@ -23,8 +23,10 @@ Data frame columns:
 \item{df}{Number of model parameters}
 \item{logLik}{Log-likelihood (or quasi-likelihood for \acronym{GEE})}
 \item{<rank>}{Information criterion value}
-\item{delta}{\ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC}}
-\item{weight}{\sQuote{Akaike weights}.}
+\item{delta}{the \IC difference, i.e. the the relative difference to 
+    the best model, 
+    \ifelse{latex}{\eqn{\Delta_{IC} = IC_i - IC_{min}}}{\enc{Δ}{Delta}_IC = IC_i - IC_min}, }
+\item{weight}{\sQuote{Akaike weights}, i.e. \link[=Weights]{normalized model likelihoods}.}
 
 Attributes:
     \item{model.calls}{A list containing model calls (arranged in 
@@ -58,6 +60,6 @@ The object has class \code{c("model.selection", "data.frame")}.
 }
 
 \seealso{
-  \code{\link{dredge}}, \code{\link{model.sel}}.
+  \lcode{dredge}, \lcode{model.sel}.
 }
 \keyword{models}

@@ -95,7 +95,7 @@ function(x, peel = TRUE) {
                 # and of length >= 2
 				m <- regexpr("^(([a-zA-Z]{2,5})\\(((?:[^()]*|(?1))*)\\))$", ixi, perl = TRUE, useBytes = TRUE)
                 cptgrps <- .matches(ixi, m)
-				if(peel <- all(cptgrps[, 2L] != "")) {
+				if(peel <- all(nzchar(cptgrps[, 2L]))) {
 					peelpfx <- paste0(cptgrps[, 2L], "(")
 					peelsfx <- ")"
 					ixi <- cptgrps[, 3L]
@@ -159,7 +159,7 @@ function(x, split = ":",
 		for(i in seq.int(n[k])) {
 			chprv <- ch
 			ch <- substr(x[k], i, i)
-			if(inquote != "") { # in quotes
+			if(nzchar(inquote)) { # in quotes
 				if(chprv == esc && ch == esc) ch <- " " else
 					if(chprv != esc && ch == inquote)	inquote <- ""
 			} else {

@@ -11,7 +11,7 @@ jackknifeWeights(
 )
 }
 \arguments{
-\item{object, \dots}{two or more fitted \code{\link{glm}} objects, or a
+\item{object, \dots}{two or more fitted \lcode{glm} objects, or a
 \code{list} of such, or an \link[=model.avg]{"averaging"} object.}
 
 \item{data}{a data frame containing the variables in the model. It is
@@ -20,7 +20,7 @@ optional if all models are \code{glm}.}
 \item{type}{a character string specifying the function to minimize. Either
 \code{"rmse"} or \code{"loglik"}.}
 
-\item{family}{used only if \code{type = "loglik"}, a \code{\link{family}} object to be
+\item{family}{used only if \code{type = "loglik"}, a \lcode{family} object to be
 used for likelihood calculation. Not needed if all models share the same
 \code{family} and link function.}
 
@@ -29,13 +29,13 @@ to be used in the model fitting process. Should be \code{NULL} or
 a numeric vector.}
 
 \item{optim.method}{optional, optimisation method, passed to
-\code{\link{optim}}.}
+\lcode{optim}.}
 
 \item{maxit}{optional, the maximum number of iterations, passed to
-\code{\link{optim}}.}
+\lcode{optim}.}
 
 \item{optim.args}{optional list of other arguments passed to
-\code{\link{optim}}.}
+\lcode{optim}.}
 
 \item{start}{starting values for model weights. Numeric of length equal the
 number of models.}
@@ -57,7 +57,7 @@ The function returns a numeric vector of model weights.
 Compute model weights optimized for jackknifed model fits.
 }
 \details{
-Model weights are chosen (using \code{\link{optim}}) to minimise
+Model weights are chosen (using \lcode{optim}) to minimise
 \acronym{RMSE} or log-likelihood of
 the prediction for data point \var{i}, of a model fitted omitting that
 data point \var{i}. The jackknife procedure is therefore run for all
@@ -67,7 +67,7 @@ provided models and for all data points.
 This procedure can give variable results depending on the
 \link[=optim]{optimisation method} and starting values. It is therefore
 advisable to make several replicates using different \code{optim.method}s.
-See \code{\link{optim}} for possible values for this argument.
+See \lcode{optim} for possible values for this argument.
 }
 \examples{
 fm <- glm(Prop ~ mortality * dose, binomial(), Beetle, na.action = na.fail)
@@ -91,7 +91,7 @@ information-theoretic, and tactical approaches for predictive inference.
 \emph{Ecological Monographs} \strong{88}, 485–504.
 }
 \seealso{
-\code{\link{Weights}}, \code{\link{model.avg}}
+\lcode{Weights}, \lcode{model.avg}
 
 Other model weights: 
 \code{\link{BGWeights}()},

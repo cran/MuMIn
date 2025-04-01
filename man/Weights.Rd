@@ -14,19 +14,37 @@ Weights(x) <- value
 }
 
 \arguments{
-	\item{x}{a numeric vector of information criterion values such as AIC, or
-	objects returned by functions like \code{AIC}. There are also methods for
-	extracting \sQuote{Akaike weights} from \code{"model.selection"} or 
-	\code{"averaging"} objects. }
+\item{x}{a numeric vector of any information criterion (such as 
+     \AIC, \AICc, \QAIC, \BIC) values, or objects returned by functions like 
+     \code{AIC}. There are also methods for extracting \sQuote{Akaike weights} from 
+     \code{"model.selection"} or \code{"averaging"} objects. }
 	
-	\item{value}{numeric, the new weights for the \code{"averaging"} object or
-	\code{NULL} to reset the weights based on the original IC used.}
+\item{value}{numeric, the new weights for the \code{"averaging"} object or
+     \code{NULL} to reset the weights based on the original \IC used. 
+      The assigned \code{value} need not sum to one, but if they are all zero, the 
+      result will be invalid (\code{NaN}). }
 
 }
 
 \details{
-	The replacement function can assign new weights to an \code{"averaging"}
-	object, affecting coefficient values and order of component models.
+
+\sQuote{Akaike weights}, \myequation{\omega_{i}}{X}{w_i}, of a model \var{i} can be 
+interpreted as the probability that the model is the best (approximating) model
+given the data and the set of all models considered. The weights are calculated as:
+
+\mydequation{
+\omega_i = \frac{\exp(\Delta_i/2)}{\sum_{r=1}^{R}\exp(\Delta_r/2)}
+}{X}{
+w_i = exp(Delta_i / 2) / (sum(exp(Delta_r / 2))
+}
+
+where \DeltaIC{i} is the \IC difference of the  \var{i}-th model relative to the
+smallest \IC value in the set of \var{R} models.
+
+The replacement version of \code{Weights} can assign new weights to an 
+    \code{"averaging"} object, affecting coefficient values and the order of 
+    component models. Upon assignment, the weights are normalised to sum to one.
+    
 }
 
 \value{
@@ -35,24 +53,26 @@ Weights(x) <- value
 
 
 \note{
-	On assigning new weights, the model order changes accordingly, so assigning
-	the same weights again will cause incorrect re-calculation of averaged
-	coefficients. To avoid that, either re-set model weights by assigning \code{NULL},
-	or use ordered weights.
+Assigning new weights changes the model order accordingly, so reassigning
+ weights to the same object must take this new order into account, otherwise 
+ the averaged coefficients will be calculated incorrectly. To avoid this, either
+ re-set the model weights by assigning \code{NULL}, or sort the new weights 
+ using the (decreasing) order of the previously assigned weights.
 }
 
 
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{sw}}, \code{\link{weighted.mean}}
+\lcode{sw}, \lcode{weighted.mean}
 
-\code{\link{armWeights}}, 
-\code{\link{bootWeights}}, \code{\link{BGWeights}}, \code{\link{cos2Weights}},
-\code{\link{jackknifeWeights}} and \code{\link{stackingWeights}} can be used to
-produce model weights.
+\lcode{armWeights}, 
+\lcode{bootWeights}, \lcode{BGWeights}, \lcode{cos2Weights},
+\lcode{jackknifeWeights} and \lcode{stackingWeights} can be used to
+produce various kinds of model weights.
 
-\code{\link{weights}}, which extracts fitting weights from model objects.
+Not to be confused with \lcode{weights}, which extracts fitting weights 
+from model objects.
 }
 
 \examples{

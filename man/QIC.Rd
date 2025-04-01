@@ -5,7 +5,7 @@
 \encoding{utf-8}
 \title{QIC and quasi-Likelihood for GEE}
 \description{
-Calculate quasi-likelihood under the independence model criterion (QIC)
+Calculate quasi-likelihood under the independence model criterion (\QIC)
   for Generalized Estimating Equations.
 }
 
@@ -18,18 +18,18 @@ quasiLik(object, ...)
 \arguments{
   \item{object}{a fitted model object of class \code{"gee"}, \code{"geepack"}, 
     \code{"geem"}, \code{"wgee"},  or \code{"yags"}.}
-  \item{\dots}{ for QIC and QIC\eqn{_{u}}{u}, optionally more fitted model objects. }  
-  \item{typeR}{ logical, whether to calculate QIC(R). QIC(R) is
+  \item{\dots}{ for \QIC and \QICu, optionally more fitted model objects. }  
+  \item{typeR}{ logical, whether to calculate \QIC(R). \QIC(R) is
     based on quasi-likelihood of a working correlation \eqn{R} model. Defaults
-    to \code{FALSE}, and QIC(I) based on independence model is returned.
+    to \code{FALSE}, and \QIC(I) based on independence model is returned.
         }
 }
 
 \value{
     If just one object is provided, returns a numeric value with the
-    corresponding QIC; if more than one object are provided, returns a
+    corresponding \QIC; if more than one object are provided, returns a
     \code{data.frame} with rows corresponding to the objects and one column
-    representing QIC or QIC\eqn{_{u}}{u}.
+    representing \QIC or \QICu.
 }
 
 \note{
@@ -50,14 +50,15 @@ Chapman & Hall/CRC
 
 \seealso{
 Methods exist for 
-\code{\link[gee]{gee}} (package \pkg{gee}),
-\code{\link[geepack]{geeglm}} (\pkg{geepack}), 
-\code{\link[geeM]{geem}} (\pkg{geeM}), 
-\code{wgee} (\fckpkg{wgeesel}, the package's \code{QIC.gee} function is used), 
+\lxcode{gee}{gee} (package \pkg{gee}),
+\lxcode{geeglm}{geepack} (\pkg{geepack}), 
+\lxcode{geem}{geeM} (\pkg{geeM}), 
+\code{wgee} (\unCRANpkg{wgeesel}, the package's \code{QIC.gee} function is used), 
 and \code{yags} (\pkg{yags} on R-Forge).
 There is also a \code{QIC} function in packages \pkg{MESS} and \pkg{geepack}, 
-returning some extra information (such as CIC and QICc). \code{yags} and 
-\code{\link[ape]{compar.gee}} from package \pkg{ape} both provide QIC values.
+returning some extra information (such as \acronym{CIC} and \acronym{QICc}). 
+\code{yags} and \code{compar.gee} from package \pkg{ape} both
+provide \acronym{QIC} values.
 }
 
 \keyword{models}

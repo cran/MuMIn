@@ -24,7 +24,7 @@
 }
 
 \value{
-A \code{\link[=model.selection.object]{"model.selection" object}} containing 
+A \lxcode{"model.selection" object}{=model.selection.object} containing 
 models (rows) from all provided tables.
 }
 
@@ -43,8 +43,8 @@ Unlike the \code{merge} method for \code{data.frame}, this method appends
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{dredge}}, \code{\link{model.sel}}, \code{\link{merge}}, 
-	\code{\link{rbind}}.
+\lcode{dredge}, \lcode{model.sel}, \lcode{merge}, 
+	\lcode{rbind}.
 }
 
 \examples{

@@ -35,7 +35,7 @@ Model-averaged predictions, optionally with standard errors.
 		(only if \code{se.fit = FALSE} and the component objects are a result of
 		\code{lm}). }
     \item{\dots}{arguments to be passed to respective \code{predict}
-        method (e.g. \code{level} for \code{\link[nlme]{lme}} model). }
+        method (e.g. \code{level} for \lxcode{lme}{nlme} model). }
 
 }
 
@@ -50,7 +50,7 @@ the estimated standard errors.
 \code{predict}ing is possible only with \code{averaging} objects with
 \code{"modelList"} attribute, i.e. those created \emph{via} \code{model.avg}
 from a model list, or from \code{model.selection} object with argument \code{fit
-= TRUE} (which will recreate the model objects, see \code{\link{model.avg}}).
+= TRUE} (which will recreate the model objects, see \lcode{model.avg}).
 
 If all the component models are ordinary linear models, the prediction can be
 made either with the full averaged coefficients (the argument \code{full =
@@ -58,7 +58,7 @@ TRUE} this is the default) or subset-averaged coefficients. Otherwise the
 prediction is obtained by calling \code{predict} on each component model and
 weighted averaging the results, which corresponds to the assumption that all
 predictors are present in all models, but those not estimated are equal zero 
-(see \sQuote{Note} in \code{\link{model.avg}}). Predictions from component models
+(see \sQuote{Note} in \lcode{model.avg}). Predictions from component models
 with standard errors are passed to \code{par.avg} and averaged in the same way
 as the coefficients are.
 
@@ -70,7 +70,7 @@ the same family and link function. Alternatively, predictions from each model on
 response scale may be averaged (with \code{type = "response"} and
 \code{backtransform = FALSE}). Note that this leads to results differing from
 those calculated with the former method. See also
-\code{\link[stats]{predict.glm}}.
+\lxcode{predict.glm}{stats}.
 }
 
 \note{
@@ -92,10 +92,10 @@ they will be found only if \pkg{MuMIn} is before \pkg{nlme} on the
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{model.avg}}, and \code{\link{par.avg}} for details of model-averaged
+\lcode{model.avg}, and \lcode{par.avg} for details of model-averaged
 parameter calculation.
 
-\code{\link[nlme]{predict.lme}}, \code{\link[nlme]{predict.gls}}
+\lxcode{predict.lme}{nlme}, \lxcode{predict.gls}{nlme}
 }
 
 \examples{

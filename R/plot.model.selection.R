@@ -1,21 +1,5 @@
 
 
-#stop("TODO plot.model.selection")
-#z <- MuMIn:::itemByType(dd, c("terms", "varying"), drop = FALSE)
-#z[] <- lapply(z, function(x) {
-#    if(is.factor(x)) {
-#        as.integer(x) + (if(nlevels(x) == 1L) 0L else 20L)
-#    } else
-#    findInterval(x, all.inside = TRUE, seq(min(x, na.rm = TRUE),
-#        max(x, na.rm = TRUE), length.out = 20L))
-#})
-#z <- as.matrix(z)
-#mode(z) <- "integer"
-#col <- c(gray.colors(20), rainbow(2))[z]
-##col <- c(rainbow(22))[z]
-#dim(col) <- dim(z)
-
-
 `plot.model.selection` <-
 function(x,
 	ylab = NULL, xlab = NULL, main = "Model selection table",
@@ -208,13 +192,10 @@ function(x,
 	plot.window(xlim = c(0.5, m + .5), ylim = c(1, 0), xaxs = "i", yaxs = "i")
     rect(0.5, 0, m + .5, 1, col = bg, border = 0)
 
-    #image(seq.int(ncol(x2)), c(0, cwts), t(a + x2), col = col, add = TRUE)
 	cx <- seq(0.5, ncol(x2) + .5)
 	cy <- c(0, cwts)
 	
 	ixy <- expand.grid(y = seq.int(length(cwts)), x = seq.int(ncol(x2)))
-	#j <- !is.na(x2) ### XXX === xp!
-	#koBrowseHere()
 	ixy <- ixy[xp, , drop = FALSE]
 	plot.window(xlim = c(0.5, m + .5), ylim = c(1, 0), xaxs = "i", yaxs = "i")
 	rect(cx[ixy[, 2L]], cy[ixy[, 1L]], cx[ixy[, 2L] + 1L], cy[ixy[, 1L] + 1L],

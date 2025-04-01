@@ -21,7 +21,7 @@
 \arguments{
   \item{x}{a \code{model.selection} object to be subsetted.}
   \item{subset,select}{logical expressions indicating columns and rows to keep.
-    See \code{\link{subset}}. }
+    See \lcode{subset}. }
   \item{i,j}{indices specifying elements to extract. }
   \item{recalc.weights}{logical value specyfying whether Akaike weights
         should be normalized across the new set of models to sum to one.
@@ -30,7 +30,7 @@
         \ifelse{latex}{\eqn{\Delta_{IC}}}{\enc{Δ}{Delta}_IC}
         should be calculated for the new set of models (not done by default).
     }
-    \item{exact}{logical, see \code{\link[=Extract]{[}}.}
+    \item{exact}{logical, see \lxcode{[}{=Extract}.}
   \item{\dots}{further arguments passed to \code{\link{[.data.frame}} 
     (\code{drop}). }
 }
@@ -76,7 +76,7 @@ dc(a, b, c)} allows for models of form \code{a}, \code{a+b} and \code{a+b+c} but
 \author{Kamil Barto\enc{ń}{n}}
 
 \seealso{
-\code{\link{dredge}}, \code{\link{subset}} and \code{\link{[.data.frame}} for
+\lcode{dredge}, \lcode{subset} and \code{\link{[.data.frame}} for
 subsetting and extracting from \code{data.frame}s.
 }
 

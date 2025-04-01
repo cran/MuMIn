@@ -71,13 +71,13 @@ stdizeFit(object, newdata, which = c("formula", "subset", "offset", "weights",
     \item{response}{logical, stating whether the response should be standardized. By
         default, only variables on the right-hand side of the formula are standardized. }
     \item{data}{ an object coercible to \code{data.frame}, containing the
-        variables in \code{formula}. Passed to, and used by \code{\link{model.frame}}.
+        variables in \code{formula}. Passed to, and used by \lcode{model.frame}.
         }
     \item{newdata}{a \code{data.frame} returned by \code{stdize}, to be used 
         by the modified model.}
     
     \item{\dots}{ for the \code{formula} method, additional arguments passed to
-        \code{\link{model.frame}}. For other methods, it is silently ignored. }
+        \lcode{model.frame}. For other methods, it is silently ignored. }
     \item{object}{a fitted model object or an expression being a \code{call} to
         the modelling function. }
     \item{which}{ a character string naming arguments which should be modified.
@@ -100,7 +100,7 @@ stdizeFit(object, newdata, which = c("formula", "subset", "offset", "weights",
 where the values are centred and/or scaled. Transformation is carried out
 column-wise in \code{data.frame}s and matrices. 
 
-The returned value is compatible with that of \code{\link{scale}} in that the
+The returned value is compatible with that of \lcode{scale} in that the
 numeric centring and scalings used are stored in attributes
 \code{"scaled:center"} and \code{"scaled:scale"} (these can be \code{NA} if no
 centring or scaling has been done).
@@ -112,7 +112,7 @@ variables.
 }
 
 \details{
-\code{stdize} resembles \code{\link{scale}}, but uses special rules
+\code{stdize} resembles \lcode{scale}, but uses special rules
 for factors, similarly to \code{standardize} in package \pkg{arm}.
 
 \code{stdize} differs from \code{standardize} in that it is used on
@@ -127,7 +127,7 @@ Variables of only one unique value are unchanged.
 
 By default, \code{stdize} scales by dividing by standard deviation rather than twice
 the \acronym{SD} as \code{standardize} does. Scaling by \acronym{SD} is used 
-also on uncentred values, which is different from \code{\link{scale}} where
+also on uncentred values, which is different from \lcode{scale} where
 root-mean-square is used.
 
 If \code{center} or \code{scale} are logical scalars or vectors of length equal
@@ -157,13 +157,13 @@ deviations. \emph{Statistics in medicine} \bold{27}, 2865--2873.
 
 
 \seealso{
-Compare with \code{\link{scale}} and \code{standardize} or
+Compare with \lcode{scale} and \code{standardize} or
 \code{rescale} (the latter two in package \pkg{arm}).
 
 For typical standardizing, model coefficients transformation may be
-easier, see \code{\link{std.coef}}.
+easier, see \lcode{std.coef}.
 
-\code{\link{apply}} and \code{\link{sweep}} for arbitrary transformations of 
+\lcode{apply} and \lcode{sweep} for arbitrary transformations of 
 columns in a \code{data.frame}.
 
 

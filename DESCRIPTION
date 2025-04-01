@@ -1,8 +1,8 @@
 Package: MuMIn
 Type: Package
 Title: Multi-Model Inference
-Version: 1.48.4
-Date: 2024-06-21
+Version: 1.48.11
+Date: 2025-03-31
 Encoding: UTF-8
 Authors@R: c(
   person("Kamil", "Bartoń", role=c("aut", "cre"), 
@@ -18,17 +18,17 @@ Description: Tools for model selection and model averaging with support for a
              model weights derived from information criteria (AICc and alike) 
              or custom model weighting schemes.
 License: GPL-2
-Depends: R (>= 4.2.0)
+Depends: R (>= 4.4.0)
 Imports: graphics, methods, Matrix, stats, stats4, nlme, insight
 Suggests: lme4 (>= 1.1.0), mgcv (>= 1.7.5), gamm4, MASS, nnet, survival
         (>= 3.1.0), geepack, performance
-Enhances: aod, aods3, betareg, caper, coxme (>= 2.2.4), cplm, gee,
-        glmmML, logistf, MCMCglmm, ordinal, pscl, spatialreg, splm,
-        unmarked (>= 1.4.0), geeM (>= 0.7.5), gamlss, RMark, glmmTMB,
-        brglm, quantreg, maxlike
+Enhances: aod, betareg, caper, coxme (>= 2.2.4), cplm, gee, glmmML,
+        logistf, MCMCglmm, ordinal, pscl, spatialreg, splm, unmarked
+        (>= 1.4.0), geeM (>= 0.7.5), gamlss, RMark, glmmTMB, brglm,
+        quantreg, maxlike
 LazyData: yes
 ByteCompile: yes
 NeedsCompilation: no
-Packaged: 2024-06-21 23:58:23 UTC; kb2
+Packaged: 2025-04-01 10:48:34 UTC; kb2
 Repository: CRAN
-Date/Publication: 2024-06-22 14:10:02 UTC
+Date/Publication: 2025-04-01 16:30:05 UTC

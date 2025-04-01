@@ -27,7 +27,7 @@ r.squaredGLMM(object, null, ...)
   \item{object}{a fitted linear model object. }
   \item{null}{optionally, a null model, including only random effects. See \sQuote{Details}. }
   \item{envir}{optionally, the \code{environment} in which the null model is to be evaluated.
-      Defaults to the current frame. See \code{\link{eval}}. }
+      Defaults to the current frame. See \lcode{eval}. }
   \item{pj2014}{logical, if \code{TRUE} and \code{object} is of \code{poisson} 
   family, the result will include \Rsqx{GLMM} using original formulation of 
   Johnson (2014). This requires fitting \code{object} with an observation-level
@@ -104,27 +104,28 @@ al. (2017) paper. The returned value's format also has changed (it is a
 function calculated the \dQuote{theoretical} \Rsqx{GLMM} for \code{binomial}
 models.
 
-\Rsqx{GLMM} can be calculated also for fixed-effect models. In
-the simpliest case of \acronym{OLS} it reduces to \code{var(fitted) /
-(var(fitted) + deviance / 2)}. Unlike likelihood-ratio based \Rsq for 
-\acronym{OLS}, value of this statistic differs from that of
-the classical \Rsq.
+\Rsqx{GLMM} can be calculated also for fixed-effect only models. In
+the simpliest case of \acronym{OLS} it reduces to 
+\myequation{\frac{Var({\hat{\mu}})}{Var({\hat{\mu}}) + D/2}}{}{Var(mu) / (Var(mu) + D(y, mu) / 2)},
+where \myequation{Var({\hat{\mu}})}{}{Var(mu)} is the variance of fitted values, 
+and \var{D} is the model deviance. Unlike likelihood-ratio based \Rsq for 
+\acronym{OLS}, value of this statistic differs from that of the classical \Rsq.
 
 Currently methods exist for classes: \code{merMod}, \code{lme},
 \code{glmmTMB}, \code{glmmADMB}, \code{glmmPQL}, \code{cpglm}(\code{m}) and
 (\code{g})\code{lm}.
 
-For families other than gaussian, Gamma, poisson, binomial and negative binomial,
-the residual variance is obtained using \code{\link[insight]{get_variance}} 
+For families other than gaussian, Gamma, Poisson, binomial and negative binomial,
+the residual variance is obtained using \lxcode{get_variance}{insight} 
 from package \CRANpkg{insight}.
 
-See note in \code{\link{r.squaredLR}} help page for comment on using \Rsq in 
+See note in \lcode{r.squaredLR} help page for comment on using \Rsq in 
 model selection.
 
 }
 
 \author{
-Kamil Barto\enc{ń}{n}. This implementation is based on \R code from 
+Kamil Barto\enc{ń}{n}. This implementation is based on the
 \sQuote{Supporting Information} for Nakagawa et al. (2014), 
 (the extension for random-slopes) Johnson (2014), and includes developments from
 Nakagawa et al. (2017).
@@ -146,9 +147,9 @@ linear mixed-effects models revisited and expanded.
 }
 
 \seealso{
-\code{\link{summary.lm}}, \code{\link{r.squaredLR}}
+\lcode{summary.lm}, \lcode{r.squaredLR}
 
-\code{\link[performance]{r2}} from package \CRANpkg{performance} calculates
+\lxcode{r2}{performance} from package \CRANpkg{performance} calculates
 \Rsqx{GLMM} also for variance at different levels, with optional confidence 
 intervals. \CRANpkg{r2glmm} has functions for \Rsq and partial \Rsq.
 

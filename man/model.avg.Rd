@@ -32,7 +32,7 @@ model.avg(object, ..., revised.var = TRUE)
 
     \item{beta}{ indicates whether and how the component models' coefficients 
         should be standardized. See the argument's description in 
-        \code{\link{dredge}}. }
+        \lcode{dredge}. }
 
 	\item{rank}{ optionally, a rank function (returning an information criterion) to
 		use instead of \code{AICc}, e.g. \code{BIC} or \code{QAIC}, may be
@@ -44,16 +44,16 @@ model.avg(object, ..., revised.var = TRUE)
         with a current model. }
 
     \item{revised.var}{ logical, indicating whether to use the revised formula for
-        standard errors. See \code{\link{par.avg}}. }
+        standard errors. See \lcode{par.avg}. }
 
 	\item{dispersion}{ the dispersion parameter for the family used. See
-		\code{\link{summary.glm}}. This is used currently only with \code{glm},
+		\lcode{summary.glm}. This is used currently only with \code{glm},
 		is silently ignored otherwise. }
 	
 	\item{ct.args}{ optional list of arguments to be passed to
-	     \code{\link{coefTable}} (besides \code{dispersion}). }
+	     \lcode{coefTable} (besides \code{dispersion}). }
 		 
-	\item{subset}{ see \code{\link[=subset.model.selection]{subset}} method for
+	\item{subset}{ see \lxcode{subset}{=subset.model.selection} method for
 		\code{"model.selection"} object. }
 
 	\item{fit}{ if \code{TRUE}, the component models are fitted using
@@ -110,7 +110,7 @@ The object has the following attributes:
 For a list of model types that are accepted see \link[=MuMIn-models]{list of
 	supported models}.
 
-\code{rank} is found by a call to \code{\link[base]{match.fun}} and typically is
+\code{rank} is found by a call to \lxcode{match.fun}{base} and typically is
 	specified as a function or a symbol or a character string specifying a 
 	function to be searched for from the environment of the call to lapply. 
 	\code{rank} must be a function able to accept model as a first argument and 
@@ -118,8 +118,8 @@ For a list of model types that are accepted see \link[=MuMIn-models]{list of
 
 Several standard methods for fitted model objects exist for class
 	\code{averaging}, including \code{summary},
-	\code{\link[=predict.averaging]{predict}}, \code{coef}, \code{confint},
-	\code{\link{formula}}, and \code{\link{vcov}}.
+	\lxcode{predict}{=predict.averaging}, \code{coef}, \code{confint},
+	\lcode{formula}, and \lcode{vcov}.
 	
 \code{coef}, \code{vcov}, \code{confint} and \code{coefTable} accept argument
 	\code{full} that if set to \code{TRUE}, the full model-averaged coefficients
@@ -134,7 +134,7 @@ Several standard methods for fitted model objects exist for class
 %	coefTable(model, full = FALSE, ...)
 %	}	
 	
-\code{logLik} returns a list of \code{\link[stats]{logLik}} objects
+\code{logLik} returns a list of \lxcode{logLik}{stats} objects
 	for the component models.
 
 }
@@ -155,7 +155,7 @@ The \sQuote{subset} (or \sQuote{conditional}) average only averages over the
 	nonsense results. Currently, no checking for contrast consistency is done.
 	
 	\code{print} method provides a concise output (similarly as for \code{lm}). 
-	To print more details use \code{summary} function, and \code{\link{confint}}
+	To print more details use \code{summary} function, and \lcode{confint}
 	to get confidence intervals.
 
 }
@@ -175,11 +175,11 @@ Statistical Mathematics} \bold{62}, 117–125.
 
 \seealso{
 
-See \code{\link{par.avg}} for more details of model-averaged parameter
+See \lcode{par.avg} for more details of model-averaged parameter
 calculation.
 
-\code{\link{dredge}}, \code{\link{get.models}} \cr
-\code{\link{AICc}} has examples of averaging models fitted by REML.
+\lcode{dredge}, \lcode{get.models} \cr
+\lcode{AICc} has examples of averaging models fitted by REML.
 
 \code{modavg} in package \pkg{AICcmodavg}, and
 \code{coef.glmulti} in package \pkg{glmulti} also perform model
@@ -192,7 +192,7 @@ averaging.
 fm1 <- lm(y ~ ., data = Cement, na.action = na.fail)
 (ms1 <- dredge(fm1))
 
-#models with delta.aicc < 4
+# Use models with Delta AICc < 4
 summary(model.avg(ms1, subset = delta < 4))
 
 #or as a 95\% confidence set:

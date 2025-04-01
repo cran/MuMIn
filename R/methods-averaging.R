@@ -164,7 +164,7 @@ function(x, ...) {
         "\n\n", sep = "")
     cat("Component models:", "\n")
 	comp.names <- rownames(x$msTable)
-	comp.names[comp.names == ""] <- "null"
+	comp.names[!nzchar(comp.names)] <- "null"
 	cat(format(sQuote(comp.names), justify = "l"), fill = TRUE)
 	cat("\nCoefficients:", "\n")
 	print(x$coefficients[!is.na(x$coefficients[,1L]), , drop = FALSE])

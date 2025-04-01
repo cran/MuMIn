@@ -29,8 +29,8 @@ to the model term names.}
 \item{terms}{which terms to include (default \code{NULL} means all terms).}
 
 \item{labAsExpr}{logical, indicating whether the term names should be
-interpreted (\code{\link{parse}}d) as \R expressions for prettier labels.
-See also \code{\link{plotmath}}.}
+interpreted (\lcode{parse}d) as \R expressions for prettier labels.
+See also \lcode{plotmath}.}
 
 \item{vlabels}{alternative labels for the table rows (i.e. model names)}
 
@@ -52,8 +52,8 @@ See 'Details'.}
 \item{par.lab, par.vlab}{optional lists of arguments and
 \link[=par]{graphical parameters} for drawing
 term labels (top axis) and model names (right axis), respectively.
-Items of \code{par.lab} are passed as arguments to \code{\link{mtext}}, and those of
-\code{par.vlab} are passed to \code{\link{axis}}.}
+Items of \code{par.lab} are passed as arguments to \lcode{mtext}, and those of
+\code{par.vlab} are passed to \lcode{axis}.}
 
 \item{axes, ann}{logical values indicating whether the axis and annotation
 should appear on the plot.}
@@ -70,7 +70,7 @@ If \code{col.mode = 0}, the colours are recycled: if \code{col} is a matrix,
 recycling takes place both per row and per column. If \code{col.mode > 0}, the
 colour values in the columns are interpolated and assigned according to
 the model weights. Higher values shift the colours for models with lower
-model weights more forward. See also \code{\link{colorRamp}}. If \code{col.mode < 0} or
+model weights more forward. See also \lcode{colorRamp}. If \code{col.mode < 0} or
 \code{"value"} (partially matched, case-insensitive) and \code{col} has two or more
 elements, colours are used to represent coefficient values: the first
 element in \code{col} is used for categorical predictors, the rest for
@@ -80,27 +80,27 @@ for negative values to red for positive ones.
 }
 
 The following arguments are useful for adjusting label size and
-position in \code{par.lab} and \code{par.vlab} : \code{cex}, \code{las} (see \code{\link{par}}),
-\code{line} and \code{hadj} (see \code{\link{mtext}} and \code{\link{axis}}).
+position in \code{par.lab} and \code{par.vlab} : \code{cex}, \code{las} (see \lcode{par}),
+\code{line} and \code{hadj} (see \lcode{mtext} and \lcode{axis}).
 }
 \examples{
 \dontshow{if (require(graphics)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-dd <- dredge(lm(formula = y ~ ., data = Cement, na.action = na.fail))
-plot(dd,
+ms <- dredge(lm(formula = y ~ ., data = Cement, na.action = na.fail))
+plot(ms,
     # colours by coefficient value:
     col.mode = "value",
     par.lab = list(las = 2, line = 1.2, cex = 1),
     bg = "gray30",
     # change labels for the models to Akaike weights:
-    vlabels = parse(text = paste("omega ==", round(Weights(dd), 2)))
+    vlabels = parse(text = paste("omega ==", round(Weights(ms), 2)))
     )
-plot(dd, col = 2:3, col.mode = 0) # colour recycled by row
-plot(dd, col = cbind(2:3, 4:5), col.mode = 0) # colour recycled by row and column
-plot(dd, col = 2:3, col.mode = 1) # colour gradient by model weight
+plot(ms, col = 2:3, col.mode = 0) # colour recycled by row
+plot(ms, col = cbind(2:3, 4:5), col.mode = 0) # colour recycled by row and column
+plot(ms, col = 2:3, col.mode = 1) # colour gradient by model weight
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link{plot.default}}, \code{\link{par}}, \code{\link{MuMIn-package}}
+\lcode{plot.default}, \lcode{par}, \code{\link{MuMIn-package}}
 }
 \author{
 Kamil Barto\enc{ń}{n}

@@ -34,7 +34,7 @@ functions include those produced by:
 \item \lxcode{hurdle}{pscl}, \lxcode{zeroinfl}{pscl} (\CRANpkg{pscl});
 \item \lxcode{negbin}{aod}, \lxcode{betabin}{aod} (class \code{"glimML"}), 
 	package \CRANpkg{aod});
-\item \lxcode{aodml}{aods3}, \lxcode{aodql}{aods3} (\CRANpkg{aods3});
+\item \unlxcode{aodml}{aods3}, \unlxcode{aodql}{aods3} (\unCRANpkg{aods3});
 \item \lxcode{betareg}{betareg} (\CRANpkg{betareg});
 \item \lxcode{brglm}{brglm} (\CRANpkg{brglm});
 \item \code{*sarlm} models, \lxcode{spautolm}{spatialreg} (\CRANpkg{spatialreg});
@@ -50,33 +50,37 @@ functions include those produced by:
 \item \lxcode{mark}{RMark} and related functions (class \code{mark} from package
 	\CRANpkg{RMark}). Currently \code{dredge} can only manipulate \code{formula}
 	element of the argument \code{model.parameters}, keeping its other elements
-	intact.
+	intact;
+\item \lxcode{fitdistr}{MASS} mostly useful for model selection with 
+    \code{model.sel}. Use of \lxcode{fitdistr2}{=updateable} wrapper 
+    function is recommended.
 }
 
 Generalized Estimation Equation model implementations: 
 \lxcode{geeglm}{geepack} from package \CRANpkg{geepack}, 
 \lxcode{gee}{gee} from \CRANpkg{gee}, 
 \lxcode{geem}{geeM} from \CRANpkg{geeM}, 
-\code{wgeesel} from \fckCRANpkg{wgeesel}, 
-and \code{yags} from  \href{http://yags.r-forge.r-project.org/}{\pkg{yags}} (on 
-R-Forge) can be used with \code{\link{QIC}} as the selection criterion.
+\unlxcode{wgee}{wgeesel} from \unCRANpkg{wgeesel}, 
+and \code{yags} from \href{http://yags.r-forge.r-project.org/}{\pkg{yags}} (on 
+R-Forge) can be used with \lcode{QIC} as the selection criterion.
 
 
-Other classes are also likely to be supported, in particular if they inherit
-from one of the above classes. In general, the models averaged with
-\code{model.avg} may belong to different types (e.g. \code{glm} and \code{gam}), 
-provided they use the same data and response, and if it is valid to do so. 
-This applies also to constructing model selection tables with \code{model.sel}.
+Further classes may also be supported, in particular if they inherit from one of
+the classes listed above. In general, models averaged using \code{model.avg} can
+belong to different types (e.g. \code{glm} and \code{gam}), provided they use 
+the same data and response, and, obviously, if it is valid to do so. This also 
+applies to the construction of model selection tables using \code{model.sel}.
+
 }
 
 \note{
 * In order to use \code{gamm}, \code{gamm4}, \code{spml (> 1.0.0)},
   \code{crunch} or \code{MCMCglmm} with \code{dredge}, an
-  \code{\link{updateable}} wrapper for these functions should be created.
+  \lcode{updateable} wrapper for these functions should be created.
 }
 
 \seealso{
-\code{\link{model.avg}}, \code{\link{model.sel}} and \code{\link{dredge}}.
+\lcode{model.avg}, \lcode{model.sel} and \lcode{dredge}.
 }
 
 \keyword{package}

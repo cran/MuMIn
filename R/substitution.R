@@ -55,6 +55,8 @@ function (x, fac, allTerms, vName, envir = parent.frame()) {
     as.call(c(as.name(fun), call("[", vName, as.call(c(as.name("c"), match(dn[[1L]][i[j]], allTerms))))))
 }
 
+
+## dc(fun(a), x + y) --> dc(`fun(a)`, `x + y`)
 .subst.vars.for.args <- function(e) {
 	for(i in 2L:length(e))
 		if(!is.name(e[[i]]))
@@ -112,9 +114,10 @@ function (expr, what, FUN, ..., symbols = FALSE, parent = NULL) {
 		return(if(ispairlist) as.pairlist(expr) else expr)
 	}
     n <- length(expr)
-    if (n == 0L)
-		return(expr) else
-	if (n == 1L) {
+    if (n == 0L || !is.language(expr)) 
+        return(expr)
+    
+    if (n == 1L) {
 		if (!is.call(expr)) {
             if (symbols && (anyNA(what) || any(expr == what)))
                 expr <- FUN(expr, ..., parent = parent)

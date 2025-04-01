@@ -1,3 +1,6 @@
+# Extractor for model object elements returning values in consistent format 
+# (which is as it should be by default)
+
 
 # vcov alternative that always returns a matrix (as it should be)
 .vcov <- 
@@ -9,12 +12,12 @@ function(object, ...)
 as.matrix(vcov(object, ...))
 
 .vcov.glmmTMB <-
-function(object, which = c("cond", "zi", "disp"), ...) {
-    which <- match.arg(which)
-    rval <- vcov(object, ...)[[which]]
+function(object, component = c("cond", "zi", "disp"), ...) {
+    component <- match.arg(component)
+    rval <- vcov(object, ...)[[component]]
     nm <- rownames(rval)
     nm[nm == "(Intercept)"] <- "(Int)"
-    nm <- paste0(which, "(", nm, ")")
+    nm <- paste0(component, "(", nm, ")")
     dimnames(rval) <- list(nm, nm)
     rval
 }
@@ -60,6 +63,7 @@ function(object) {
         object$sigma^2
     )
 }
+
 sigma2.glmmTMB <-
 function(object) {
     if(family(object)$family == "nbinom1") sigma(object) + 1 else sigma(object)
@@ -85,12 +89,12 @@ function(object, ...)
 unclass(VarCorr(object, ...))
 
 
-
 # RE model matrix colnames for models with >1 random formulas are prefixed with
 # the grouping factor name, e.g. :
 # {~ 1 | X1, ~ 1 | X2} has model.matrix columns "X1.(Intercept)", "X2.(Intercept)"
 # Need to rename VC matrix dimnames to match them.
-.varcorr.lme <- function(object, ...) {
+.varcorr.lme <- 
+function(object, ...) {
     reStruct <- object$modelStruct$reStruct
 	rval <- lapply(reStruct, function(v, sig2) nlme::pdMatrix(v) * sig2, object$sigma^2)
     if ((m <- length(rval)) > 1L) {
@@ -100,15 +104,17 @@ unclass(VarCorr(object, ...))
 			dimnames(rval[[i]]) <- list(dn, dn)
 		}
 	}
+    attr(rval, "sc") <- object$sigma
     rval
 }
 
-
-# Note: only for conditional model
-.varcorr.glmmTMB <- function(object, ...) {
-    unclass(VarCorr(object, ...)$cond)
+.varcorr.glmmTMB <- 
+function(object, component = c("cond", "zi", "disp"), ...) {
+    component <- match.arg(component)
+    unclass(VarCorr(object, ...)[[component]])
 }
 
-.varcorr.glmmadmb <- function(object, ...) {
+.varcorr.glmmadmb <- 
+function(object, ...) {
     suppressWarnings(VarCorr(object))
 }

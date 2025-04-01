@@ -161,13 +161,8 @@ function(object, ..., rank = NULL, rank.args = NULL,
 	}
 	
 	if(!missing(extra) && length(extra) != 0L) {
-		# a cumbersome way of evaluating a non-exported function in a parent frame:
-		#extra <- eval.parent(call(".get.extras", substitute(extra)))
-		extra <- eval.parent(as.call(list(call("get", ".get.extras",
-			envir = call("asNamespace",
-			.packageName), inherits = FALSE), substitute(extra),
-			r2nullfit = TRUE)))
-		res <- lapply(models, function(x) unlist(lapply(extra, function(f) f(x))))
+		extra <- eval.parent(call(".get.extras", substitute(extra), r2nullfit = NULL))
+		res <- lapply(models, .applyExtras, extra = extra)
 		extraResultNames <- unique(unlist(lapply(res, names)))
 		nextra <- length(extraResultNames)
 		i <- seq_len(length(all.terms))
@@ -178,7 +173,10 @@ function(object, ..., rank = NULL, rank.args = NULL,
 				tmp
 			} else x
 		})), rval[, -i, drop = FALSE])
-	} else nextra <- 0L
+	} else {
+        nextra <- 0L
+        extra <- NULL
+    }
 	row.names(rval) <- names(models)
 	
 	rval <- structure(
@@ -205,6 +203,7 @@ function(object, ..., rank = NULL, rank.args = NULL,
 			lv <- 1L:length(colTypes)
 			factor(column.types, levels = lv, labels = names(colTypes)[lv])
 		},
+        extra = extra,
 		class = c("model.selection", "data.frame")
 	)
 	if(!("class" %in% colnames(rval)))

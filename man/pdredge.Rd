@@ -19,7 +19,7 @@ pdredge(global.model, cluster = NULL,
 \arguments{
     \item{global.model, beta, rank, fixed, m.lim, m.max, m.min, 
         subset, varying, extra, ct.args, deps, ...}{
-        see \code{\link{dredge}}. }
+        see \lcode{dredge}. }
 	\item{evaluate}{whether to evaluate and rank the models. If \code{FALSE}, a
         list of unevaluated \code{call}s is returned and \code{cluster} is 
         not used. 
@@ -62,7 +62,7 @@ As of version 1.45.0, using \code{pdredge} directly is deprecated. Use
 }
 
 \value{
- See \code{\link{dredge}}.
+ See \lcode{dredge}.
 }
 
 \author{Kamil Barto\enc{ń}{n}}

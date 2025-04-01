@@ -260,7 +260,7 @@ function (x, y, labAsExpr = FALSE, n = 101, w = 5, ...) {
 	lab_as_expr <- function(x) {
 		x <- gsub(":", "%*%", x, perl = TRUE)
 		x <- gsub("\\B_?(\\d+)(?![\\w\\._])", "[\\1]", x, perl = TRUE)
-		parse(text = x)
+		str2lang(x)
 	}
 	
 	xd <- function(z, n, w, x = NULL) {
