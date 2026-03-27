@@ -127,13 +127,13 @@ function(global.model, cluster = NULL,
 			prettyEnumStr(names(rankArgs[badargs])), "'dredge' or 'rank'",
 			warn = TRUE)
 
-	ICName <- as.character(attr(IC, "call")[[1L]])
+	ICName <- as.character(.getRankCall(IC)[[1L]])
 
 	if(length(tryCatch(IC(global.model), error = function(e) {
-		stop(simpleError(conditionMessage(e), subst(attr(IC, "call"),
+		stop(simpleError(conditionMessage(e), subst(.getRankCall(IC),
 			x = as.name("global.model"))))
 	})) != 1L) {
-		cry(, "result of '%s' is not of length 1", asChar(attr(IC, "call")))
+		cry(, "result of '%s' is not of length 1", asChar(.getRankCall(IC)))
 	}
 
 	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,

@@ -1,10 +1,35 @@
 MuMIn package news:
 
+Changes in version 1.48.19 (2026-03-27):
+-  backward compatibility in printing "model.selection" and "model.averaging"
+   objects.
+
+Changes in version 1.48.17 (2026-03-21)
+- (fixed) error when using `dredge` with certain 'unmarkedFit' model types due to
+  missing values in some model specs entries (noted by unmarked's Ken Kellner).
+  
+Changes in version 1.48.15 (2026-01-29)
+- adaptations to changes in 'unmarkedFit' structure introduced 
+  in 'unmarked' v. 1.5.1 (thanks to Tash Harrison for information).
+  As a result, 'MuMIn's functions are no longer compatible with older 
+  versions of 'unmarked'.
+
+Changes in version 1.48.14 (2026-01-12)
+- (fixed) fixCoefNames: warning "match limit exceeded" with some coefficient
+  names e.g. "xx(aaaaaa:bbbbbbbbb:ccc(I(d)))" 
+- (fixed) error with comparision of rank functions, when combining model 
+  selection tables
+
+Changes in version 1.48.12 (2025-06-03)
+- (fixed) rank function wrapper function is simplified, and its environment 
+  no longer contains the unnecessary global model object which resulted in 
+  larger memory use and file size when saving
+
 Changes in version 1.48.11 (2025-03-31)
 - removed more references to archived and undeclared packages
 
 Changes in version 1.48.10 (2025-03-25)
-- (fixed) obscure problem in exprApply
+- (fixed) obscure problem in `exprApply`
 
 Changes in version 1.48.9 (2024-12-12)
 - (fixed) restored support for some 'unmarkedFit' models, broken since the 
@@ -23,7 +48,7 @@ Changes in version 1.48.6 (2024-07-02)
 - (fixed) problem with model specification of 'unmarkedFitPCount'
 
 Changes in version 1.48.5 (2024-06-23)
-- minor manual improvements
+- minor improvements in the manual
 
 Changes in version 1.48.4 (2024-06-21)
 - (fixed) DESCRIPTION issues causing R check problems.

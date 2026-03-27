@@ -102,7 +102,7 @@ function(global.model, beta = c("none", "sd", "partial.sd"),
 			 warn = FALSE)
 
 	IC <- .getRank(rank, rankArgs)
-
+	
 	if(any(badargs <- is.na(match(names(rankArgs),
 		c(names(formals(get("rank", environment(IC))))[-1L], names(formals()))))))
 		cry("RTFM", ngettext(sum(badargs),
@@ -111,14 +111,14 @@ function(global.model, beta = c("none", "sd", "partial.sd"),
 			prettyEnumStr(names(rankArgs[badargs])), "'dredge' or 'rank'",
 			warn = TRUE)
 
-
-	ICName <- as.character(attr(IC, "call")[[1L]])
+		
+	ICName <- as.character(.getRankCall(IC)[[1L]])
 
 	if(length(tryCatch(IC(global.model), error = function(e) {
-		stop(simpleError(conditionMessage(e), subst(attr(IC, "call"),
+		stop(simpleError(conditionMessage(e), subst(.getRankCall(IC),
 			x = as.name("global.model"))))
 	})) != 1L) {
-		cry(, "result of '%s' is not of length 1", asChar(attr(IC, "call")))
+		cry(, "result of '%s' is not of length 1", asChar(.getRankCall(IC)))
 	}
 
 	allTerms <- allTerms0 <- getAllTerms(global.model, intercept = TRUE,
@@ -259,19 +259,6 @@ function(global.model, beta = c("none", "sd", "partial.sd"),
 	}
 	## END: 'extra'
 
-	nov <- as.integer(nVars - nFixed)
-	ncomb <- (2L ^ nov) * nVariants
-    novMax <- log2(.Machine$integer.max %/% nVariants)
-    if(nov > novMax)
-		cry(, "number of non-fixed predictors [%d] exceeds the allowed maximum of %.0f (with %d variants)", 
-            nov, novMax, nVariants)
-    resultChunkSize <- 25L
-	if(evaluate) {
-		rvNcol <- nVars + nVarying + 3L + nExtra
-		rval <- matrix(NA_real_, ncol = rvNcol, nrow = resultChunkSize)
-		coefTables <- vector(resultChunkSize, mode = "list")
-	}
-
 	## BEGIN: 'subset'
 	## @param:	hasSubset, subset, allTerms, [interceptLabel],
 	## @value:	hasSubset, subset
@@ -386,12 +373,29 @@ function(global.model, beta = c("none", "sd", "partial.sd"),
 		}
 	} # END: 'subset'
 
+
+	nov <- as.integer(nVars - nFixed)
+	ncomb <- (2L ^ nov) * nVariants
+    novMax <- log2(.Machine$integer.max %/% nVariants)
+    if(nov > novMax)
+		cry(, "number of non-fixed predictors [%d] exceeds the allowed maximum of %.0f (with %d variants)", 
+            nov, novMax, nVariants)
+    
+    resultChunkSize <- 25L
+    resultInitialSize <- resultChunkSize * nVariants
+
+	if(evaluate) {
+		rvNcol <- nVars + nVarying + 3L + nExtra
+		rval <- matrix(NA_real_, ncol = rvNcol, nrow = resultInitialSize)
+		coefTables <- vector(resultInitialSize, mode = "list")
+	}
+
 	comb.sfx <- rep(TRUE, nFixed)
 	comb.seq <- if(nov != 0L) seq_len(nov) else 0L
 	k <- 0L
 	extraResult1 <- integer(0L)
-	calls <- vector(mode = "list", length = resultChunkSize)
-	ord <- integer(resultChunkSize)
+	calls <- vector(mode = "list", length = resultInitialSize)
+	ord <- integer(resultInitialSize)
 
 	argsOptions <- list(
 		response = attr(allTerms0, "response"),
@@ -585,6 +589,8 @@ function(global.model, beta = c("none", "sd", "partial.sd"),
 		for (i in varyingNames) rval[, i] <-
 			factor(rval[, i], levels = vnum[[i]], labels = variant.names[vnum[[i]]])
 	}
+	
+	#koBrowseHere()
 
 	rval <- rval[o <- order(rval[, ICName], decreasing = FALSE), ]
 	coefTables <- coefTables[o]

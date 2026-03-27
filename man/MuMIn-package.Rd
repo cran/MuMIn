@@ -44,8 +44,8 @@ following are currently implemented in \R:
 \lcode{DIC} extractor for \acronym{MCMC} models and a \lcode{QIC} for
 \acronym{GEE}.
 
-Many model fitting functions in \R are supported. For a complete list,
-see \link[=MuMIn-models]{the list of supported models}.
+\pkg{MuMIn} works with many model fitting functions available in \R. For a 
+complete list, see \link[=MuMIn-models]{the list of supported models}.
 
 In addition to \dQuote{regular} information criteria, model averaging can be 
 performed using various types of model weighting algorithms:

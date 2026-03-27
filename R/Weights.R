@@ -17,7 +17,7 @@ function(x) {
 	attr(rval, "wt.type") <- 
 		if(!is.null(attr(x, "model.weights"))) 
 			attr(x, "model.weights") else
-			asChar(attr(attr(x, "rank"), "call")[[1L]])
+			asChar(.getRankCall(attr(x, "rank"))[[1L]])
 	rval
 }
 

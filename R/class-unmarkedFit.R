@@ -1,5 +1,9 @@
 
-`formula.unmarkedFit` <- function (x, ...) x@formula
+`formula.unmarkedFit` <-
+function (x, ...) {
+	if(.hasSlot(x, "formula")) x@formula else
+		formula.formlist(x@formlist)
+}
 
 umf_terms2formulalist <- 
 function(termNames, opt, replaceInt = "(1)") {
@@ -24,17 +28,16 @@ function(termNames, opt, replaceInt = "(1)") {
 umf.formlist <-
 function(x, specs = getspecs(x, TRUE), names.item = "model") {
 
-    specs <- specs[!is.na(specs$formula.slot), ]
+    specs <- specs[!is.na(specs$formlist.name), ]
     
-    fl <- if(.hasSlot(x, "formlist")) {
-        fl <- x@formlist
-        fl[match(specs$formlist.name, names(fl))]
-    } else if(.hasSlot(x, "formula") &&
-              all(startsWith(specs$formula.slot, "formula"))) {
-        fl <- frmsplit(x@formula)
-        fl[match(specs$formula.slot, paste0("formula", seq_along(fl)))]
-    } else
-        lapply(specs$formula.slot, function(name) slot(x, name))
+    if(!.hasSlot(x, "formlist"))
+		stop("incompatible 'unmarkedFit' object (possibly created with unmarked version < 1.5.1): 'formlist' element is missing")
+	
+	fl <- x@formlist
+	i <- match(specs$formlist.name, names(fl), nomatch = 0L)
+	if(any(i == 0L))
+		stop("incompatible 'unmarkedFit' object (possibly created with unmarked version < 1.5.1): unrecognized items in 'formlist'")
+    fl <- fl[i]
     names(fl) <- specs[[names.item]]
     fl
 }
@@ -107,7 +110,10 @@ function(x, intercept = FALSE, ...) {
 function(obj, termNames, opt, ...) {
 	
 	specs <- getspecs(obj)
+	specs <- specs[!is.na(specs$formula.arg), , drop = FALSE]
+	
 	formulanames <- as.character(specs$formula.arg)
+	
 	single_formula <- all(startsWith(formulanames, "formula"))
 	
 	# NOTE: elements are named after full short.name
@@ -133,4 +139,20 @@ function(obj, termNames, opt, ...) {
 		names(zarg) <- formulanames
 		zarg
 	}
+}
+
+umf_vcov <-
+function(object, method = NA, ...) {
+    method <- if(anyNA(method)) NA else
+        match.arg(method, choices = c("hessian", "nonparboot"))
+    if(is.na(method)) {
+        if(.hasSlot(object, "TMB") && !is.null(object@TMB)) {
+            method <- "TMB"
+        } else if(!is.null(object@opt$hessian)) {
+            method <- "hessian"
+        } else if(!is.null(object@bootstrapSamples)) {
+            method <- "nonparboot"
+        } else return(NULL)
+    }
+    return(vcov(object, method = method, ...))
 }

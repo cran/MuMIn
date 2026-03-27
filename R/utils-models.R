@@ -16,43 +16,70 @@ function(x) {
 
 
 `.getRank` <-
-function(rank = NULL, rank.args = NULL, object = NULL, ...) {
+function(rank = "AICc", rank.args = NULL, object = NULL,
+	envir = parent.frame(), ...) {
 	rank.args <- c(rank.args, list(...))
-
+	
+    namestr <- NULL # just not to annoy R check
+	isrankfun <- FALSE
 	if(is.null(rank)) {
-		x <- NULL # just not to annoy R check
-		IC <- as.function(c(alist(x =, do.call("AICc", list(x)))))
-		attr(IC, "call") <- call("AICc", as.name("x"))
-		class(IC) <- c("function", "rankFunction")
-		return(IC)
-	} else if(inherits(rank, "rankFunction") && length(rank.args) == 0L) {
-		return(rank)
-	} else if(is.list(rank) && length(rank) == 1L && is.function(rank[[1L]])) {
-        srank <- names(rank)[1L]
-        rank <- rank[[1L]]
-    } else {
-        srank <- substitute(rank, parent.frame())
-        if(srank == "rank") srank <- substitute(rank)
-    }
+		rank <- AICc
+		namestr <- "AICc"
+	} else {
+		isrankfun <- is.function(rank) && (
+			inherits(rank, "rankFunction") ||
+				is.call(environment(rank)$..rankfunctioncall))
+		if(isrankfun && length(rank.args) == 0L)
+			return(rank)
+
+		if(is.list(rank) && length(rank) == 1L && is.function(rank[[1L]])) {
+			namestr <- names(rank)[1L]
+			rank <- rank[[1L]]
+		} else {
+			namestr <- substitute(rank, envir)
+			if(namestr == "rank") namestr <- substitute(rank)
+		}
+	}
 
 	rank <- match.fun(rank)
-	ICName <- switch(mode(srank), call = as.name("IC"), character = as.name(srank), name=, srank)
-	ICarg <- c(list(as.name("x")), rank.args)
-	ICCall <- as.call(c(ICName, ICarg))
-	IC <- as.function(c(alist(x =), list(substitute(do.call("rank", ICarg),
-		list(ICarg = ICarg)))))
-
+	funcname <- switch(mode(namestr),
+		call = as.name("IC"),
+		character = as.name(namestr),
+		name =, namestr)
+	funcargs <- c(list(as.name("x")), rank.args)
+	funccall <- as.call(c(funcname, funcargs))
+	
+	if(isrankfun)
+		funcenv <- environment(rank)
+	else {
+		funcenv <- new.env(parent = environment(rank))
+		funcenv$rank <- rank
+	}
+	funcenv$..rankfunctioncall <- funccall
+	
+	wrappedrank <- as.function(c(alist(x = ),
+		as.call(c(list(as.name("rank"), as.name("x")), rank.args))
+	), envir = funcenv)
+	
 	if(!is.null(object)) {
-		test <- IC(object)
+		test <- wrappedrank(object)
 		if (!is.numeric(test) || length(test) != 1L)
 			stop("'rank' should return numeric vector of length 1")
 	}
-
-	attr(IC, "call") <- ICCall
-	class(IC) <- c("function", "rankFunction")
-	IC
+	wrappedrank
 }
 
+.getRankCall <-
+function(rank) {
+	if(exists("..rankfunctioncall", environment(rank), inherits = FALSE, 
+			mode = "language")) {
+		return(get("..rankfunctioncall", environment(rank), inherits = FALSE, 
+			mode = "language"))
+	# backward compatibility:
+	} else if(is.call(cl <- attr(rank,"call"))) {
+		return(cl)
+	} else return(as.symbol("undetermined criterion"))
+}
 
 # Like `regmatches`, but for captured groups, and simplistic.
 # Only does results of `regexpr`.
@@ -66,6 +93,7 @@ function (x, m) {
 	rval
 }
 
+
 # sorts alphabetically interaction components in model term names
 # if 'peel', tries to remove coefficients wrapped into function-like syntax
 # (this is meant mainly for 'unmarkedFit' models with names such as "psi(a:b:c)")
@@ -74,9 +102,12 @@ function (x, m) {
 # "log(`b:a`)") - but this is unlikely to be a valid model term.
 `fixCoefNames` <-
 function(x, peel = TRUE) {
+	
 	if(!length(x)) return(x)
 	ia <- grep(":", x, fixed = TRUE)
 	if(!length(ia)) return(structure(x, order = rep.int(1L, length(x))))
+		
+		#koBrowseHere()
 	
 	ixi <- x[ia]
 	if(peel) {
@@ -93,23 +124,39 @@ function(x, peel = TRUE) {
 				# only if 'XXX(...)', i.e. exclude 'XXX():YYY()' or such
                 # assumes coefficient types are ascii letters only 
                 # and of length >= 2
-				m <- regexpr("^(([a-zA-Z]{2,5})\\(((?:[^()]*|(?1))*)\\))$", ixi, perl = TRUE, useBytes = TRUE)
+				
+				#m <- regexpr("^([a-zA-Z]{2,5})(([a-zA-Z\\._]{0,5})\\(((?:[^()]*|(?2))*)\\))$", test, perl = TRUE, useBytes = TRUE)
+				m <- regexpr("^([a-zA-Z]{2,5})(([a-zA-Z\\._]*)\\(((?:[^()]*|(?2))*)\\))$", ixi, perl = TRUE, useBytes = TRUE)
+				#m <- regexpr("^(([a-zA-Z]{2,5})\\(((?:[^()]*|(?1))*)\\))$", ixi, perl = TRUE, useBytes = TRUE)
                 cptgrps <- .matches(ixi, m)
-				if(peel <- all(nzchar(cptgrps[, 2L]))) {
-					peelpfx <- paste0(cptgrps[, 2L], "(")
+				if(peel <- all(nzchar(cptgrps[, 1L]))) {
+					peelpfx <- paste0(cptgrps[, 1L], "(")
 					peelsfx <- ")"
-					ixi <- cptgrps[, 3L]
+					ixi <- cptgrps[, 4L]
 				}
 			}
 		}
 	}
 	# replace {...}, [...], (...), ::, and ::: with placeholders
-	m <- gregexpr("(?:\\{(?:[^\\{\\}]*|(?0))*\\}|\\[(?:[^\\[\\]]*|(?0))*\\]|\\((?:[^()]*|(?0))*\\)|(?>:::?))", ixi, perl = TRUE)
+	
+	
+	# When using a single RX (with alternating patterns (a|b|c)), sometimes
+	# there is a warning: PCRE error 'match limit exceeded'.
+	# To work this around, the three bracket types are matched sequentially:
+	rxx <- c("\\[[^\\[\\]]*+(?:(?0)[^\\]\\[]*)*+\\]",
+			 "\\([^\\(\\)]*+(?:(?0)[^\\)\\(]*)*+\\)",
+			 "\\{[^\\{\\}]*+(?:(?0)[^\\}\\{]*)*+\\}",
+			 ":::?")
+	
 	xtpl <- ixi
-	regmatches(xtpl, m) <- lapply(m, function(x) {
-		if((ml <- attr(x, "match.length"))[1L] == -1L) return(character(0L))
-		sapply(ml, function(n) paste0(rep("_", n), collapse = ""))
-	})
+	for(rx in rxx) {
+		m <- gregexpr(xtpl, pattern = rx, perl = TRUE)
+		regmatches(xtpl, m) <- lapply(m, function(x) {
+			if((ml <- attr(x, "match.length"))[1L] == -1L) return(character(0L))
+			vapply(ml, function(n) paste0(rep("_", n), collapse = ""), NA_character_)
+		})
+	}
+		
 	
 	# split by ':' and sort
 	splits <- gregexpr(":", xtpl, fixed = TRUE)

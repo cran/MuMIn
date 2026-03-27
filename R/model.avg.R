@@ -143,7 +143,7 @@ function(object, ..., beta = c("none", "sd", "partial.sd"),
 	
 	testSmoothKConsistency(models) # for gam, if any
 
-	ICname <- asChar(attr(rank, "call")[[1L]])
+	ICname <- asChar(.getRankCall(rank)[[1L]])
 
 	allterms1 <- lapply(models, getAllTerms)
 	all.terms <- unique(unlist(allterms1, use.names = FALSE))

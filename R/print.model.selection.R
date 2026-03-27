@@ -85,7 +85,7 @@ function(x, abbrev.names = TRUE, warnings = getOption("warn") != -1L, ...) {
 			}
 		}
 		
-		cat("Models ranked by", asChar(attr(attr(origx, 'rank'), "call")), "\n")
+		cat("Models ranked by", asChar(.getRankCall(attr(origx, "rank"))), "\n")
 		if(!is.null(random.terms)) {
 			if(addrandcol) {
 				cat("Random terms: \n")

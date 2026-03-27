@@ -45,7 +45,7 @@ function (object, rank = NULL, rank.args = NULL, fit = NA, ...,
 		cl$object <- models
 		rval <- do.call("model.sel", as.list(cl), envir = parent.frame())
 	} else if(!is.null(rank)) {
-		newRankName <- as.character(attr(rank, "call")[[1L]])
+		newRankName <- as.character(.getRankCall(rank)[[1L]])
 		message(gettextf("New rank '%s' applied to logLik objects", newRankName))
 		k <- type2col(object, "ic")
 		attr(object, "names")[k] <- names(attr(object, "column.types"))[k] <-
@@ -100,7 +100,7 @@ function(object, ..., rank = NULL, rank.args = NULL,
         warning("'rank.args' ignored with no 'rank' given")
         
 	rank <- .getRank(rank, rank.args = rank.args, object = object)
-	ICname <- asChar(attr(rank, "call")[[1L]])
+	ICname <- asChar(.getRankCall(rank)[[1L]])
 	allTermsList <- lapply(models, getAllTerms, intercept = TRUE)
 	random.terms <- lapply(allTermsList, attr, "random.terms")
 	all.terms <- unique(unlist(allTermsList, use.names = FALSE))
